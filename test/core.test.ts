@@ -99,7 +99,7 @@ test('comparison refuses dimensions kinds subjects populations digests and windo
     const comparison = await compareQuantities(host, { id, left: 'base', right: key }); assert.equal(comparison.usable, false);
     const state = (await readQuantitySet(host, id)).state;
     assert.throws(() => evaluateQuantityExpression(state, { op: 'add', left: 'base', right: key }), hasCode(comparison.reason!));
-    if (index >= 2) assert.throws(() => evaluateQuantityExpression(state, { op: 'divide', left: 'base', right: key }), hasCode('population_mismatch'));
+    if (index >= 2) assert.throws(() => evaluateQuantityExpression(state, { op: 'divide', left: 'base', right: key }), hasCode(index === 5 ? 'window_mismatch' : 'population_mismatch'));
   }
   await recordQuantity(host, await request(host, id, 'equal', { value: { numerator: '2', denominator: '1' }, unit_code: 'min' }));
   assert.equal((await compareQuantities(host, { id, left: 'base', right: 'equal' })).ordering, 0);

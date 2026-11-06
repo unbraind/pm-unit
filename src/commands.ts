@@ -53,7 +53,7 @@ export async function runCommand(command: string, ctx: CommandHandlerContext): P
       else if (command === 'record') data = await recordQuantity(host, parse(RecordQuantityInputSchema, { ...raw, id, op, revision }));
       else data = await deriveQuantity(host, parse(DeriveQuantityInputSchema, { ...raw, id, op, revision }));
     } else if (command === 'convert') data = await convertQuantity(host, { id, quantity: scalar(flags.quantity), to: scalar(flags.to) } as Parameters<typeof convertQuantity>[1]);
-    else if (command === 'compare') data = await compareQuantities(host, { id, left: scalar(flags.left), right: scalar(flags.right) });
+    else if (command === 'compare') data = await compareQuantities(host, { id, left: scalar(flags.left), right: scalar(flags.right), across_windows: flags.acrossWindows as boolean | undefined });
     else if (command === 'explain') data = await explainQuantity(host, { id, quantity: scalar(flags.quantity) });
     else { insist(command === 'packet', 'invalid_input', 'Unknown unit command'); data = await quantityPacket(host, { id, quantity: flags.quantity === undefined ? undefined : scalar(flags.quantity), limit: integer(ctx.global.outputLimit ?? flags.limit, 20), cursor: flags.cursor === undefined ? ctx.global.outputCursor : scalar(flags.cursor) }); }
     return fitEnvelope(host, envelope(data), budget);
@@ -75,6 +75,7 @@ export function register(api: ExtensionApi): void {
   for (const format of ['json', 'toon'] as const) api.registerRenderer(format, ctx => renderOutput(ctx.result, format).trimEnd(), { commands: definitions.map(([name]) => `unit ${name}`) });
   for (const [name, args, names, description, example] of definitions) {
     const flags: FlagDefinition[] = [...names, 'budget'].map(flag => ({ long: `--${flag}`, value_type: 'string', value_name: flag, description: `${flag}; ${example}` }));
+    if (name === 'compare') flags.push({ long: '--across-windows', value_type: 'boolean', value_validation: 'strict', description: 'Compare the same subject, population, meaning and dimension across the explicitly named windows' });
     api.registerCommand(defineCommand({ ...(['convert', 'compare', 'explain', 'packet'].includes(name) ? { read_output: { row_keys: [] } } : {}), name: `unit ${name}`, description, intent: 'Preserve exact quantities and their declared population context', arguments: args.map(arg => ({ name: arg, required: true, description: 'Authorized quantity owner' })), flags, examples: [example], run: ctx => runCommand(name, ctx) }));
   }
 }

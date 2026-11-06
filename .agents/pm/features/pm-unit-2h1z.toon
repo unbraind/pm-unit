@@ -2,11 +2,37 @@ id: pm-unit-2h1z
 title: Compare one population across time windows with an explicit window reason
 description: "Manual test, 2026-11-06. Two daily counts of the same population (same subject_ref, population_key and population_digest; windows 11-04 and 11-05) are refused as population_mismatch. Agents routinely need day-over-day or release-over-release comparisons. Proposal: report window_mismatch as its own reason when only time_window differs, and add an explicit cross-window comparison (for example --across-windows) that orders the values. Its witness names both windows, and it stays refused for different populations or semantics."
 type: Feature
-status: open
+status: in_progress
 priority: 2
 tags[3]: agents,compare,manual-test
 created_at: "2026-11-06T07:22:31.895Z"
-updated_at: "2026-11-06T09:22:21.325Z"
+updated_at: "2026-11-06T14:02:38.419Z"
 author: claude-orchestrator
 acceptance_criteria: "A time_window-only difference reports window_mismatch, not population_mismatch; an explicit cross-window comparison orders same-population values and names both windows in its witness; a different population, semantic kind or dimension is still refused; every case has tests through real SDK trackers"
+comments[4]{created_at,author,text}:
+  "2026-11-06T13:10:25.303Z",codex-agent,"Implement a read-only explicit cross-window comparison. Keep dimension, meaning, subject and population checks strict; report window-only mismatches separately. Return both windows and the constants held fixed. Add real no-git SDK, CLI, packed-artifact and behavioral revert coverage, documentation and a pinned public day-over-day example."
+  "2026-11-06T13:26:17.202Z",codex-agent,"Implemented explicit SDK across_windows and CLI --across-windows with a strict boolean, a window-only diagnostic and a structured comparison witness. Other context mismatches, unknowns and overlapping intervals still abstain. Preliminary complete coverage passed 78 tests at 100 percent in every dimension. Self-review also preserves conflict exit code 4 and reports window-only arithmetic mismatches without allowing cross-window arithmetic. Added a public Wikimedia pair: 722 versus 965 daily page views with identical filter definitions, pinned raw bytes, SHA-256 and native source provenance. Source validity, visitor identity and causality are not inferred."
+  "2026-11-06T13:31:50.310Z",codex-agent,"Behavioral revert proof: node test/revert.acceptance.ts --cross-window-only passed all eight required negative controls, each in a disposable copy: legacy population label for window-only mismatch; removed opt-in; overly broad opt-in; missing right-window witness; ignored CLI transport; removed native flag registration; mislabeled arithmetic windows; and lost context-conflict exit code. The unchanged implementation passed afterward. Final focused core plus cross-window tests passed 12 of 12; the tracker-linked test passed, and packed npm/Bun/npx/bunx plus in-process SDK acceptance passed with Git absent. Regenerated the existing public fleet receipt at 43732 ms, retaining 47 reproduced claims and the same packet metrics. Both full release gates are next."
+  "2026-11-06T14:02:36.750Z",codex-agent,"Final local validation passed: npm run release:check and bun run release:check each completed 78 unskipped tests, one captured-artifact npm/Bun/npx/bunx plus SDK acceptance journey, and all 40 behavioral reverts with the unchanged implementation passing afterward. Independent coverage is statements 572/572, branches 404/404, functions 107/107 and lines 517/517, with no ignores. Lint, typecheck, tracker health, identity, changelog, production audit, docstrings (83 declarations), zero duplication and the 41-file package allowlist passed. The eight new regression removals are documented above. Both historical daily measurements retain separate UTC windows and a common declared filter digest. No new SDK gap was hit. Releasing the claim without closing the feature; final exact-head remote CI and review evidence will be included in the handoff."
+files[14]{path,scope}:
+  docs/real-data-receipt.json,project
+  src/api.ts,project
+  src/commands.ts,project
+  src/errors.ts,project
+  src/kernel.ts,project
+  src/output.ts,project
+  src/schema.ts,project
+  test/core.test.ts,project
+  test/corpus-privacy.test.ts,project
+  test/cross-window.test.ts,project
+  test/fixtures/daily-pageviews.json,project
+  test/install.acceptance.ts,project
+  test/revert.acceptance.ts,project
+  test/tracker-metadata.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/cross-window.test.ts,project,codex-agent,"2026-11-06T13:26:15.359Z",local_mutation,cross-window-comparison
+docs[3]{path,scope}:
+  ARCHITECTURE.md,project
+  docs/real-data.md,project
+  README.md,project
 body: ""

@@ -1,0 +1,6 @@
+{
+  "source": "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/TypeScript/daily/20240101/20240102",
+  "retrieved_at": "2026-11-06T13:11:15.113Z",
+  "sha256": "0a374cd5be65b68b482c79f6d9890660865e765a58ff41aa487bbef94226b242",
+  "response": "{\"items\":[{\"project\":\"en.wikipedia\",\"article\":\"TypeScript\",\"granularity\":\"daily\",\"timestamp\":\"2024010100\",\"access\":\"all-access\",\"agent\":\"user\",\"views\":722},{\"project\":\"en.wikipedia\",\"article\":\"TypeScript\",\"granularity\":\"daily\",\"timestamp\":\"2024010200\",\"access\":\"all-access\",\"agent\":\"user\",\"views\":965}]}"
+}

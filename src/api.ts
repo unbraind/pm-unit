@@ -4,7 +4,7 @@ import type { Host, Snapshot } from './host.ts';
 import { insist, UnitRefusal, refusal } from './errors.ts';
 import { parse, digest, canonical, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema } from './schema.ts';
 import type { QuantitySet, Quantity, DerivationWitness, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './schema.ts';
-import { readState, normalizeQuantity, quantity, convert, incompatibility, order, evaluate } from './kernel.ts';
+import { readState, normalizeQuantity, quantity, convert, incompatibility, order, evaluate, units } from './kernel.ts';
 /** Native committed receipt retains historical result separately from the current revision. */
 export interface UnitMutationReceipt {
   /** Canonical native identity. */
@@ -115,9 +115,10 @@ export async function convertQuantity(host: Host, raw: ConvertQuantityInput) {
   if (q.uncertainty) converted.uncertainty = { lower: convert(q.uncertainty.lower, q.unit_code, input.to), upper: convert(q.uncertainty.upper, q.unit_code, input.to) };
   return { owner_id: owner.id, revision: owner.revision, quantity: converted, source_digest: digest(q), freshness: 'unknown' as const };
 }
-/** Diagnose non-comparability without turning numerical agreement into source verification. */
+/** Order declared contexts, optionally across windows, retaining constants and both windows. */
 export async function compareQuantities(host: Host, raw: CompareQuantitiesInput) {
-  const input = parse(CompareQuantitiesInputSchema, raw); const owner = await readQuantitySet(host, input.id); const left = quantity(owner.state, input.left); const right = quantity(owner.state, input.right); const mismatch = incompatibility(left, right);
+  const input = parse(CompareQuantitiesInputSchema, raw); const owner = await readQuantitySet(host, input.id); const left = quantity(owner.state, input.left); const right = quantity(owner.state, input.right); const contextMismatch = incompatibility(left, right);
+  const mismatch = input.across_windows && contextMismatch === 'window_mismatch' ? null : contextMismatch;
   const missing = [left, right].filter(q => q.value === null).map(q => q.quantity_id);
   let ordering = mismatch !== null || missing.length > 0 ? null : order(left.value!, convert(right.value!, right.unit_code, left.unit_code));
   let intervalReason: string | null = null;
@@ -130,7 +131,9 @@ export async function compareQuantities(host: Host, raw: CompareQuantitiesInput)
   }
   return { owner_id: owner.id, revision: owner.revision, usable: ordering !== null, comparison: ordering === null ? 'not_comparable' as const : 'comparable' as const, ordering, reason: mismatch ?? (missing.length > 0 ? 'unknown_operand' : intervalReason), missing_ids: missing,
     left, right,
-    remedy: ordering === null ? 'Record matching units, semantic kinds, subjects, populations and windows with known values' : 'Retain source witnesses; numerical agreement does not verify the source claim' };
+    comparison_witness: { across_windows: input.across_windows, left_time_window: left.time_window, right_time_window: right.time_window,
+      held_constant: contextMismatch === null || contextMismatch === 'window_mismatch' ? { subject_ref: left.subject_ref, population_key: left.population_key, population_digest: left.population_digest, semantic_kind: left.semantic_kind, dimension: units[left.unit_code].dimension } : null },
+    remedy: mismatch === 'window_mismatch' ? 'Opt in with --across-windows (SDK across_windows: true) to compare this same declared population across the named windows' : ordering === null ? 'Record compatible units, semantic kinds, subjects and populations with known values and separable uncertainty intervals' : 'Retain source witnesses; numerical agreement does not verify the source claim' };
 }
 /** Complete transitive dependency witness; never truncates operands or denominators. */
 export function explanation(state: QuantitySet, key: string, seen = new Set<string>()): { quantity: Quantity; derivation: QuantitySet['derivations'][number] | null; dependencies: Quantity[]; derivation_witnesses: DerivationWitness[] } {

@@ -34,7 +34,7 @@ export function refusal(error: unknown): UnitRefusal {
 export function exitCode(code: string, nativeExit?: number): number {
   if (nativeExit !== undefined) return nativeExit;
   if (code === 'not_found') return 3;
-  if (['revision_conflict', 'operation_conflict', 'stale_cursor', 'contention', 'dimension_mismatch', 'semantic_mismatch', 'population_mismatch', 'unsafe_overlap', 'divide_by_zero', 'unknown_operand', 'derivation_cycle'].includes(code)) return 4;
+  if (['revision_conflict', 'operation_conflict', 'stale_cursor', 'contention', 'dimension_mismatch', 'semantic_mismatch', 'population_mismatch', 'window_mismatch', 'unsafe_overlap', 'divide_by_zero', 'unknown_operand', 'derivation_cycle'].includes(code)) return 4;
   if (['backend_unsupported', 'permission_denied', 'incomplete_read', 'outcome_unknown'].includes(code)) return 5;
   return 2;
 }
