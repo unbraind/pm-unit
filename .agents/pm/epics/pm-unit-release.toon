@@ -2,17 +2,20 @@ id: pm-unit-release
 title: Release exact quantity context first slice
 description: ""
 type: Epic
-status: in_progress
+status: open
 priority: 2
 tags: []
 created_at: "2026-11-06T04:32:04.866Z"
-updated_at: "2026-11-06T07:10:15.516Z"
+updated_at: "2026-11-06T21:32:12.882Z"
 author: codex-agent
 acceptance_criteria: Native no-git quantities preserve units populations provenance and exact derivations; all package gates and packed consumer evidence pass
-comments[3]{created_at,author,text}:
+comments[6]{created_at,author,text}:
   "2026-11-06T04:32:07.191Z",codex-agent,"Companion specification pm-cli-website-iwyd read without modification. Scope: first-slice exact observations and conversions, semantic comparisons, bounded binary derivations for acceptance evidence, native CAS/replay, production gates. Reviewed declaration changes and general expression algebra remain explicit follow-ups."
   "2026-11-06T06:07:34.306Z",codex-agent,"Implementation is local on feat/unit; companion pm-cli-website-iwyd was read only. Final public proof: 53 quantities, 47/47 exact claims, 6 non-comparable diagnostics, 2 unsafe sums refused, and 1 disclosed unknown derivation. Complete ten-claim packet: 12516 bytes, 3129 tokens, versus 72659 raw-item tokens; evaluator 173 explicit calls and 16427 ms. No release-ready arbitrary-provider or native producer-cursor parity claim: see the open package blocker Features. All work claims will be released and items remain unclosed for orchestrator verification."
   "2026-11-06T07:10:13.717Z",claude-orchestrator,"Orchestrator review before the public repo: applied the scaffold fixes from pm-glossary#5. The maintainer squash-merge author is approved, as in pm-http and pm-glossary. The sync-caller test reads only active lines and requires one full-SHA pin with a version comment. The deprecated pm-github-version input is removed, so Dependabot SHA bumps pass. workflow.test 3/3; identity:check zero violations."
+  "2026-11-06T21:15:53.656Z",codex-sol,"Closure verification on main after merged PR #4 (e723ebeb6dcc7dffed097cb787e0e3639a5dcfdc) and PR #5 (0578835e5d5b46aac334bb8368905deb04530b61). Read the acceptance criteria and corresponding source/tests; run existing focused and full package gates before deciding closure. Native cursor parity, arbitrary providers and declaration algebra remain separate unfinished features. No publication is authorized."
+  "2026-11-06T21:31:22.060Z",codex-sol,"Main closure verification (current-main CI run 42251057235; local linked core/cross-window tests 12/12): The exact first-slice acceptance is delivered by PR #4 and retained by PR #5. Main CI run 42251057235 passes the full npm gate sequence and bun run release:check, 78/78 tests, all four coverage dimensions at 100 percent, captured npm/Bun/npx/bunx no-git consumer journeys and 40 behavioral reverts. Deferred declarations, native cursor parity and arbitrary providers remain separate open items; this closes the bounded implementation epic and does not approve publication or certify those capabilities. The local linked-worktree health gate sees shared/enclosing merge configuration drift; the independent disposable clone health is clean apart from optional missing-driver warnings. Local npm and Bun gates are being rerun serially; their results and exact-head remote CI/review evidence will be reported in the PR handoff without rewriting tracker history."
+  "2026-11-06T21:32:05.894Z",codex-sol,"Closure decision: keep the epic open. Strict close correctly refused because active child items pm-unit-declarations, pm-unit-native-cursor and pm-unit-providers remain open. The preceding comment described the intended bounded first-slice closure, but no epic close occurred. Retain the refusal and child ownership; do not downgrade validation or re-parent unfinished work. Remaining epic work is reviewed declarations/general algebra, native cursor/cost parity and arbitrary-provider conformance. Pause the epic and release this audit claim."
 files[3]{path,scope}:
   .github/approved-git-identities.txt,project
   .github/workflows/pm-github-sync.yml,project

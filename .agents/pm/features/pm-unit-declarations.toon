@@ -6,8 +6,10 @@ status: open
 priority: 2
 tags[1]: later
 created_at: "2026-11-06T04:47:04.681Z"
-updated_at: "2026-11-06T04:47:04.681Z"
+updated_at: "2026-11-06T21:16:56.354Z"
 author: codex-agent
 acceptance_criteria: Versioned evidence-backed compatibility and disjoint partition declarations; product division and bounded integer exponent unit AST; weighted ratio aggregation; immutable declaration pins
 parent: pm-unit-release
+comments[1]{created_at,author,text}:
+  "2026-11-06T21:16:56.345Z",codex-sol,"PR #4 explicitly defers reviewed compatibility/disjoint partition declarations, general product/division/exponent unit AST, weighted ratio aggregation and immutable declaration pins. PR #5 only adds cross-window comparison. Keep open; concurrent declaration work and PR #7 are outside this closure audit."
 body: ""
