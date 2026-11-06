@@ -8,7 +8,7 @@ import { npmEnvironment, testEnvironment } from '../scripts/environment.ts';
 
 const changes = [
   { name: 'exact normalization removed', file: 'kernel', pattern: /export function rational\(value\) \{[\s\S]*?\n\}/, replacement: 'export function rational(value) { return value; }', test: 'core', filter: 'rational properties' },
-  { name: 'unit scaling removed', file: 'kernel', pattern: /return arithmetic\(arithmetic\(value, units\[from\]\.factor, 'multiply'\), units\[to\]\.factor, 'divide'\);/, replacement: 'return value;', test: 'core', filter: 'real ledger preserves' },
+  { name: 'unit scaling removed', file: 'kernel', pattern: /return arithmetic\(value, factor, 'multiply'\);/, replacement: 'return value;', test: 'core', filter: 'real ledger preserves' },
   { name: 'context compatibility removed', file: 'kernel', pattern: /export function incompatibility\(left, right\) \{[\s\S]*?\n\}/, replacement: 'export function incompatibility(left, right) { return null; }', test: 'core', filter: 'comparison refuses' },
   { name: 'native guard replaced by unconditional write', file: 'api', pattern: /const checked = await host\.client\.withExpectedItemRevisions\(\[\{ id: snapshot.id, itemHash: snapshot.revision \}\], \(\) => host\.client\.update\(snapshot.id, (\{[^\n]+\})\)\);/, replacement: 'const checked = { result: await host.client.update(snapshot.id, $1), checked: [snapshot.id], unchecked: [] };', test: 'concurrency', filter: 'before_update preserves' },
   { name: 'durable operation replay removed', file: 'api', pattern: /const found = state\.operations\.find\(row => row\.operation_id === op\);/, replacement: 'const found = undefined;', test: 'core', filter: 'real ledger preserves' },
@@ -59,7 +59,13 @@ const changes = [
   { partition: true, name: 'partition explanation drops review witnesses', file: 'api', pattern: /declarations.length > 0 \? \{ declarations \} : \{\}/, replacement: 'false ? { declarations } : {}', test: 'partitions', filter: 'reviewed partition sums' },
 
 ];
-const selected = process.argv.includes('--partitions-only') ? changes.filter(change => 'partition' in change && change.partition) : process.argv.includes('--cross-window-only') ? changes.filter(change => 'crossWindow' in change && change.crossWindow) : process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
+// Revert only the changed conversion function, preserving every other safeguard.
+for (const filter of ['boundary identity', 'boundary compatible', 'boundary SDK']) changes.push({
+  name: `intermediate overflow restored: ${filter}`, file: 'kernel', pattern: /export function convert\(value, from, to\) \{[\s\S]*?\n\}/,
+  replacement: "export function convert(value, from, to) { parse(UnitCodeSchema, from); parse(UnitCodeSchema, to); insist(units[from].dimension === units[to].dimension, 'dimension_mismatch', 'Unit dimensions differ', 'Choose a unit with the same dimension'); return arithmetic(arithmetic(value, units[from].factor, 'multiply'), units[to].factor, 'divide'); }",
+  test: 'conversion-boundary', filter,
+});
+const selected = process.argv.includes('--partitions-only') ? changes.filter(change => 'partition' in change && change.partition) : process.argv.includes('--conversion-only') ? changes.filter(change => change.test === 'conversion-boundary') : process.argv.includes('--cross-window-only') ? changes.filter(change => 'crossWindow' in change && change.crossWindow) : process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
 for (const change of selected) {
   const root = mkdtempSync(join(tmpdir(), 'unit-revert-'));
   try {
@@ -69,5 +75,5 @@ for (const change of selected) {
     assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`); assert.match(result.stdout + result.stderr, /AssertionError|Missing expected rejection|Missing expected exception|UnitRefusal:/, `Failure must be behavioral: ${change.name}`); if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch)); console.log(`EXPECTED FAIL: ${change.name}`);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
-const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/partitions.test.ts', 'test/partition-process.test.ts', 'test/partition-public.test.ts', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
+const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/partitions.test.ts', 'test/partition-process.test.ts', 'test/partition-public.test.ts', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/conversion-boundary.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
 assert.equal(restored.status, 0, restored.stdout + restored.stderr); console.log(`revert-gate: ${selected.length} behavioral failures; unchanged implementation passes`);
