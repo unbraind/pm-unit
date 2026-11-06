@@ -2,12 +2,28 @@ id: pm-unit-ledger
 title: Exact native quantity ledger and SDK
 description: ""
 type: Feature
-status: open
+status: in_progress
 priority: 2
 tags: []
 created_at: "2026-11-06T04:32:07.992Z"
-updated_at: "2026-11-06T04:32:07.992Z"
+updated_at: "2026-11-06T06:07:35.166Z"
 author: codex-agent
 acceptance_criteria: Create record convert compare derive explain packet preserve exact values and source witnesses; strict privacy and schema refusals precede writes
 parent: pm-unit-release
+comments[2]{created_at,author,text}:
+  "2026-11-06T05:10:46.180Z",codex-agent,"Exact fractions, finite unit conversions, semantic and population refusals, conservative intervals and unknown propagation are implemented. All authoritative records and replay identities are in native unit_state with native comments and related links. Ten behavioral safeguard removals fail in disposable copies; the restored implementation passes. One linked run caught stale dist after new pure-API validation was added; the final linked command will include a fresh build."
+  "2026-11-06T05:20:59.179Z",codex-agent,"The linked npm run test:core now builds first and passes 6 of 6 tests through pm test. The native-directory adapter preserves active extension schema and chooses field versus project-schema options dynamically; packed SDK writes and subsequent reads pass for CLI-created owners."
+files[7]{path,scope}:
+  index.ts,project
+  src/api.ts,project
+  src/commands.ts,project
+  src/host.ts,project
+  src/kernel.ts,project
+  src/output.ts,project
+  src/schema.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  "npm run test:core",project,codex-agent,"2026-11-06T05:11:08.720Z",local_mutation,feat/unit
+docs[2]{path,scope}:
+  ARCHITECTURE.md,project
+  README.md,project
 body: ""

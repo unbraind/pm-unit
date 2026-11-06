@@ -1,0 +1,157 @@
+import assert from 'node:assert/strict';
+import { mkdtemp, mkdir, rm, readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { PmClient } from '@unbrained/pm-cli/sdk/core';
+import { certifyCompleteListResult } from '@unbrained/pm-cli/sdk/runtime';
+import { createDirectoryHost, createQuantitySet, recordQuantity, deriveQuantity, convertQuantity, compareQuantities, readQuantitySet, quantityPacket, fitEnvelope, envelope, digest, UnitRefusal } from '../dist/index.js';
+import type { Quantity, UnitCode } from '../dist/index.js';
+import { guardSubmitted } from '../dist/src/schema.js';
+import { runtimeSources } from '../scripts/inventory.ts';
+import { npmEnvironment } from '../scripts/environment.ts';
+/** Public source-pinned extracted measurement; no source body is copied into state. */
+export interface Claim {
+  /** Deterministic observation key. */
+  key: string;
+  /** Exact source-declared decimal. */
+  decimal: string;
+  /** Timestamp when the public receipt reported this claim, not the measurement window. */
+  reported_at: string;
+  /** Explicit physical or counting unit. */
+  unit: UnitCode;
+  /** First-release conversion target. */
+  to: UnitCode;
+  /** Independent conversion factor numerator. */
+  scale: string;
+  /** Independent conversion factor denominator. */
+  divisor: string;
+  /** Semantic meaning retained after compression. */
+  kind: string;
+  /** Exact source fragment population. */
+  population: string;
+  /** Distinguish native revisions from external document content digests. */
+  source_kind: 'native_item' | 'external_document';
+  /** Native identity or external document citation key. */
+  item_id: string;
+  /** Native revision for native sources, content SHA-256 for external documents. */
+  item_hash: string;
+  /** Exact source field pointer. */
+  pointer: string;
+  /** SHA-256 of the full source fragment. */
+  fragment_digest: string;
+  /** Public repository commit, or physical source URL. */
+  source: string;
+}
+/** Independent decimal-to-rational oracle, without package arithmetic. */
+export function decimalFraction(text: string) { const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) }; }
+/** Refresh curated numeric receipts from Git-tracked public fleet data into disposable non-Git copies. */
+export async function harvest() {
+  const scratch = await mkdtemp(join(tmpdir(), 'unit-public-')); const claims: Claim[] = []; const sources: { repo: string; revision: string; item_id: string; item_hash: string; bytes: number }[] = []; const selected = new Set<string>();
+  try {
+    for (const repo of ['pm-vcs', 'pm-rl']) {
+      const original = resolve('..', repo); const revision = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: original, encoding: 'utf8', env: npmEnvironment(process.env) }).trim();
+      const copy = join(scratch, repo); await mkdir(copy); const archive = execFileSync('git', ['archive', revision, '.agents/pm'], { cwd: original, maxBuffer: 32 * 1024 * 1024, env: npmEnvironment(process.env) });
+      execFileSync('tar', ['-x', '-C', copy], { input: archive });
+      const client = new PmClient({ cwd: copy, pmRoot: join(copy, '.agents/pm'), noExtensions: true }); const corpus = await client.listAllComplete({ includeBody: true }); certifyCompleteListResult(corpus);
+      const rules: { regex: RegExp; unit: UnitCode; to: UnitCode; scale: string; divisor: string; kind: string; max: number }[] = repo === 'pm-vcs' ? [
+        { regex: /\b(\d+) tests\b/g, unit: 'count', to: 'count', scale: '1', divisor: '1', kind: 'test_count', max: 12 },
+        { regex: /\b(\d+(?:\.\d+)?)\s*MiB\b/g, unit: 'MiB', to: 'B', scale: '1048576', divisor: '1', kind: 'data_size', max: 6 },
+        { regex: /(?<![\d.-])(\d+(?:\.\d+)?)\s*(?:seconds|s)\b/g, unit: 's', to: 'min', scale: '1', divisor: '60', kind: 'elapsed_duration', max: 4 },
+        { regex: /\b(\d+)\/(\d+)\b/g, unit: 'count', to: 'count', scale: '1', divisor: '1', kind: 'test_count', max: 6 },
+        { regex: /\b(\d+(?:\.\d+)?)\s*(?:percent|%)\b/g, unit: '%', to: 'ratio', scale: '1', divisor: '100', kind: 'coverage_percentage', max: 4 },
+      ] : [{ regex: /\b(\d+) tokens\b/g, unit: 'token', to: 'token', scale: '1', divisor: '1', kind: 'token_count', max: 6 }];
+      for (const rule of rules) {
+        let count = 0;
+        for (const row of corpus.items) {
+          if (count >= rule.max) break;
+          const got = await client.get(row.id, { outputInclude: 'full', outputBudget: 'unbounded', outputLimit: 'unbounded' }); assert.ok('item' in got && 'item_hash' in got);
+          const comments = got.item.comments ?? [];
+          for (const [index, comment] of comments.entries()) {
+            rule.regex.lastIndex = 0;
+            for (const match of comment.text.matchAll(rule.regex)) {
+              if (count >= rule.max) break;
+              if (rule.kind === 'elapsed_duration' && /[-~]/.test(comment.text.slice(Math.max(0, match.index! - 4), match.index!))) continue;
+              if (rule.kind === 'data_size' && (comment.text.includes('example') || comment.text.includes('fixture'))) continue;
+              const pointer = `/comments/${index}/text`; const population = digest([repo, row.id, pointer, match.index]); const paired = match[2] !== undefined;
+              if (paired && (match[1] !== match[2] || Number(match[1]) < 200)) continue;
+              const fingerprint = `${repo}:${row.id}:${pointer}:${match.index}:${rule.unit}`; if (selected.has(fingerprint)) continue; selected.add(fingerprint);
+              const values = paired ? [match[1], match[2]] : [match[1]];
+              for (const [part, decimal] of values.entries()) claims.push({ key: `fleet-${claims.length}`, source_kind: 'native_item', decimal, reported_at: comment.created_at, unit: rule.unit, to: rule.to, scale: rule.scale, divisor: rule.divisor, kind: rule.unit === '%' && /duplicat|jscpd/i.test(comment.text.slice(Math.max(0, match.index! - 64), match.index!)) ? 'duplication_percentage' : rule.kind, population, item_id: row.id, item_hash: got.item_hash as string, pointer, fragment_digest: createHash('sha256').update(comment.text).digest('hex'), source: `https://github.com/unbraind/${repo}/tree/${revision}`, ...(part === 1 ? { kind: 'test_count' } : {}) });
+              if (!sources.some(source => source.repo === repo && source.item_id === row.id)) sources.push({ repo, revision, item_id: row.id, item_hash: got.item_hash as string, bytes: Buffer.byteLength(JSON.stringify(got.item)) }); count++;
+            }
+          }
+        }
+      }
+    }
+    assert.ok(claims.length >= 30, `Public measured corpus too small: ${claims.length}`);
+    const url = 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html'; const response = await fetch(url, { signal: AbortSignal.timeout(20000) }); assert.ok(response.ok); const html = await response.text(); const hash = createHash('sha256').update(html).digest('hex'); const retrievedAt = new Date().toISOString();
+    for (const [key, decimal, unit, to, scale, divisor, kind] of [
+      ['earth-equatorial', '6378.137', 'km', 'm', '1000', '1', 'equatorial_radius'], ['earth-polar', '6356.752', 'km', 'm', '1000', '1', 'polar_radius'], ['earth-rotation', '23.9345', 'h', 's', '3600', '1', 'sidereal_rotation'],
+    ] as const) { assert.ok(html.includes(decimal)); claims.push({ key, source_kind: 'external_document', decimal, reported_at: retrievedAt, unit, to, scale, divisor, kind, population: digest('NASA Earth fact sheet'), item_id: 'nasa-earth-facts', item_hash: hash, pointer: key, fragment_digest: hash, source: url }); }
+    const observer = resolve('..', 'pm-observer'); const observerRevision = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: observer, encoding: 'utf8', env: npmEnvironment(process.env) }).trim();
+    const policy = execFileSync('git', ['show', observerRevision + ':README.md'], { cwd: observer, env: npmEnvironment(process.env) });
+    const observer_policy = { source: `https://github.com/unbraind/pm-observer/blob/${observerRevision}/README.md`, sha256: createHash('sha256').update(policy).digest('hex') };
+    const receipt = { schema_version: 1, claims, sources, observer_policy, raw_item_bytes: sources.reduce((sum, row) => sum + row.bytes, 0), physical_source_sha256: hash };
+    await writeFile('test/fixtures/measurements.json', JSON.stringify(receipt, null, 2) + '\n'); return receipt;
+  } finally { await rm(scratch, { recursive: true, force: true }); }
+}
+/** Evaluate public receipt claims with independent expected rationals and predeclared mismatch controls. */
+export async function evaluateCorpus() {
+  const fixtureText = await readFile('test/fixtures/measurements.json', 'utf8');
+  const input = JSON.parse(fixtureText) as { claims: Claim[]; raw_item_bytes: number; sources: unknown[]; observer_policy: { source: string; sha256: string } };
+  const root = await mkdtemp(join(tmpdir(), 'unit-real-data-')); const started = performance.now(); let calls = 0;
+  try {
+    const pmRoot = join(root, '.agents/pm'); const native = new PmClient({ cwd: root, pmRoot, author: 'real-data', noExtensions: true }); await native.init('proof', { defaults: true, agentGuidance: 'skip', mergeFence: false });
+    const external_source_anchors: { item: unknown; item_hash: string; source: string; content_digest: string }[] = [];
+    /** Anchor explicitly selected public external facts in native items before referencing them. */
+    async function anchor(key: string, source: string, content_digest: string, evidence: string) {
+      const body = `Public source: ${source}\nContent SHA-256: ${content_digest}\n${evidence}`;
+      await native.create({ id: key, title: 'Explicit public source anchor', type: 'Task', body }); calls++;
+      const got = await native.get(key, { outputInclude: 'full', outputBudget: 'unbounded', outputLimit: 'unbounded' }); calls++; assert.ok('item' in got && 'item_hash' in got); assert.equal(got.item.body, body); guardSubmitted(got.item);
+      external_source_anchors.push({ item: got.item, item_hash: got.item_hash as string, source, content_digest });
+      return { item_id: got.item.id, item_hash: got.item_hash as string, field_pointer: '/body' };
+    }
+    const physical = input.claims.filter(claim => claim.source_kind === 'external_document'); assert.equal(physical.length, 3);
+    const physicalRef = await anchor('proof-physical-source', physical[0].source, physical[0].item_hash, physical.map(claim => `${claim.key}: ${claim.decimal} ${claim.unit}; original measurement window unknown`).join('\n'));
+    const host = createDirectoryHost(pmRoot, 'real-data'); const id = 'proof-ledger'; await createQuantitySet(host, { id, op: 'birth', title: 'Public measurement receipts', quantity_set_key: 'fleet' }); calls++;
+    const results: { key: string; expected: { numerator: string; denominator: string }; actual: unknown }[] = [];
+    for (const claim of input.claims) {
+      const q: Quantity = { quantity_id: claim.key, value: decimalFraction(claim.decimal), unit_code: claim.unit, semantic_kind: claim.kind, subject_ref: claim.key.startsWith('earth') ? 'earth' : 'public-fleet-run', population_key: claim.population, population_digest: claim.fragment_digest, time_window: `Measurement window unknown; receipt reported ${claim.reported_at}`, acquisition: 'reported', observed_at: claim.reported_at, provenance: [claim.source_kind === 'external_document' ? { ...physicalRef, citation_id: claim.key } : { item_id: claim.item_id, item_hash: claim.item_hash, field_pointer: claim.pointer }], notes: '' };
+      await recordQuantity(host, { id, op: claim.key, revision: (await readQuantitySet(host, id)).revision, quantity: q }); calls += 2;
+      const actual = (await convertQuantity(host, { id, quantity: claim.key, to: claim.to })).quantity.value!; calls++;
+      const source = decimalFraction(claim.decimal); const expected = { numerator: String(BigInt(source.numerator) * BigInt(claim.scale)), denominator: String(BigInt(source.denominator) * BigInt(claim.divisor)) };
+      assert.equal(BigInt(actual.numerator) * BigInt(expected.denominator), BigInt(expected.numerator) * BigInt(actual.denominator)); results.push({ key: claim.key, expected, actual });
+    }
+    const comparisons: { left: string; right: string; reason: string | null }[] = [];
+    for (const [left, right] of [[input.claims[0].key, input.claims.find(row => row.unit === 'MiB')!.key], [input.claims[0].key, input.claims.find(row => row.unit === 'token')!.key], ['earth-equatorial', 'earth-polar'], [input.claims[0].key, input.claims.find(row => row.unit === 'count' && row.population !== input.claims[0].population)!.key]]) {
+      const comparison = await compareQuantities(host, { id, left, right }); calls++; assert.equal(comparison.usable, false); comparisons.push({ left, right, reason: comparison.reason });
+    }
+    const pair = input.claims.find((row, index) => index > 0 && row.population === input.claims[index - 1].population && row.unit === 'count')!; const index = input.claims.indexOf(pair); const numerator = input.claims[index - 1];
+    await deriveQuantity(host, { id, op: 'ratio-proof', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'ratio-proof', expression: { op: 'divide', left: numerator.key, right: pair.key } }); calls += 2;
+    const ratio = await convertQuantity(host, { id, quantity: 'ratio-proof', to: '%' }); calls++; assert.deepEqual(ratio.quantity.value, { numerator: '100', denominator: '1' });
+    const controlsId = 'proof-controls'; await createQuantitySet(host, { id: controlsId, op: 'controls-birth', title: 'Public policy mismatch controls', quantity_set_key: 'controls' }); calls++;
+    const baseline = (await readQuantitySet(host, id)).state.observations[0]; calls++;
+    const policyRef = await anchor('proof-observer-policy', input.observer_policy.source, input.observer_policy.sha256, 'Illustrative policy example: two parallel ten-second tools have ten seconds elapsed and twenty seconds summed duration. Cached input is a subset of total input; no cached-subset count is published by this selected policy source.');
+    const controls: Quantity[] = [
+      { ...baseline, quantity_id: 'parallel-elapsed', value: { numerator: '10', denominator: '1' }, unit_code: 's', semantic_kind: 'elapsed_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative public observer policy example; not a new measured receipt.' },
+      { ...baseline, quantity_id: 'parallel-summed', value: { numerator: '20', denominator: '1' }, unit_code: 's', semantic_kind: 'summed_tool_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative public observer policy example; not a new measured receipt.' },
+      { ...baseline, quantity_id: 'tokens-total', unit_code: 'token', semantic_kind: 'input_total', population_key: 'token-policy', population_digest: digest('token-policy'), provenance: [policyRef], acquisition: 'estimated', notes: 'Mismatch control; total is illustrative.' },
+      { ...baseline, quantity_id: 'tokens-cached', unit_code: 'token', semantic_kind: 'cached_subset', population_key: 'token-policy', population_digest: digest('token-policy'), provenance: [policyRef], value: null, unknown_reason: 'No cached-subset count is published in this selected source.', notes: '' },
+    ];
+    for (const q of controls) { await recordQuantity(host, { id: controlsId, op: q.quantity_id, revision: (await readQuantitySet(host, controlsId)).revision, quantity: q }); calls += 2; }
+    for (const [left, right] of [['parallel-elapsed', 'parallel-summed'], ['tokens-total', 'tokens-cached']]) { const result = await compareQuantities(host, { id: controlsId, left, right }); calls++; assert.equal(result.reason, 'semantic_mismatch'); comparisons.push({ left, right, reason: result.reason }); }
+    const unsafe: string[] = [];
+    for (const [owner, left, right, code] of [[id, numerator.key, pair.key, 'unsafe_overlap'], [controlsId, 'tokens-total', 'tokens-cached', 'semantic_mismatch']]) {
+      try { await deriveQuantity(host, { id: owner, op: `unsafe-${left}`, revision: (await readQuantitySet(host, owner)).revision, quantity_id: 'unsafe-sum', expression: { op: 'add', left, right } }); assert.fail('Unsafe sum was admitted'); }
+      catch (error) { assert.ok(error instanceof UnitRefusal); assert.equal(error.code, code); unsafe.push(code); } calls += 2;
+    }
+    await deriveQuantity(host, { id: controlsId, op: 'unknown-ratio', revision: (await readQuantitySet(host, controlsId)).revision, quantity_id: 'unknown-ratio', expression: { op: 'divide', left: 'tokens-total', right: 'tokens-cached' } }); calls += 2;
+    const unknown = await convertQuantity(host, { id: controlsId, quantity: 'unknown-ratio', to: '%' }); calls++; assert.equal(unknown.quantity.value, null); assert.match(unknown.quantity.unknown_reason!, /tokens-cached/);
+    const packet = envelope(await quantityPacket(host, { id, limit: 10 })); calls++; const full = fitEnvelope(host, packet, 8192); const bytes = full.output_fit.output_bytes; let minimum: number | null = null;
+    try { fitEnvelope(host, packet, 1600); } catch (error) { assert.ok(error instanceof UnitRefusal && error.code === 'output_budget'); minimum = error.details.minimum_usable_budget as number | null; }
+    const emitted_inventory = await Promise.all(runtimeSources().sort().map(async path => ({ path: path.replace(/\.ts$/, '.js'), sha256: createHash('sha256').update(await readFile(join('dist', path.replace(/\.ts$/, '.js')))).digest('hex') })));
+    return { fixture_digest: createHash('sha256').update(fixtureText).digest('hex'), implementation_digest: digest(emitted_inventory), emitted_inventory, sdk_version: '2026.11.5', measured_runtime: process.version, external_source_anchors, quantities: input.claims.length + 6, illustrative_controls: 4, unknown_derivations: 1, unknown_operand_ids: ['tokens-cached'], unsafe_refusals: unsafe, exact_claims: results.length, reproduced: results.length, refusals: comparisons, derived_ratios: 1, packet_claims: 10, packet_bytes: bytes, packet_tokens: Math.ceil(bytes / 4), packet_minimum_budget: minimum, raw_item_bytes: input.raw_item_bytes, raw_item_tokens: Math.ceil(input.raw_item_bytes / 4), calls, wall_ms: Math.round(performance.now() - started), results, sources: input.sources };
+  } finally { await rm(root, { recursive: true, force: true }); }
+}

@@ -2,12 +2,35 @@ id: pm-unit-quality
 title: Release gates documentation and real-data proof
 description: ""
 type: Feature
-status: open
+status: in_progress
 priority: 2
 tags: []
 created_at: "2026-11-06T04:32:09.688Z"
-updated_at: "2026-11-06T04:32:09.688Z"
+updated_at: "2026-11-06T06:07:37.336Z"
 author: codex-agent
 acceptance_criteria: Exact 100 percent four-dimension source coverage; npm Bun npx bunx packed acceptance; real fleet and physical receipts; allowlisted artifact and gated release workflow
 parent: pm-unit-release
+comments[3]{created_at,author,text}:
+  "2026-11-06T05:10:55.549Z",codex-agent,"Public proof: 47 exact published claims reproduced, 53 quantities including separately labelled controls and derivations, 6 incompatible comparisons and 2 unsafe sums refused, 1 unknown cached-subset ratio disclosed. Ten-claim packet is 12382 bytes and 3096 estimated tokens versus 290636 raw source bytes and 72659 tokens. Actual measurement windows remain explicitly unknown; public receipt timestamps are retained. Report details and exact source pins are in docs/real-data.md."
+  "2026-11-06T05:21:01.107Z",codex-agent,"Packed acceptance passed: one captured allowlisted tarball installed in fresh npm and Bun projects; native TOON/JSON help and contracts, successful and refused mutations, SDK reads and writes, npx and native bunx, Node 22.19 and Node 26.13, and no Git executable on PATH. The prior full coverage run passed 59 tests with 538/538 statements, 377/377 branches, 103/103 functions and 487/487 lines. Final source gate follows the adapter and native-remedy refinements."
+  "2026-11-06T06:07:32.762Z",codex-agent,"Precommit npm release:check passed all gates: 62 tests, 542/542 statements, 388/388 branches, 105/105 functions, 490/490 lines, 40 allowlisted package files, 2 packed npm/Bun journeys, and 11 then-current behavioral reverts. A final related-ID canonicalization regression and proof were added afterward; all 12 safeguard-removal proofs and the restored core/contract suite now pass. Public external sources now have actual native anchor item revisions, separate from their content digests."
+files[12]{path,scope}:
+  .github/workflows/release.yml,project
+  CODEOWNERS,project
+  docs/real-data-receipt.json,project
+  scripts/coverage-gate.ts,project
+  test/contracts.test.ts,project
+  test/corpus.ts,project
+  test/edge.test.ts,project
+  test/fixtures/measurements.json,project
+  test/install.acceptance.ts,project
+  test/release-verification.test.ts,project
+  test/revert.acceptance.ts,project
+  test/workflow.test.ts,project
+tests[2]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  "npm run release:check",project,codex-agent,"2026-11-06T05:04:37.793Z",local_mutation,feat/unit
+  "bun run release:check",project,codex-agent,"2026-11-06T05:04:37.793Z",local_mutation,feat/unit
+docs[2]{path,scope}:
+  docs/real-data.md,project
+  docs/review-status.md,project
 body: ""

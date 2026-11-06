@@ -1,0 +1,811 @@
+{
+  "fixture_digest": "75131c98e5b96499b9e637bded2e25b04cff4628e0e970c76a33891f49744756",
+  "implementation_digest": "9ded29287ed3306f0e1a5cc87a5dc0d57ba235ca7f1466aab5a8618a3826fcbb",
+  "emitted_inventory": [
+    {
+      "path": "index.js",
+      "sha256": "b078a72d38993287e883bd7a3600726f91f5276bdfd2fd0f1ed5956d4a86d611"
+    },
+    {
+      "path": "src/api.js",
+      "sha256": "7177d0e2a3ba3ec96564a4e1c63b213dadccf10d9af1e0398c53f7d89a1e1a26"
+    },
+    {
+      "path": "src/commands.js",
+      "sha256": "145d06de7b899c749125715a087fdf5bf70a5ffb02fa60cbc7447deed07ee5ff"
+    },
+    {
+      "path": "src/errors.js",
+      "sha256": "ee757cca91d63182a8fa91785ec822e3bcd0a3348ee06a76decc4bdb73e798ad"
+    },
+    {
+      "path": "src/host.js",
+      "sha256": "3c8a7ff1bf203b024e8a73ba6ffab18b19e9096034fa567c4cad63fe34742638"
+    },
+    {
+      "path": "src/kernel.js",
+      "sha256": "4af564bf559be9e24298c0b6e199a3e51473609d644beb7d6cfb0dda49d304dd"
+    },
+    {
+      "path": "src/output.js",
+      "sha256": "4a885b9ef6db47af3f3d7f1497382058eabe6b1b62745198eda74f2c3d788257"
+    },
+    {
+      "path": "src/schema.js",
+      "sha256": "4b46d2614ca6ccdb3b0588bd97c4082901b4e3783566851c96a08744f2ba868a"
+    }
+  ],
+  "sdk_version": "2026.11.5",
+  "measured_runtime": "v24.19.0",
+  "external_source_anchors": [
+    {
+      "item": {
+        "id": "proof-physical-source",
+        "title": "Explicit public source anchor",
+        "description": "",
+        "type": "Task",
+        "status": "open",
+        "priority": 2,
+        "tags": [],
+        "created_at": "2026-11-06T06:03:34.576Z",
+        "updated_at": "2026-11-06T06:03:34.576Z",
+        "author": "real-data",
+        "comments": [],
+        "notes": [],
+        "learnings": [],
+        "files": [],
+        "tests": [],
+        "docs": [],
+        "reminders": [],
+        "events": [],
+        "notes_count": 0,
+        "tests_count": 0,
+        "collection_counts": {
+          "comments": 0,
+          "notes": 0,
+          "learnings": 0,
+          "files": 0,
+          "tests": 0,
+          "docs": 0,
+          "reminders": 0,
+          "events": 0
+        },
+        "body": "Public source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html\nContent SHA-256: 1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef\nearth-equatorial: 6378.137 km; original measurement window unknown\nearth-polar: 6356.752 km; original measurement window unknown\nearth-rotation: 23.9345 h; original measurement window unknown"
+      },
+      "item_hash": "d835d7eba0e623df794ef2c7571fd78c168f38f8e18d42ce555b6f5b008af9c2",
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+      "content_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"
+    },
+    {
+      "item": {
+        "id": "proof-observer-policy",
+        "title": "Explicit public source anchor",
+        "description": "",
+        "type": "Task",
+        "status": "open",
+        "priority": 2,
+        "tags": [],
+        "created_at": "2026-11-06T06:03:49.873Z",
+        "updated_at": "2026-11-06T06:03:49.873Z",
+        "author": "real-data",
+        "comments": [],
+        "notes": [],
+        "learnings": [],
+        "files": [],
+        "tests": [],
+        "docs": [],
+        "reminders": [],
+        "events": [],
+        "notes_count": 0,
+        "tests_count": 0,
+        "collection_counts": {
+          "comments": 0,
+          "notes": 0,
+          "learnings": 0,
+          "files": 0,
+          "tests": 0,
+          "docs": 0,
+          "reminders": 0,
+          "events": 0
+        },
+        "body": "Public source: https://github.com/unbraind/pm-observer/blob/4728eca6adbfc85e562c4e71a2aa635ecbd999df/README.md\nContent SHA-256: c383c977373e2b0492055564a9f74541b06c92e9c06f5dadd21022ed14c22e47\nIllustrative policy example: two parallel ten-second tools have ten seconds elapsed and twenty seconds summed duration. Cached input is a subset of total input; no cached-subset count is published by this selected policy source."
+      },
+      "item_hash": "7c06706d7a798a839478f19c698c6278ac9f9678bfba220926fe42cb2474593e",
+      "source": "https://github.com/unbraind/pm-observer/blob/4728eca6adbfc85e562c4e71a2aa635ecbd999df/README.md",
+      "content_digest": "c383c977373e2b0492055564a9f74541b06c92e9c06f5dadd21022ed14c22e47"
+    }
+  ],
+  "quantities": 53,
+  "illustrative_controls": 4,
+  "unknown_derivations": 1,
+  "unknown_operand_ids": [
+    "tokens-cached"
+  ],
+  "unsafe_refusals": [
+    "unsafe_overlap",
+    "semantic_mismatch"
+  ],
+  "exact_claims": 47,
+  "reproduced": 47,
+  "refusals": [
+    {
+      "left": "fleet-0",
+      "right": "fleet-12",
+      "reason": "dimension_mismatch"
+    },
+    {
+      "left": "fleet-0",
+      "right": "fleet-38",
+      "reason": "dimension_mismatch"
+    },
+    {
+      "left": "earth-equatorial",
+      "right": "earth-polar",
+      "reason": "semantic_mismatch"
+    },
+    {
+      "left": "fleet-0",
+      "right": "fleet-1",
+      "reason": "population_mismatch"
+    },
+    {
+      "left": "parallel-elapsed",
+      "right": "parallel-summed",
+      "reason": "semantic_mismatch"
+    },
+    {
+      "left": "tokens-total",
+      "right": "tokens-cached",
+      "reason": "semantic_mismatch"
+    }
+  ],
+  "derived_ratios": 1,
+  "packet_claims": 10,
+  "packet_bytes": 12516,
+  "packet_tokens": 3129,
+  "packet_minimum_budget": 3129,
+  "raw_item_bytes": 290636,
+  "raw_item_tokens": 72659,
+  "calls": 173,
+  "wall_ms": 16427,
+  "results": [
+    {
+      "key": "fleet-0",
+      "expected": {
+        "numerator": "278",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "278",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-1",
+      "expected": {
+        "numerator": "2586",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "2586",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-2",
+      "expected": {
+        "numerator": "3",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "3",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-3",
+      "expected": {
+        "numerator": "784",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "784",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-4",
+      "expected": {
+        "numerator": "793",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "793",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-5",
+      "expected": {
+        "numerator": "797",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "797",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-6",
+      "expected": {
+        "numerator": "1243",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1243",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-7",
+      "expected": {
+        "numerator": "1508",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1508",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-8",
+      "expected": {
+        "numerator": "1512",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1512",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-9",
+      "expected": {
+        "numerator": "24",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "24",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-10",
+      "expected": {
+        "numerator": "1461",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1461",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-11",
+      "expected": {
+        "numerator": "1038",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1038",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-12",
+      "expected": {
+        "numerator": "48234496",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "48234496",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-13",
+      "expected": {
+        "numerator": "52428800",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "52428800",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-14",
+      "expected": {
+        "numerator": "4915724288",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "1228931072",
+        "denominator": "25"
+      }
+    },
+    {
+      "key": "fleet-15",
+      "expected": {
+        "numerator": "4627365888",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "1156841472",
+        "denominator": "25"
+      }
+    },
+    {
+      "key": "fleet-16",
+      "expected": {
+        "numerator": "3502243840",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "175112192",
+        "denominator": "5"
+      }
+    },
+    {
+      "key": "fleet-17",
+      "expected": {
+        "numerator": "116391936",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "29097984",
+        "denominator": "25"
+      }
+    },
+    {
+      "key": "fleet-18",
+      "expected": {
+        "numerator": "1413",
+        "denominator": "60"
+      },
+      "actual": {
+        "numerator": "471",
+        "denominator": "20"
+      }
+    },
+    {
+      "key": "fleet-19",
+      "expected": {
+        "numerator": "16315",
+        "denominator": "60"
+      },
+      "actual": {
+        "numerator": "3263",
+        "denominator": "12"
+      }
+    },
+    {
+      "key": "fleet-20",
+      "expected": {
+        "numerator": "5",
+        "denominator": "60"
+      },
+      "actual": {
+        "numerator": "1",
+        "denominator": "12"
+      }
+    },
+    {
+      "key": "fleet-21",
+      "expected": {
+        "numerator": "11",
+        "denominator": "60"
+      },
+      "actual": {
+        "numerator": "11",
+        "denominator": "60"
+      }
+    },
+    {
+      "key": "fleet-22",
+      "expected": {
+        "numerator": "420",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "420",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-23",
+      "expected": {
+        "numerator": "420",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "420",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-24",
+      "expected": {
+        "numerator": "1752",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1752",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-25",
+      "expected": {
+        "numerator": "1752",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1752",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-26",
+      "expected": {
+        "numerator": "1523",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1523",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-27",
+      "expected": {
+        "numerator": "1523",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1523",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-28",
+      "expected": {
+        "numerator": "1541",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1541",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-29",
+      "expected": {
+        "numerator": "1541",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1541",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-30",
+      "expected": {
+        "numerator": "1709",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1709",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-31",
+      "expected": {
+        "numerator": "1709",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1709",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-32",
+      "expected": {
+        "numerator": "793",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "793",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-33",
+      "expected": {
+        "numerator": "793",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "793",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-34",
+      "expected": {
+        "numerator": "100",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "1",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-35",
+      "expected": {
+        "numerator": "100",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "1",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-36",
+      "expected": {
+        "numerator": "0",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-37",
+      "expected": {
+        "numerator": "100",
+        "denominator": "100"
+      },
+      "actual": {
+        "numerator": "1",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-38",
+      "expected": {
+        "numerator": "1094",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1094",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-39",
+      "expected": {
+        "numerator": "1094",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1094",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-40",
+      "expected": {
+        "numerator": "88",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "88",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-41",
+      "expected": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-42",
+      "expected": {
+        "numerator": "0",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "0",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "fleet-43",
+      "expected": {
+        "numerator": "1152",
+        "denominator": "1"
+      },
+      "actual": {
+        "numerator": "1152",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "earth-equatorial",
+      "expected": {
+        "numerator": "6378137000",
+        "denominator": "1000"
+      },
+      "actual": {
+        "numerator": "6378137",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "earth-polar",
+      "expected": {
+        "numerator": "6356752000",
+        "denominator": "1000"
+      },
+      "actual": {
+        "numerator": "6356752",
+        "denominator": "1"
+      }
+    },
+    {
+      "key": "earth-rotation",
+      "expected": {
+        "numerator": "861642000",
+        "denominator": "10000"
+      },
+      "actual": {
+        "numerator": "430821",
+        "denominator": "5"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-tracker-admission",
+      "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
+      "bytes": 47645
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-toolchain-1104",
+      "item_hash": "3b04b1108c52cfe0905eac0ac540397b6d57384032ca0e7302286cf1525fda81",
+      "bytes": 21233
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-b7cb",
+      "item_hash": "fd1d737b7a7eea44ab8b1dbeca0799b2bf5175e780f5825eb6f8932248cf64b9",
+      "bytes": 8183
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-bcgs",
+      "item_hash": "9c632d9f04d8ea3be92552d03e467a88444bc16208929633122e3f278c354ca9",
+      "bytes": 14577
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-op2c",
+      "item_hash": "6a368932061fbe732fd7bf0d9b7d43439ca6b7d95b4ddc8cdd3cc9e41a12bc4e",
+      "bytes": 29763
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-74qw",
+      "item_hash": "47df4b143005c3de9bd3a1e126e090164d7cfcdcde548de7ed23e1d7aa676544",
+      "bytes": 10298
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-nz10",
+      "item_hash": "f1ede6bc3b91e2a207e9718efbfe3aaa5fd73a34f945548c87db4491ef04636d",
+      "bytes": 19309
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-d9m8",
+      "item_hash": "681ac3aae2aa3473e1af14fc881c0b530e4a8618b80e313ee2fd61457aa81757",
+      "bytes": 1540
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-7ydb",
+      "item_hash": "85f76ad01ebd7b4895aef6fd3e5239eda302d986d7798084cbc4bdf7bd4c1c03",
+      "bytes": 7309
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-rd82",
+      "item_hash": "897eab4e9644af061c5d7e9c757a8344edcdfb498ddc8b830b5d5df9fcc68a38",
+      "bytes": 3391
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-5lre",
+      "item_hash": "d45d2e002f510f08d8398dacb8a6215ccdbeda233b1a77f0f04b39da1ca7221b",
+      "bytes": 3294
+    },
+    {
+      "repo": "pm-vcs",
+      "revision": "f2ab3c3412d87fbf766bc629b685a986b5400f61",
+      "item_id": "pm-vcs-simi",
+      "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
+      "bytes": 8901
+    },
+    {
+      "repo": "pm-rl",
+      "revision": "962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
+      "item_id": "pm-rl-qhz2",
+      "item_hash": "28ac440aca14cb3f44165b2a5af37fa33378150b8794545023d23d0dff6986cf",
+      "bytes": 19455
+    },
+    {
+      "repo": "pm-rl",
+      "revision": "962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
+      "item_id": "pm-rl-ip21",
+      "item_hash": "a19d96a3ab2d774a20f577484355710ad159e38734a262080ea51f431cfdb1d4",
+      "bytes": 28796
+    },
+    {
+      "repo": "pm-rl",
+      "revision": "962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
+      "item_id": "pm-rl-9nlg",
+      "item_hash": "1512f79fc45961d6ec8669fe48f84ddb4c55564cf3ee9d4372181211285f378f",
+      "bytes": 14017
+    },
+    {
+      "repo": "pm-rl",
+      "revision": "962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
+      "item_id": "pm-rl-prefix",
+      "item_hash": "0f3bb29d2ce9097a548412074c15806d955c6c559e0f2f91caaea40966c25f7d",
+      "bytes": 23687
+    },
+    {
+      "repo": "pm-rl",
+      "revision": "962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
+      "item_id": "pm-rl-whrd",
+      "item_hash": "eba6e40532cfe2253bb7b04020b967f02f42118add867b7e36b203a72b22178c",
+      "bytes": 29238
+    }
+  ]
+}

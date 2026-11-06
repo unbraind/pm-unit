@@ -2,12 +2,20 @@ id: pm-unit-concurrency
 title: Native CAS replay and no-git conformance
 description: ""
 type: Feature
-status: open
+status: in_progress
 priority: 2
 tags: []
 created_at: "2026-11-06T04:32:08.908Z"
-updated_at: "2026-11-06T04:32:08.908Z"
+updated_at: "2026-11-06T06:07:36.151Z"
 author: codex-agent
 acceptance_criteria: Every interleaving boundary and crash rerun converges; two OS writers preserve acknowledged records; 500 seeded sequences match read-back
 parent: pm-unit-release
+comments[2]{created_at,author,text}:
+  "2026-11-06T04:47:00.317Z",codex-agent,"Boundary tests passed: six competing-write boundaries, two create collisions, six mutation crash points, two create crash points, contention exhaustion and explicit stale derivation refusal. Independent OS writers acknowledged 18 records and explicitly refused 2 conflicts; all 18 survived. Replay added no history events."
+  "2026-11-06T05:33:17.232Z",codex-agent,"The linked concurrency suite passed 33 of 33 tests through pm test, including identical record and derivation requests at every boundary and hard OS exits before update, after update and before receipt. Independent writers acknowledged 18 of 20 requests, explicitly refused 2 conflicts, and preserved every acknowledged record."
+files[2]{path,scope}:
+  test/concurrency.test.ts,project
+  test/model.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/concurrency.test.ts,project,codex-agent,"2026-11-06T05:04:31.543Z",local_mutation,feat/unit
 body: ""
