@@ -90,9 +90,11 @@ export function evaluate(state: QuantitySet, ast: Expression): Quantity {
   } else rightUnit = left.unit_code;
   const valueRight = right.value === null ? null : convert(right.value, right.unit_code, rightUnit);
   if (ast.op === 'divide' && valueRight !== null) insist(BigInt(valueRight.numerator) !== 0n, 'divide_by_zero', 'The denominator witness is zero', 'Record a nonzero denominator witness');
+  const mergedProvenance = [...new Map([...left.provenance, ...right.provenance].map(ref => [digest(ref), ref])).values()];
+  insist(mergedProvenance.length <= 16, 'limit_exceeded', 'Derived quantity would retain more than sixteen distinct source fragments', 'Use operands with fewer distinct sources or partition the calculation');
   const result = { ...left, quantity_id: 'evaluated', value: left.value === null || valueRight === null ? null : arithmetic(left.value, valueRight, ast.op), unit_code: unit,
     semantic_kind: `${ast.op}.${digest([left.semantic_kind, right.semantic_kind])}`,
-    provenance: [...new Map([...left.provenance, ...right.provenance].map(ref => [digest(ref), ref])).values()], notes: '', acquisition: 'estimated' as const,
+    provenance: mergedProvenance, notes: '', acquisition: 'estimated' as const,
   };
   delete result.uncertainty; delete result.supersedes; delete result.correction_reason; delete result.unknown_reason;
   if (result.value === null) result.unknown_reason = `Missing operands: ${[left.value === null ? ast.left : '', right.value === null ? ast.right : ''].filter(Boolean).join(', ')}`;

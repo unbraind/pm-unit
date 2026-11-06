@@ -29,6 +29,8 @@ test('native harness executes all commands and round-trips scoped JSON and TOON 
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputCursor: result.continuation })).ok, true);
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1', cursor: result.continuation })).ok, true);
   assert.equal((await run('packet', ['corpus-cli'], { cursor: result.continuation }, { outputCursor: result.continuation })).refusal?.code, 'invalid_input');
+  assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputLimit: '2' })).refusal?.code, 'invalid_input');
+  assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputLimit: '1' })).refusal?.code, 'invalid_input');
   assert.equal((await run('packet', ['corpus-cli'], {}, { outputLimit: '1', outputBudget: '1600' })).ok, true);
   assert.equal((await run('packet', ['corpus-cli'], { budget: '1600', quantity: 'first' })).ok, true);
   assert.equal((await run('packet', ['corpus-cli'], { budget: '1600' }, { outputBudget: '1600' })).refusal?.code, 'invalid_input');
@@ -61,7 +63,7 @@ test('bounded stdin rejects malformed UTF-8, injection and oversized JSON before
 test('packet cursors bind query projection and revision, with complete omission receipts', async t => {
   const { host, id } = await fixture(t); await recordQuantity(host, await request(host, id, 'a')); await recordQuantity(host, await request(host, id, 'b'));
   const first = await quantityPacket(host, { id, limit: 1 }); assert.equal(first.returned, 1); assert.equal(first.omitted, 1); assert.equal(first.total, 2); assert.ok(first.continuation);
-  const last = await quantityPacket(host, { id, limit: 1, cursor: first.continuation }); assert.equal(last.continuation, null); assert.equal(last.rows[0].quantity.quantity_id, 'b');
+  const last = await quantityPacket(host, { id, limit: 1, cursor: first.continuation }); assert.equal(last.continuation, null); assert.equal(last.rows[0].quantity.quantity_id, 'b'); assert.equal(last.omitted, 0); assert.equal(envelope(last).omitted, 0);
   for (const cursor of ['bad', Buffer.from('null').toString('base64url'), Buffer.from('{}').toString('base64url'), Buffer.from(JSON.stringify({ offset: -1, query: 'x', revision: first.revision })).toString('base64url')]) await assert.rejects(quantityPacket(host, { id, limit: 1, cursor }), hasCode('stale_cursor'));
   await assert.rejects(quantityPacket(host, { id, limit: 2, cursor: first.continuation }), hasCode('stale_cursor'));
   const changedOffset = JSON.parse(Buffer.from(first.continuation, 'base64url').toString('utf8')); changedOffset.offset = 100;

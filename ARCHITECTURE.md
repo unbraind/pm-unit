@@ -21,3 +21,9 @@ JSON and TOON use the same strict versioned envelope and scoped host renderers. 
 Submitted text is shareable data. The SDK secret scanner plus bounded recursive validation refuses credential-shaped content, common email shapes (a heuristic), absolute home paths, control/bidi sequences, malformed Unicode, accessor/prototype/cyclic objects and oversized content before mutation. Instruction text is retained as inert structured data; formulas are never evaluated as code. The runtime reads no source bodies automatically, calls no model/network/shell and enumerates no environment. Native history remains authoritative and can retain prior submissions; redaction and retention must use host history policy. Local author attribution provides no authentication or access control.
 
 Each quantity carries at most sixteen provenance references; derived quantities share that bound after reference union. Larger witness sets refuse rather than truncating source identities. Full expression and reviewed declaration support remains deferred.
+
+## Pagination receipts
+
+Each packet reports the full query total, the rows returned on this page and
+the number of rows remaining after this page. Earlier pages do not contribute
+to `omitted`. The final page has `omitted: 0` and `continuation: null`.

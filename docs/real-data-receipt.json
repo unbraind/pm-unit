@@ -1,6 +1,6 @@
 {
-  "fixture_digest": "78e48b343cfaafd149fbe3febe5020b2627fc71108d6825a484314e73c7d2ae2",
-  "implementation_digest": "b9fe56aa2f259b48173df614c27f0e70bff1ba6415fbe18a32f0a5012a7ca9bb",
+  "fixture_digest": "ef9261e01d30fe8ee75017c7c3f8bc09969760fed2d8b0c8c5e15ed69285c44d",
+  "implementation_digest": "106818541d7627bbbb05a22e0bae7611b069c20f41d44f09376e0f88988b9bcd",
   "emitted_inventory": [
     {
       "path": "index.js",
@@ -8,11 +8,11 @@
     },
     {
       "path": "src/api.js",
-      "sha256": "aa17aa24c9410be86e524f5b4f545b8ceab6098d875c669549bac4d47d045766"
+      "sha256": "f3988cda9b0fa530165a30922796449608f482c5887ac7338e56520373be9211"
     },
     {
       "path": "src/commands.js",
-      "sha256": "145d06de7b899c749125715a087fdf5bf70a5ffb02fa60cbc7447deed07ee5ff"
+      "sha256": "fff0b49c1e2168ce21722b9010f26d4d175f6df6983a8eca3c1f331e39318b8d"
     },
     {
       "path": "src/errors.js",
@@ -24,7 +24,7 @@
     },
     {
       "path": "src/kernel.js",
-      "sha256": "230969ea9ff76772c886368befb3eac45efffe1df6f95aecddea8873d7955620"
+      "sha256": "55ae53b957d721ea85d4538f065e373dc147b25385ffd803fee5758a51400a57"
     },
     {
       "path": "src/output.js",
@@ -47,8 +47,8 @@
         "status": "open",
         "priority": 2,
         "tags": [],
-        "created_at": "2026-11-06T07:48:26.574Z",
-        "updated_at": "2026-11-06T07:48:26.574Z",
+        "created_at": "2026-11-06T08:27:04.318Z",
+        "updated_at": "2026-11-06T08:27:04.318Z",
         "author": "real-data",
         "comments": [],
         "notes": [],
@@ -72,7 +72,7 @@
         },
         "body": "Public source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html\nContent SHA-256: 1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef\nearth-equatorial: 6378.137 km; original measurement window unknown\nearth-polar: 6356.752 km; original measurement window unknown\nearth-rotation: 23.9345 h; original measurement window unknown"
       },
-      "item_hash": "3b2c4f1d6052dc38e881546747f2ead65138b427ae8de963a20e729f08cd2b33",
+      "item_hash": "cbd290c9e953640b324d7ec8fdcdd6e6f015eaef41cd30ce62527dea0f174362",
       "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
       "content_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"
     },
@@ -85,8 +85,8 @@
         "status": "open",
         "priority": 2,
         "tags": [],
-        "created_at": "2026-11-06T07:48:37.703Z",
-        "updated_at": "2026-11-06T07:48:37.703Z",
+        "created_at": "2026-11-06T08:27:14.834Z",
+        "updated_at": "2026-11-06T08:27:14.834Z",
         "author": "real-data",
         "comments": [],
         "notes": [],
@@ -110,7 +110,7 @@
         },
         "body": "Public source: https://github.com/unbraind/pm-unit/blob/5f0aeee30896065fd2a810497af3efcdec96e7b1/docs/policy-examples.md\nContent SHA-256: 722ec7cf86fea04fe9f18d6baca415c2d33a528567498ccd70ebe19e78c294b3\n# Illustrative quantity policies\n\nThese examples define test policies, not measured fleet observations. Their\ncontent SHA-256 is recorded separately from the native tracker anchor revision.\n\n## Parallel durations\n\nTwo tools start together and each runs for ten seconds. Elapsed wall time is\nten seconds; summed tool duration is twenty seconds. Both quantities use seconds\nand the same example population, but have different semantic kinds. Comparing\nor combining them as though they measured the same thing must be refused.\n\n## Cached input tokens\n\nCached input tokens are a subset of total input tokens for the same request\npopulation. A total-plus-cached sum double-counts that subset and must be refused.\nThe total used by the test control is illustrative. This policy supplies no\ncached-token count, so the cached operand and any ratio that requires its value\nremain explicitly unknown. Neither a missing count nor a subset relationship\nauthorizes an invented measurement."
       },
-      "item_hash": "4c7abe4d76fbde56afc5f654e83f9ed698e1a702e57f05bfbdaea535e7754138",
+      "item_hash": "68807e452b57e292026ca413fb33a5ec77a8f9000141a7c1ce056d165e59ecd5",
       "source": "https://github.com/unbraind/pm-unit/blob/5f0aeee30896065fd2a810497af3efcdec96e7b1/docs/policy-examples.md",
       "content_digest": "722ec7cf86fea04fe9f18d6baca415c2d33a528567498ccd70ebe19e78c294b3"
     }
@@ -167,7 +167,7 @@
   "raw_item_bytes": 290636,
   "raw_item_tokens": 72659,
   "calls": 173,
-  "wall_ms": 12263,
+  "wall_ms": 11344,
   "results": [
     {
       "key": "fleet-0",

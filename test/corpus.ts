@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -43,6 +44,26 @@ export interface Claim {
   fragment_digest: string;
   /** Public repository commit, or physical source URL. */
   source: string;
+  /** Shared source-match identity for an explicitly paired numerator and denominator. */
+  pair_of?: string;
+  /** Position in the source's reported fraction, independent of fixture array order. */
+  pair_role?: 'numerator' | 'denominator';
+}
+/** Resolve corpus inputs and outputs from this checkout, independent of the launch directory. */
+export const corpusRoot = fileURLToPath(new URL('../', import.meta.url));
+/** Match physical-source hosts exactly; paths, query text and lookalike hosts are not citations. */
+export function isEarthFactSource(source: string): boolean {
+  try { return new URL(source).hostname === 'nssdc.gsfc.nasa.gov'; } catch { return false; }
+}
+/** Preserve rule semantics and attach explicit pairing independently of fixture ordering. */
+export function matchClaims(base: Omit<Claim, 'key' | 'decimal' | 'pair_of' | 'pair_role'>, values: readonly string[], offset: number): Claim[] {
+  assert.ok(values.length === 1 || values.length === 2);
+  const { source_kind, ...fields } = base;
+  return values.map((decimal, part) => ({ key: `fleet-${offset + part}`, source_kind, decimal, ...fields, ...(values.length === 2 ? { pair_of: base.population, pair_role: part === 0 ? 'numerator' as const : 'denominator' as const } : {}) }));
+}
+/** Emit bounded source excerpts as JSON data for explicit maintainer review during refresh. */
+export function harvestReviewLine(claim: Claim, fragment: string, index: number): string {
+  return JSON.stringify({ selected_claim: claim, match_offset: index, excerpt: fragment.slice(Math.max(0, index - 80), index + 120) });
 }
 /** Independent decimal-to-rational oracle, without package arithmetic. */
 export function decimalFraction(text: string) { const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) }; }
@@ -58,7 +79,7 @@ const physicalSource = {
 };
 /** Load this repository's public policy text and pin its exact bytes. */
 async function readPolicyExamples() {
-  const text = await readFile('docs/policy-examples.md', 'utf8');
+  const text = await readFile(join(corpusRoot, 'docs/policy-examples.md'), 'utf8');
   return { text, anchor: { source: 'https://github.com/unbraind/pm-unit/blob/5f0aeee30896065fd2a810497af3efcdec96e7b1/docs/policy-examples.md', sha256: createHash('sha256').update(text).digest('hex') } };
 }
 /** Refresh curated numeric receipts from Git-tracked public fleet data into disposable non-Git copies. */
@@ -66,7 +87,7 @@ export async function harvest() {
   const scratch = await mkdtemp(join(tmpdir(), 'unit-public-')); const claims: Claim[] = []; const sources: { repo: string; revision: string; item_id: string; item_hash: string; bytes: number }[] = []; const selected = new Set<string>();
   try {
     for (const { repo, revision } of publicTrackers) {
-      const original = resolve('..', repo);
+      const original = resolve(corpusRoot, '..', repo);
       const copy = join(scratch, repo); await mkdir(copy); const archive = execFileSync('git', ['archive', revision, '.agents/pm'], { cwd: original, maxBuffer: 32 * 1024 * 1024, env: npmEnvironment(process.env) });
       execFileSync('tar', ['-x', '-C', copy], { input: archive });
       const client = new PmClient({ cwd: copy, pmRoot: join(copy, '.agents/pm'), noExtensions: true }); const corpus = await client.listAllComplete({ includeBody: true }); certifyCompleteListResult(corpus);
@@ -90,10 +111,11 @@ export async function harvest() {
               if (rule.kind === 'elapsed_duration' && /[-~]/.test(comment.text.slice(Math.max(0, match.index! - 4), match.index!))) continue;
               if (rule.kind === 'data_size' && (comment.text.includes('example') || comment.text.includes('fixture'))) continue;
               const pointer = `/comments/${index}/text`; const population = digest([repo, row.id, pointer, match.index]); const paired = match[2] !== undefined;
-              if (paired && (match[1] !== match[2] || Number(match[1]) < 200)) continue;
+              if (paired && rule.unit === 'count' && (match[1] !== match[2] || Number(match[1]) < 200)) continue;
               const fingerprint = `${repo}:${row.id}:${pointer}:${match.index}:${rule.unit}`; if (selected.has(fingerprint)) continue; selected.add(fingerprint);
               const values = paired ? [match[1], match[2]] : [match[1]];
-              for (const [part, decimal] of values.entries()) claims.push({ key: `fleet-${claims.length}`, source_kind: 'native_item', decimal, reported_at: comment.created_at, unit: rule.unit, to: rule.to, scale: rule.scale, divisor: rule.divisor, kind: rule.unit === '%' && /duplicat|jscpd/i.test(comment.text.slice(Math.max(0, match.index! - 64), match.index!)) ? 'duplication_percentage' : rule.kind, population, item_id: row.id, item_hash: got.item_hash as string, pointer, fragment_digest: createHash('sha256').update(comment.text).digest('hex'), source: `https://github.com/unbraind/${repo}/tree/${revision}`, ...(part === 1 ? { kind: 'test_count' } : {}) });
+              const admitted = matchClaims({ source_kind: 'native_item', reported_at: comment.created_at, unit: rule.unit, to: rule.to, scale: rule.scale, divisor: rule.divisor, kind: rule.unit === '%' && /duplicat|jscpd/i.test(comment.text.slice(Math.max(0, match.index! - 64), match.index!)) ? 'duplication_percentage' : rule.kind, population, item_id: row.id, item_hash: got.item_hash as string, pointer, fragment_digest: createHash('sha256').update(comment.text).digest('hex'), source: `https://github.com/unbraind/${repo}/tree/${revision}` }, values, claims.length);
+              for (const claim of admitted) { claims.push(claim); console.log(harvestReviewLine(claim, comment.text, match.index!)); }
               if (!sources.some(source => source.repo === repo && source.item_id === row.id)) sources.push({ repo, revision, item_id: row.id, item_hash: got.item_hash as string, bytes: Buffer.byteLength(JSON.stringify(got.item)) }); count++;
             }
           }
@@ -105,15 +127,15 @@ export async function harvest() {
     assert.equal(hash, physicalSource.sha256, 'Physical source changed; review the public acquisition pin before refreshing');
     for (const [key, decimal, unit, to, scale, divisor, kind] of [
       ['earth-equatorial', '6378.137', 'km', 'm', '1000', '1', 'equatorial_radius'], ['earth-polar', '6356.752', 'km', 'm', '1000', '1', 'polar_radius'], ['earth-rotation', '23.9345', 'h', 's', '3600', '1', 'sidereal_rotation'],
-    ] as const) { assert.ok(html.includes(decimal)); claims.push({ key, source_kind: 'external_document', decimal, reported_at: physicalSource.reported_at, unit, to, scale, divisor, kind, population: digest('NASA Earth fact sheet'), item_id: 'nasa-earth-facts', item_hash: hash, pointer: key, fragment_digest: hash, source: physicalSource.url }); }
+    ] as const) { assert.ok(html.includes(decimal)); const claim: Claim = { key, source_kind: 'external_document', decimal, reported_at: physicalSource.reported_at, unit, to, scale, divisor, kind, population: digest('NASA Earth fact sheet'), item_id: 'nasa-earth-facts', item_hash: hash, pointer: key, fragment_digest: hash, source: physicalSource.url }; claims.push(claim); console.log(harvestReviewLine(claim, html, html.indexOf(decimal))); }
     const policy = await readPolicyExamples();
     const receipt = { schema_version: 1, claims, sources, policy_examples: policy.anchor, raw_item_bytes: sources.reduce((sum, row) => sum + row.bytes, 0), physical_source_sha256: hash };
-    await writeFile('test/fixtures/measurements.json', JSON.stringify(receipt, null, 2) + '\n'); return receipt;
+    await writeFile(join(corpusRoot, 'test/fixtures/measurements.json'), JSON.stringify(receipt, null, 2) + '\n'); return receipt;
   } finally { await rm(scratch, { recursive: true, force: true }); }
 }
 /** Evaluate public receipt claims with independent expected rationals and predeclared mismatch controls. */
 export async function evaluateCorpus() {
-  const fixtureText = await readFile('test/fixtures/measurements.json', 'utf8');
+  const fixtureText = await readFile(join(corpusRoot, 'test/fixtures/measurements.json'), 'utf8');
   const input = JSON.parse(fixtureText) as { claims: Claim[]; raw_item_bytes: number; sources: unknown[]; policy_examples: { source: string; sha256: string } };
   const policy = await readPolicyExamples(); assert.deepEqual(input.policy_examples, policy.anchor, 'Policy anchor changed; refresh the public fixture before evaluation');
   const root = await mkdtemp(join(tmpdir(), 'unit-real-data-')); const started = performance.now(); let calls = 0;
@@ -143,7 +165,8 @@ export async function evaluateCorpus() {
     for (const [left, right] of [[input.claims[0].key, input.claims.find(row => row.unit === 'MiB')!.key], [input.claims[0].key, input.claims.find(row => row.unit === 'token')!.key], ['earth-equatorial', 'earth-polar'], [input.claims[0].key, input.claims.find(row => row.unit === 'count' && row.population !== input.claims[0].population)!.key]]) {
       const comparison = await compareQuantities(host, { id, left, right }); calls++; assert.equal(comparison.usable, false); comparisons.push({ left, right, reason: comparison.reason });
     }
-    const pair = input.claims.find((row, index) => index > 0 && row.population === input.claims[index - 1].population && row.unit === 'count')!; const index = input.claims.indexOf(pair); const numerator = input.claims[index - 1];
+    const numerator = input.claims.find(row => row.pair_role === 'numerator' && row.unit === 'count'); assert.ok(numerator?.pair_of);
+    const pair = input.claims.find(row => row.pair_of === numerator.pair_of && row.pair_role === 'denominator'); assert.ok(pair);
     await deriveQuantity(host, { id, op: 'ratio-proof', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'ratio-proof', expression: { op: 'divide', left: numerator.key, right: pair.key } }); calls += 2;
     const ratio = await convertQuantity(host, { id, quantity: 'ratio-proof', to: '%' }); calls++; assert.deepEqual(ratio.quantity.value, { numerator: '100', denominator: '1' });
     const controlsId = 'proof-controls'; await createQuantitySet(host, { id: controlsId, op: 'controls-birth', title: 'Public policy mismatch controls', quantity_set_key: 'controls' }); calls++;
@@ -166,7 +189,7 @@ export async function evaluateCorpus() {
     const unknown = await convertQuantity(host, { id: controlsId, quantity: 'unknown-ratio', to: '%' }); calls++; assert.equal(unknown.quantity.value, null); assert.match(unknown.quantity.unknown_reason!, /tokens-cached/);
     const packet = envelope(await quantityPacket(host, { id, limit: 10 })); calls++; const full = fitEnvelope(host, packet, 8192); const bytes = full.output_fit.output_bytes; let minimum: number | null = null;
     try { fitEnvelope(host, packet, 1600); } catch (error) { assert.ok(error instanceof UnitRefusal && error.code === 'output_budget'); minimum = error.details.minimum_usable_budget as number | null; }
-    const emitted_inventory = await Promise.all(runtimeSources().sort().map(async path => ({ path: path.replace(/\.ts$/, '.js'), sha256: createHash('sha256').update(await readFile(join('dist', path.replace(/\.ts$/, '.js')))).digest('hex') })));
+    const emitted_inventory = await Promise.all(runtimeSources(corpusRoot).sort().map(async path => ({ path: path.replace(/\.ts$/, '.js'), sha256: createHash('sha256').update(await readFile(join(corpusRoot, 'dist', path.replace(/\.ts$/, '.js')))).digest('hex') })));
     return { fixture_digest: createHash('sha256').update(fixtureText).digest('hex'), implementation_digest: digest(emitted_inventory), emitted_inventory, sdk_version: '2026.11.5', measured_runtime: process.version, external_source_anchors, quantities: input.claims.length + 6, illustrative_controls: 4, unknown_derivations: 1, unknown_operand_ids: ['tokens-cached'], unsafe_refusals: unsafe, exact_claims: results.length, reproduced: results.length, refusals: comparisons, derived_ratios: 1, packet_claims: 10, packet_bytes: bytes, packet_tokens: Math.ceil(bytes / 4), packet_minimum_budget: minimum, raw_item_bytes: input.raw_item_bytes, raw_item_tokens: Math.ceil(input.raw_item_bytes / 4), calls, wall_ms: Math.round(performance.now() - started), results, sources: input.sources };
   } finally { await rm(root, { recursive: true, force: true }); }
 }

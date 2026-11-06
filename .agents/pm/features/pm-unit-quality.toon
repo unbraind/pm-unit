@@ -4,13 +4,13 @@ description: ""
 type: Feature
 status: in_progress
 priority: 2
-tags: []
+tags[1]: "gh:unbraind/pm-unit#4"
 created_at: "2026-11-06T04:32:09.688Z"
-updated_at: "2026-11-06T07:49:52.891Z"
+updated_at: "2026-11-06T08:36:37.436Z"
 author: codex-agent
 acceptance_criteria: Exact 100 percent four-dimension source coverage; npm Bun npx bunx packed acceptance; real fleet and physical receipts; allowlisted artifact and gated release workflow
 parent: pm-unit-release
-comments[8]{created_at,author,text}:
+comments[10]{created_at,author,text}:
   "2026-11-06T05:10:55.549Z",codex-agent,"Public proof: 47 exact published claims reproduced, 53 quantities including separately labelled controls and derivations, 6 incompatible comparisons and 2 unsafe sums refused, 1 unknown cached-subset ratio disclosed. Ten-claim packet is 12382 bytes and 3096 estimated tokens versus 290636 raw source bytes and 72659 tokens. Actual measurement windows remain explicitly unknown; public receipt timestamps are retained. Report details and exact source pins are in docs/real-data.md."
   "2026-11-06T05:21:01.107Z",codex-agent,"Packed acceptance passed: one captured allowlisted tarball installed in fresh npm and Bun projects; native TOON/JSON help and contracts, successful and refused mutations, SDK reads and writes, npx and native bunx, Node 22.19 and Node 26.13, and no Git executable on PATH. The prior full coverage run passed 59 tests with 538/538 statements, 377/377 branches, 103/103 functions and 487/487 lines. Final source gate follows the adapter and native-remedy refinements."
   "2026-11-06T06:07:32.762Z",codex-agent,"Precommit npm release:check passed all gates: 62 tests, 542/542 statements, 388/388 branches, 105/105 functions, 490/490 lines, 40 allowlisted package files, 2 packed npm/Bun journeys, and 11 then-current behavioral reverts. A final related-ID canonicalization regression and proof were added afterward; all 12 safeguard-removal proofs and the restored core/contract suite now pass. Public external sources now have actual native anchor item revisions, separate from their content digests."
@@ -19,30 +19,46 @@ comments[8]{created_at,author,text}:
   "2026-11-06T07:40:51.150Z",codex-agent,"Resumed the quality work after synchronizing feat/unit. Replace the non-public policy dependency with a digest-pinned document owned by this repository; regenerate the public fixture and receipt, add a confinement regression and behavioral revert proof, then run both release gates before pushing. Existing ledger and unit changes remain intact."
   "2026-11-06T07:47:54.561Z",codex-agent,"Added repository-owned illustrative policies for parallel elapsed versus summed durations and cached-token subsets. The policy document will be anchored by content SHA-256 and an immutable public commit URL. The refreshed fixture preserves all 47 original claims, public source digests, acquisition timestamps and raw bytes. Focused corpus and guard tests pass 4 of 4; restoring only the original harvest function in a disposable copy fails the guard, and restoring the current function passes all 3 guard tests."
   "2026-11-06T07:49:51.894Z",codex-agent,"Public-corpus correction completed: fixture and receipt regenerated through the evaluator; all 47 original claims, native source digests, physical source digest, acquisition timestamps and raw item bytes are unchanged. The policy anchor is docs/policy-examples.md at commit 5f0aeee30896065fd2a810497af3efcdec96e7b1 with SHA-256 722ec7cf86fea04fe9f18d6baca415c2d33a528567498ccd70ebe19e78c294b3. The guard checks private-name citations, exact read entry points, copied tracker roots and policy-byte consistency, with five negative read controls. Linked guard execution passed 3 of 3; result tracking is disabled by project policy, so results are recorded here. The regenerated receipt has 53 quantities, 47 reproduced claims, 6 comparison refusals, 2 unsafe sums, 3219 packet tokens versus 72659 raw tokens, 173 calls and 12263 ms. A disposable exact harvest-function revert fails; the fixed function passes. The release gate now includes 16 safeguard removals. Full npm and Bun release checks will run serially on the committed final head before push; no other tracker or private source was accessed."
-files[18]{path,scope}:
+  "2026-11-06T08:19:00.195Z",codex-agent,"Review round 1: loaded all 12 unresolved threads with complete comments and the latest CodeRabbit review; no outside-diff section is present. Loaded the one open CodeQL alert. Verify pagination omissions, conflicting limit transports, derivation provenance capacity, public-corpus selection and anchors, execution location and platform contracts. Add focused regression and disposable revert proofs, inspect the full PR for matching defects, and validate on the final head. Thread replies and resolution remain with the orchestrator."
+  "2026-11-06T08:36:36.349Z",codex-agent,"PR 4 round 1 verified all 12 complete unresolved threads and the one open CodeQL test alert; latest CodeRabbit review has no outside-diff findings. Fixed remaining-page omission counts (bVXy), duplicate limit transports (bVX7), specific provenance union capacity refusals with no mutation (bVYA), exact private-name boundaries (bVYD), reviewable per-claim refresh excerpts (bVYI), explicit pair identity and rule semantics (bVYM), checkout-relative execution (bVXu and bVYW), single-runtime receipt scope (bVXi), and exact NASA hostname parsing (bOOM and bVYc). Packed acceptance now documents POSIX and Bun prerequisites and refuses missing proof before setup (bVYS); deliberately did not adopt skipping because release evidence must not be silently absent. Self-review also fixed whitespace erasure inside guard path literals. Targeted suite passed 21 of 21; linked prerequisite test passed 1 of 1, manually recorded because result tracking is disabled. All 12 new disposable behavioral reversions failed for their expected assertions and the unchanged implementation passed. Independently replacing each entire prior quantityPacket, runCommand and evaluate function also failed its regression, then passed after restoration. The disposable proof harness now copies the authored source inventory needed by the foreign-directory scenario. Typecheck, lint, zero-duplication and docstring gates pass. Refreshed all 47 original claims without changing values or source pins; emitted 47 bounded review excerpts, added explicit pair roles, and retained 53 quantities and 8 refusals. Npm and Bun full release gates will run serially at the final committed head, as prior measured gate duration is comfortably under one hour. No thread replies, resolution or reviewer mentions were sent."
+files[28]{path,scope}:
   .github/workflows/release.yml,project
   CODEOWNERS,project
+  CONTRIBUTING.md,project
   docs/policy-examples.md,project
   docs/real-data-receipt.json,project
   package.json,project
   README.md,project
   scripts/coverage-gate.ts,project
+  scripts/inventory.ts,project
   scripts/pack-gate.ts,project
+  src/api.ts,project
+  src/commands.ts,project
+  src/kernel.ts,project
   test/contracts.test.ts,project
+  test/core.test.ts,project
   test/corpus-privacy.test.ts,project
+  test/corpus-review.test.ts,project
   test/corpus.ts,project
   test/edge.test.ts,project
   test/fixtures/measurements.json,project
+  test/install-tools.test.ts,project
+  test/install-tools.ts,project
   test/install.acceptance.ts,project
   test/real-data.acceptance.ts,project
+  test/real-data.test.ts,project
   test/release-verification.test.ts,project
   test/revert.acceptance.ts,project
   test/workflow.test.ts,project
-tests[3]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+tests[5]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
   "npm run release:check",project,codex-agent,"2026-11-06T05:04:37.793Z",local_mutation,feat/unit
   "bun run release:check",project,codex-agent,"2026-11-06T05:04:37.793Z",local_mutation,feat/unit
   node --test --test-concurrency=2 test/corpus-privacy.test.ts,project,codex-agent,"2026-11-06T07:49:25.503Z",local_mutation,feat/unit
-docs[4]{path,scope}:
+  node test/revert.acceptance.ts --review-only,project,codex-agent,"2026-11-06T08:32:55.788Z",local_mutation,feat/unit
+  node --test --test-concurrency=2 test/install-tools.test.ts,project,codex-agent,"2026-11-06T08:32:59.570Z",local_mutation,feat/unit
+docs[6]{path,scope}:
+  ARCHITECTURE.md,project
+  CONTRIBUTING.md,project
   docs/policy-examples.md,project
   docs/real-data.md,project
   docs/review-status.md,project

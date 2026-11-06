@@ -3,23 +3,30 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync, readFileSync, existsSync, unlinkSync, copyFileSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { spawnSync, execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { npmEnvironment } from '../scripts/environment.ts';
 import { observation } from './helpers.ts';
+import { packedRequirement } from './install-tools.ts';
 /** Run a credential-free consumer command and preserve only bounded diagnostics. */
 function execute(executable: string, args: string[], cwd: string, env: NodeJS.ProcessEnv, input?: string, expected = 0): string {
   const result = spawnSync(executable, args, { cwd, env, input, encoding: 'utf8', timeout: 180000, maxBuffer: 4 * 1024 * 1024 });
   assert.equal(result.status, expected, `${executable} ${args.slice(0, 4).join(' ')}: ${result.stderr.slice(-1500)} ${result.stdout.slice(-1500)}`); return result.stdout || result.stderr;
 }
 test('one captured artifact supports npm Bun npx bunx and SDK with Git absent', () => {
+  assert.equal(packedRequirement(process.platform), null, packedRequirement(process.platform) ?? '');
+  const tools = new Map(['bun', 'npm', 'npx'].flatMap(name => {
+    const found = spawnSync('bash', ['-c', `command -v ${name}`], { encoding: 'utf8', env: npmEnvironment(process.env) });
+    return found.status === 0 && found.stdout.trim() !== '' ? [[name, found.stdout.trim()] as const] : [];
+  }));
+  assert.equal(packedRequirement(process.platform, [...tools.keys()]), null, packedRequirement(process.platform, [...tools.keys()]) ?? '');
   const root = mkdtempSync(join(tmpdir(), 'unit-packed-')); const env = npmEnvironment(process.env); delete env.NODE_V8_COVERAGE;
   try {
     const packed = JSON.parse(execute('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', root], process.cwd(), env)) as { filename: string; files: { path: string }[] }[];
     const archive = join(root, packed[0].filename); const sha256 = createHash('sha256').update(readFileSync(archive)).digest('hex');
-    const bin = join(root, 'bin'); mkdirSync(bin); const bun = execFileSync('bash', ['-c', 'command -v bun'], { encoding: 'utf8', env }).trim();
+    const bin = join(root, 'bin'); mkdirSync(bin); const bun = tools.get('bun')!;
     for (const [name, target] of [['sh', '/bin/sh'], ['node', process.execPath], ['bun', bun], ['bunx', bun]]) symlinkSync(target, join(bin, name));
-    for (const name of ['npm', 'npx']) symlinkSync(execFileSync('bash', ['-c', `command -v ${name}`], { encoding: 'utf8', env }).trim(), join(bin, name));
+    for (const name of ['npm', 'npx']) symlinkSync(tools.get(name)!, join(bin, name));
     const journeys: { manager: string; commands: number; runtime: string }[] = [];
     for (const manager of ['npm', 'bun']) {
       const cwd = join(root, manager); mkdirSync(cwd); writeFileSync(join(cwd, 'package.json'), JSON.stringify({ name: 'unit-consumer', version: '1.0.0', private: true, type: 'module' }));

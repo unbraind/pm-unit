@@ -167,7 +167,7 @@ export async function quantityPacket(host: Host, raw: QuantityPacketInput) {
   const ids = input.quantity === undefined ? [...owner.state.observations.map(row => row.quantity_id), ...owner.state.derivations.map(row => row.quantity.quantity_id)].sort() : [input.quantity];
   insist(offset <= ids.length, 'stale_cursor', 'Cursor offset is outside this query', 'Restart unit packet');
   const rows = ids.slice(offset, offset + input.limit).map(key => explanation(owner.state, key)); const next = offset + rows.length;
-  return { owner_id: owner.id, revision: owner.revision, rows, returned: rows.length, omitted: ids.length - rows.length, total: ids.length, continuation: next < ids.length ? Buffer.from(canonical({ revision: owner.revision, query, offset: next })).toString('base64url') : null };
+  return { owner_id: owner.id, revision: owner.revision, rows, returned: rows.length, omitted: ids.length - next, total: ids.length, continuation: next < ids.length ? Buffer.from(canonical({ revision: owner.revision, query, offset: next })).toString('base64url') : null };
 }
 
 /** Exact read-only conversion result with unchanged population context. */

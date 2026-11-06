@@ -9,7 +9,10 @@ const guardedFiles = ['test/corpus.ts', 'test/fixtures/measurements.json', 'docs
 
 /** Reject non-public citations without attempting to access the named repository. */
 function checkPublicText(text: string) {
-  for (const name of privateRepositories) assert.ok(!text.toLowerCase().includes(name), `Private fleet dependency: ${name}`);
+  for (const name of privateRepositories) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    assert.ok(!new RegExp(`(?<![\\w-])${escaped}(?![\\w-])`, 'i').test(text), `Private fleet dependency: ${name}`);
+  }
 }
 
 /** Walk syntax nodes without executing the harvester or importing its dependencies. */
@@ -23,22 +26,25 @@ function walk(value: unknown, visit: (node: Record<string, unknown>) => void) {
 /** Constrain all corpus read entry points, including Git acquisition and SDK roots. */
 function checkReadBoundaries(source: string) {
   const tree = parse(source, { sourceType: 'module', plugins: ['typescript'] });
-  const compact = (text: string) => text.replace(/\s+/g, '');
+  const compact = (text: string) => JSON.stringify(parse(text, { sourceType: 'module', plugins: ['typescript'], tokens: true }).tokens?.map(token => ({ type: typeof token.type === 'string' ? token.type : token.type.label, value: token.value })));
   const text = (node: Record<string, unknown>) => compact(source.slice(node.start as number, node.end as number));
   const imports: Record<string, string[]> = {
     'node:assert/strict': ['assert'],
     'node:fs/promises': ['mkdtemp', 'mkdir', 'rm', 'readFile', 'writeFile'],
     'node:path': ['join', 'resolve'], 'node:os': ['tmpdir'],
     'node:child_process': ['execFileSync'], 'node:crypto': ['createHash'],
+    'node:url': ['fileURLToPath'],
     '@unbrained/pm-cli/sdk/core': ['PmClient'],
     '@unbrained/pm-cli/sdk/runtime': ['certifyCompleteListResult'],
   };
   const localImports = new Set(['../dist/index.js', '../dist/src/schema.js', '../scripts/inventory.ts', '../scripts/environment.ts']);
   const allowedCalls = [
-    "readFile('docs/policy-examples.md', 'utf8')",
-    "readFile('test/fixtures/measurements.json', 'utf8')",
-    "readFile(join('dist', path.replace(/\\.ts$/, '.js')))",
-    "resolve('..', repo)",
+    "readFile(join(corpusRoot, 'docs/policy-examples.md'), 'utf8')",
+    "readFile(join(corpusRoot, 'test/fixtures/measurements.json'), 'utf8')",
+    "readFile(join(corpusRoot, 'dist', path.replace(/\\.ts$/, '.js')))",
+    "fileURLToPath(new URL('../', import.meta.url))",
+    'runtimeSources(corpusRoot)',
+    "resolve(corpusRoot, '..', repo)",
     "execFileSync('git', ['archive', revision, '.agents/pm'], { cwd: original, maxBuffer: 32 * 1024 * 1024, env: npmEnvironment(process.env) })",
     "execFileSync('tar', ['-x', '-C', copy], { input: archive })",
     'fetch(physicalSource.url, { signal: AbortSignal.timeout(20000) })',
@@ -46,10 +52,11 @@ function checkReadBoundaries(source: string) {
     "new PmClient({ cwd: root, pmRoot, author: 'real-data', noExtensions: true })",
     "createDirectoryHost(pmRoot, 'real-data')",
   ].map(compact);
-  const readNames = new Set(['readFile', 'resolve', 'execFileSync', 'fetch', 'PmClient', 'createDirectoryHost']);
+  const readNames = new Set(['readFile', 'resolve', 'fileURLToPath', 'runtimeSources', 'execFileSync', 'fetch', 'PmClient', 'createDirectoryHost']);
   const pathDeclarations = new Map(Object.entries({
     publicTrackers: "[{ repo: 'pm-vcs', revision: 'f2ab3c3412d87fbf766bc629b685a986b5400f61' }, { repo: 'pm-rl', revision: '962ac059ab8f6f8382dc93b1bc814cdc84b46fa8' },] as const",
-    original: "resolve('..', repo)", copy: 'join(scratch, repo)',
+    corpusRoot: "fileURLToPath(new URL('../', import.meta.url))",
+    original: "resolve(corpusRoot, '..', repo)", copy: 'join(scratch, repo)',
     scratch: "await mkdtemp(join(tmpdir(), 'unit-public-'))",
     root: "await mkdtemp(join(tmpdir(), 'unit-real-data-'))", pmRoot: "join(root, '.agents/pm')",
   }).map(([name, expression]) => [name, compact(expression)]));
@@ -75,8 +82,9 @@ function checkReadBoundaries(source: string) {
       const name = (node.id as { name?: string }).name;
       if (name && pathDeclarations.has(name)) { assert.equal(text(node.init as Record<string, unknown>), pathDeclarations.get(name), `Read root must stay confined: ${name}`); seenPaths.add(name); }
     }
-    if (node.type === 'ForOfStatement' && text(node.right as Record<string, unknown>) === 'publicTrackers') {
-      assert.equal(text(node.left as Record<string, unknown>), compact('const { repo, revision }')); publicLoop++;
+    if (node.type === 'ForOfStatement' && text(node.right as Record<string, unknown>) === compact('publicTrackers')) {
+      const left = node.left as { start: number; end: number };
+      assert.equal(source.slice(left.start, left.end).replace(/\s+/g, ''), 'const{repo,revision}'); publicLoop++;
     }
   });
   assert.deepEqual(seenCalls.sort(), allowedCalls.sort(), 'Corpus reads must use only the policy, fixture, emitted inventory and copied public trackers');
@@ -85,7 +93,10 @@ function checkReadBoundaries(source: string) {
 
 test('public corpus guard rejects private fleet citations in every generated artifact and the harvester', async () => {
   for (const path of guardedFiles) checkPublicText(await readFile(path, 'utf8'));
-  for (const name of privateRepositories) assert.throws(() => checkPublicText(JSON.stringify({ source: `https://github.com/example/${name}/blob/main/README.md` })), /Private fleet dependency/);
+  for (const name of privateRepositories) {
+    for (const exact of [name, name.toUpperCase()]) assert.throws(() => checkPublicText(JSON.stringify({ source: `https://github.com/example/${exact}/blob/main/README.md` })), /Private fleet dependency/);
+    for (const allowed of [`${name}-tools`, `tools-${name}`, `${name}_tools`]) checkPublicText(`https://github.com/example/${allowed}/README.md`);
+  }
 });
 
 test('public corpus guard confines reads to copied public trackers and explicit repository inputs', async () => {
@@ -93,7 +104,8 @@ test('public corpus guard confines reads to copied public trackers and explicit 
   for (const mutation of [
     source + "\nawait readFile('../unapproved/README.md', 'utf8');\n",
     source.replace('cwd: copy, pmRoot: join(copy', 'cwd: original, pmRoot: join(original'),
-    source.replace("resolve('..', repo)", "resolve('..', 'unapproved')"),
+    source.replace("resolve(corpusRoot, '..', repo)", "resolve(corpusRoot, '..', 'unapproved')"),
+    source.replace("repo: 'pm-vcs'", "repo: 'pm- vcs'"),
     source.replace("from 'node:fs/promises'", "from 'node:fs'"),
     source + "\nawait import('node:fs');\n",
   ]) assert.throws(() => checkReadBoundaries(mutation), /Corpus reads|confined|Unreviewed|Dynamic/);

@@ -43,6 +43,7 @@ export async function runCommand(command: string, ctx: CommandHandlerContext): P
     const budget = requestedBudget === 'unbounded' ? 8192 : integer(requestedBudget, integer(policy?.output_budget, 1600));
     insist(command === 'packet' || (ctx.global.outputCursor === undefined && ctx.global.outputLimit === undefined), 'invalid_input', 'Pagination applies only to unit packet');
     insist(flags.cursor === undefined || ctx.global.outputCursor === undefined, 'invalid_input', 'Choose one continuation transport', 'Use --cursor for the package cursor; native producer continuation remains upstream work');
+    insist(flags.limit === undefined || ctx.global.outputLimit === undefined, 'invalid_input', 'Choose one limit transport', 'Use --limit or --output-limit, not both');
     const id = await host.normalizeId!(command === 'create' ? scalar(flags.id) : scalar(ctx.args[0])); let data: UnitData;
     if (['create', 'record', 'derive'].includes(command)) {
       const raw = await inputJson(flags.input); insist(!Object.keys(raw).some(key => ['id', 'op', 'revision'].includes(key)), 'invalid_input', 'Use explicit identity and revision flags');

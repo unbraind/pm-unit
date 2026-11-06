@@ -76,6 +76,21 @@ test('unknowns and conservative intervals never invent evidence', async t => {
   const zeroState = (await readQuantitySet(host, id)).state; assert.throws(() => evaluateQuantityExpression(zeroState, { op: 'divide', left: 'exact', right: 'zero-range' }), hasCode('divide_by_zero'));
 });
 
+test('derivations name provenance capacity and preserve state when the source union is too large', async t => {
+  const { host, id, pmRoot } = await fixture(t);
+  const source = observation('source').provenance[0];
+  const references = (start: number, count: number) => Array.from({ length: count }, (_, index) => ({ ...source, citation_id: `fragment-${start + index}` }));
+  for (const [key, start] of [['left', 0], ['right', 9], ['shared', 7]] as const) await recordQuantity(host, await request(host, id, key, { provenance: references(start, 9) }));
+  const before = await readQuantitySet(host, id); const history = await readFile(join(pmRoot, 'history', `${id}.jsonl`), 'utf8');
+  await assert.rejects(deriveQuantity(host, { id, op: 'oversized-union', revision: before.revision, quantity_id: 'too-many-sources', expression: { op: 'divide', left: 'left', right: 'right' } }), error => {
+    assert.ok(error instanceof UnitRefusal); assert.equal(error.code, 'limit_exceeded'); assert.match(error.message, /sixteen distinct source/); assert.match(error.remedy, /partition/); return true;
+  });
+  assert.equal((await readQuantitySet(host, id)).revision, before.revision); assert.equal(await readFile(join(pmRoot, 'history', `${id}.jsonl`), 'utf8'), history);
+  await deriveQuantity(host, { id, op: 'bounded-union', revision: before.revision, quantity_id: 'bounded', expression: { op: 'divide', left: 'left', right: 'shared' } });
+  assert.equal((await explainQuantity(host, { id, quantity: 'bounded' })).quantity.provenance.length, 16);
+  assert.equal(evaluateQuantityExpression((await readQuantitySet(host, id)).state, { op: 'divide', left: 'left', right: 'left' }).provenance.length, 9);
+});
+
 test('comparison refuses dimensions kinds subjects populations digests and windows', async t => {
   const { host, id } = await fixture(t); await recordQuantity(host, await request(host, id, 'base'));
   const controls = [{ unit_code: 'm' as const }, { semantic_kind: 'summed_tool_duration' }, { subject_ref: 'different' }, { population_key: 'different' }, { population_digest: digest('different') }, { time_window: 'different' }];
