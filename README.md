@@ -106,7 +106,7 @@ The SDK privacy scanner rejects credential-shaped values; home paths, email shap
 
 ## Evidence and exit codes
 
-See [real-data receipts](docs/real-data.md) and [architecture](ARCHITECTURE.md). Run `npm run release:check` and `bun run release:check` for exact source coverage, lint, duplication, documentation, security audit, native tests, packed consumers, allowlisted packaging and behavioral revert proofs. Publishing is disabled until `PM_RELEASE_APPROVED` is exactly `true` on main; the workflow publishes only the verified archived tarball with OIDC provenance.
+See [real-data receipts](docs/real-data.md) and [architecture](ARCHITECTURE.md). The corpus uses pinned public source trackers and digest-pinned [policy examples owned by this repository](docs/policy-examples.md). Run `npm run release:check` and `bun run release:check` for exact source coverage, lint, duplication, documentation, security audit, native tests, packed consumers, allowlisted packaging and behavioral revert proofs. Publishing is disabled until `PM_RELEASE_APPROVED` is exactly `true` on main; the workflow publishes only the verified archived tarball with OIDC provenance.
 
 | Exit | Meaning |
 | --- | --- |

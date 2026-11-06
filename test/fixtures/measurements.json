@@ -3,6 +3,7 @@
   "claims": [
     {
       "key": "fleet-0",
+      "source_kind": "native_item",
       "decimal": "278",
       "reported_at": "2026-11-05T10:54:52.557Z",
       "unit": "count",
@@ -15,11 +16,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/29/text",
       "fragment_digest": "08b202da33adf65f218f96eff858d221d8a36882de596b579e05857ed47f7009",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-1",
+      "source_kind": "native_item",
       "decimal": "2586",
       "reported_at": "2026-11-05T16:29:22.119Z",
       "unit": "count",
@@ -32,11 +33,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/37/text",
       "fragment_digest": "00afa9c424e900aa7be6186711fc0e250e7a084fdf12968a1ef640a001c481a4",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-2",
+      "source_kind": "native_item",
       "decimal": "3",
       "reported_at": "2026-11-05T12:45:40.245Z",
       "unit": "count",
@@ -49,11 +50,11 @@
       "item_hash": "3b04b1108c52cfe0905eac0ac540397b6d57384032ca0e7302286cf1525fda81",
       "pointer": "/comments/17/text",
       "fragment_digest": "fdd623553b22cbc68bc1ade4a5ef3d84d31b55b28dc8ed5c7135cbd06c4a055b",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-3",
+      "source_kind": "native_item",
       "decimal": "784",
       "reported_at": "2026-09-12T23:36:00.202Z",
       "unit": "count",
@@ -66,11 +67,11 @@
       "item_hash": "fd1d737b7a7eea44ab8b1dbeca0799b2bf5175e780f5825eb6f8932248cf64b9",
       "pointer": "/comments/0/text",
       "fragment_digest": "2aed71672db116cc8a3de56758af11dee16a8ef470ec63e898ea95e7321295cf",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-4",
+      "source_kind": "native_item",
       "decimal": "793",
       "reported_at": "2026-10-02T22:08:41.858Z",
       "unit": "count",
@@ -83,11 +84,11 @@
       "item_hash": "9c632d9f04d8ea3be92552d03e467a88444bc16208929633122e3f278c354ca9",
       "pointer": "/comments/3/text",
       "fragment_digest": "a32016c6f5c649380d6bb56a8acf5c56cecffeb1b04061e370efd9809cfc400a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-5",
+      "source_kind": "native_item",
       "decimal": "797",
       "reported_at": "2026-10-04T12:22:35.726Z",
       "unit": "count",
@@ -100,11 +101,11 @@
       "item_hash": "9c632d9f04d8ea3be92552d03e467a88444bc16208929633122e3f278c354ca9",
       "pointer": "/comments/7/text",
       "fragment_digest": "e4220b7caf80ba7d798857b501ee79a681058a29573116cf97f5889a560c719a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-6",
+      "source_kind": "native_item",
       "decimal": "1243",
       "reported_at": "2026-10-10T10:40:08.032Z",
       "unit": "count",
@@ -117,11 +118,11 @@
       "item_hash": "6a368932061fbe732fd7bf0d9b7d43439ca6b7d95b4ddc8cdd3cc9e41a12bc4e",
       "pointer": "/comments/6/text",
       "fragment_digest": "9bbc63d7a605d17439f70463a15c0f387638a1b2448f6f486dffcc4f626bc135",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-7",
+      "source_kind": "native_item",
       "decimal": "1508",
       "reported_at": "2026-10-14T07:19:50.622Z",
       "unit": "count",
@@ -134,11 +135,11 @@
       "item_hash": "6a368932061fbe732fd7bf0d9b7d43439ca6b7d95b4ddc8cdd3cc9e41a12bc4e",
       "pointer": "/comments/12/text",
       "fragment_digest": "54a28117a50287d90dc10977c7d0d40ae11c2b7389d9358fad00b1099b503334",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-8",
+      "source_kind": "native_item",
       "decimal": "1512",
       "reported_at": "2026-10-14T07:38:28.460Z",
       "unit": "count",
@@ -151,11 +152,11 @@
       "item_hash": "6a368932061fbe732fd7bf0d9b7d43439ca6b7d95b4ddc8cdd3cc9e41a12bc4e",
       "pointer": "/comments/14/text",
       "fragment_digest": "33f2113401318d9397e704bfb9af07b80d15a0cbabed814b08cf34eba4b1f4a7",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-9",
+      "source_kind": "native_item",
       "decimal": "24",
       "reported_at": "2026-10-12T10:57:14.876Z",
       "unit": "count",
@@ -168,11 +169,11 @@
       "item_hash": "47df4b143005c3de9bd3a1e126e090164d7cfcdcde548de7ed23e1d7aa676544",
       "pointer": "/comments/2/text",
       "fragment_digest": "f2efe3aee7eb16baa443d17db0f8cf7eeea27abde387f8492af5d40d07e0dada",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-10",
+      "source_kind": "native_item",
       "decimal": "1461",
       "reported_at": "2026-10-12T11:42:10.878Z",
       "unit": "count",
@@ -185,11 +186,11 @@
       "item_hash": "47df4b143005c3de9bd3a1e126e090164d7cfcdcde548de7ed23e1d7aa676544",
       "pointer": "/comments/7/text",
       "fragment_digest": "2175555af51af45c315fe62222d897d4f7d6a115996cddc89aeb6c91ea70343e",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-11",
+      "source_kind": "native_item",
       "decimal": "1038",
       "reported_at": "2026-10-07T23:30:14.542Z",
       "unit": "count",
@@ -202,11 +203,11 @@
       "item_hash": "f1ede6bc3b91e2a207e9718efbfe3aaa5fd73a34f945548c87db4491ef04636d",
       "pointer": "/comments/13/text",
       "fragment_digest": "f1c56a4bbc427f87a83ace60f574a69fc044736a0d61cabecf253a82ad5f22fc",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-12",
+      "source_kind": "native_item",
       "decimal": "46",
       "reported_at": "2026-10-12T10:52:12.063Z",
       "unit": "MiB",
@@ -219,11 +220,11 @@
       "item_hash": "681ac3aae2aa3473e1af14fc881c0b530e4a8618b80e313ee2fd61457aa81757",
       "pointer": "/comments/0/text",
       "fragment_digest": "577662c9551de5c0f370ade30b9f47bf99b9a3305271c9feeff840a600c8680d",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-13",
+      "source_kind": "native_item",
       "decimal": "50",
       "reported_at": "2026-10-12T10:52:12.063Z",
       "unit": "MiB",
@@ -236,11 +237,11 @@
       "item_hash": "681ac3aae2aa3473e1af14fc881c0b530e4a8618b80e313ee2fd61457aa81757",
       "pointer": "/comments/0/text",
       "fragment_digest": "577662c9551de5c0f370ade30b9f47bf99b9a3305271c9feeff840a600c8680d",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-14",
+      "source_kind": "native_item",
       "decimal": "46.88",
       "reported_at": "2026-10-12T08:05:31.364Z",
       "unit": "MiB",
@@ -253,11 +254,11 @@
       "item_hash": "85f76ad01ebd7b4895aef6fd3e5239eda302d986d7798084cbc4bdf7bd4c1c03",
       "pointer": "/comments/1/text",
       "fragment_digest": "2f18e784476466870d6a8dd79fd9e2f7637b99936c70f60add2142fd1f4ca0e2",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-15",
+      "source_kind": "native_item",
       "decimal": "44.13",
       "reported_at": "2026-10-12T08:05:31.364Z",
       "unit": "MiB",
@@ -270,11 +271,11 @@
       "item_hash": "85f76ad01ebd7b4895aef6fd3e5239eda302d986d7798084cbc4bdf7bd4c1c03",
       "pointer": "/comments/1/text",
       "fragment_digest": "2f18e784476466870d6a8dd79fd9e2f7637b99936c70f60add2142fd1f4ca0e2",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-16",
+      "source_kind": "native_item",
       "decimal": "33.40",
       "reported_at": "2026-10-12T08:05:31.364Z",
       "unit": "MiB",
@@ -287,11 +288,11 @@
       "item_hash": "85f76ad01ebd7b4895aef6fd3e5239eda302d986d7798084cbc4bdf7bd4c1c03",
       "pointer": "/comments/1/text",
       "fragment_digest": "2f18e784476466870d6a8dd79fd9e2f7637b99936c70f60add2142fd1f4ca0e2",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-17",
+      "source_kind": "native_item",
       "decimal": "1.11",
       "reported_at": "2026-10-12T08:05:31.364Z",
       "unit": "MiB",
@@ -304,11 +305,11 @@
       "item_hash": "85f76ad01ebd7b4895aef6fd3e5239eda302d986d7798084cbc4bdf7bd4c1c03",
       "pointer": "/comments/1/text",
       "fragment_digest": "2f18e784476466870d6a8dd79fd9e2f7637b99936c70f60add2142fd1f4ca0e2",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-18",
+      "source_kind": "native_item",
       "decimal": "1413",
       "reported_at": "2026-11-05T10:54:52.557Z",
       "unit": "s",
@@ -321,11 +322,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/29/text",
       "fragment_digest": "08b202da33adf65f218f96eff858d221d8a36882de596b579e05857ed47f7009",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-19",
+      "source_kind": "native_item",
       "decimal": "16315",
       "reported_at": "2026-11-05T16:29:22.119Z",
       "unit": "s",
@@ -338,11 +339,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/37/text",
       "fragment_digest": "00afa9c424e900aa7be6186711fc0e250e7a084fdf12968a1ef640a001c481a4",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-20",
+      "source_kind": "native_item",
       "decimal": "5",
       "reported_at": "2026-11-05T10:27:15.735Z",
       "unit": "s",
@@ -355,11 +356,11 @@
       "item_hash": "3b04b1108c52cfe0905eac0ac540397b6d57384032ca0e7302286cf1525fda81",
       "pointer": "/comments/1/text",
       "fragment_digest": "eef3360a6587d0483521ad2ca628c026e53035681d75195daeba61e981ac40ee",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-21",
+      "source_kind": "native_item",
       "decimal": "11",
       "reported_at": "2026-11-05T10:42:04.802Z",
       "unit": "s",
@@ -372,11 +373,11 @@
       "item_hash": "3b04b1108c52cfe0905eac0ac540397b6d57384032ca0e7302286cf1525fda81",
       "pointer": "/comments/4/text",
       "fragment_digest": "5baaf15cd66d8e6d9bba81a37850344920384cc5812e14b4264b1256092d0885",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-22",
+      "source_kind": "native_item",
       "decimal": "420",
       "reported_at": "2026-11-04T10:43:42.513Z",
       "unit": "count",
@@ -389,11 +390,11 @@
       "item_hash": "897eab4e9644af061c5d7e9c757a8344edcdfb498ddc8b830b5d5df9fcc68a38",
       "pointer": "/comments/0/text",
       "fragment_digest": "e412c24df2a5ba2ff8f4bbc2030c6483f26a95ab3285dd7df58398710bd28eb4",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-23",
+      "source_kind": "native_item",
       "decimal": "420",
       "reported_at": "2026-11-04T10:43:42.513Z",
       "unit": "count",
@@ -406,11 +407,11 @@
       "item_hash": "897eab4e9644af061c5d7e9c757a8344edcdfb498ddc8b830b5d5df9fcc68a38",
       "pointer": "/comments/0/text",
       "fragment_digest": "e412c24df2a5ba2ff8f4bbc2030c6483f26a95ab3285dd7df58398710bd28eb4",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-24",
+      "source_kind": "native_item",
       "decimal": "1752",
       "reported_at": "2026-10-20T20:55:22.187Z",
       "unit": "count",
@@ -423,11 +424,11 @@
       "item_hash": "d45d2e002f510f08d8398dacb8a6215ccdbeda233b1a77f0f04b39da1ca7221b",
       "pointer": "/comments/0/text",
       "fragment_digest": "0b76db3f88d8ebefb9d3859f7f90288ae113c9c6b65300dacf3308f1697f87af",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-25",
+      "source_kind": "native_item",
       "decimal": "1752",
       "reported_at": "2026-10-20T20:55:22.187Z",
       "unit": "count",
@@ -440,11 +441,11 @@
       "item_hash": "d45d2e002f510f08d8398dacb8a6215ccdbeda233b1a77f0f04b39da1ca7221b",
       "pointer": "/comments/0/text",
       "fragment_digest": "0b76db3f88d8ebefb9d3859f7f90288ae113c9c6b65300dacf3308f1697f87af",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-26",
+      "source_kind": "native_item",
       "decimal": "1523",
       "reported_at": "2026-10-14T21:33:14.532Z",
       "unit": "count",
@@ -457,11 +458,11 @@
       "item_hash": "fd1d737b7a7eea44ab8b1dbeca0799b2bf5175e780f5825eb6f8932248cf64b9",
       "pointer": "/comments/3/text",
       "fragment_digest": "5e4e56734734a2e7e30bd1d23c694343fe156ec75f01a3c668a39ee0c0ae646a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-27",
+      "source_kind": "native_item",
       "decimal": "1523",
       "reported_at": "2026-10-14T21:33:14.532Z",
       "unit": "count",
@@ -474,11 +475,11 @@
       "item_hash": "fd1d737b7a7eea44ab8b1dbeca0799b2bf5175e780f5825eb6f8932248cf64b9",
       "pointer": "/comments/3/text",
       "fragment_digest": "5e4e56734734a2e7e30bd1d23c694343fe156ec75f01a3c668a39ee0c0ae646a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-28",
+      "source_kind": "native_item",
       "decimal": "1541",
       "reported_at": "2026-10-15T21:35:33.467Z",
       "unit": "count",
@@ -491,11 +492,11 @@
       "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
       "pointer": "/comments/1/text",
       "fragment_digest": "c077d2e377bd404e378bf7a01fa8041bb016ed8687c5262fbf09ebe0395e4773",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-29",
+      "source_kind": "native_item",
       "decimal": "1541",
       "reported_at": "2026-10-15T21:35:33.467Z",
       "unit": "count",
@@ -508,11 +509,11 @@
       "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
       "pointer": "/comments/1/text",
       "fragment_digest": "c077d2e377bd404e378bf7a01fa8041bb016ed8687c5262fbf09ebe0395e4773",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-30",
+      "source_kind": "native_item",
       "decimal": "1709",
       "reported_at": "2026-10-20T00:22:35.697Z",
       "unit": "count",
@@ -525,11 +526,11 @@
       "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
       "pointer": "/comments/5/text",
       "fragment_digest": "c71ea9986229e76b073c74ca9c975f9d595897a23060268d9859c2ebe3150bea",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-31",
+      "source_kind": "native_item",
       "decimal": "1709",
       "reported_at": "2026-10-20T00:22:35.697Z",
       "unit": "count",
@@ -542,11 +543,11 @@
       "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
       "pointer": "/comments/5/text",
       "fragment_digest": "c71ea9986229e76b073c74ca9c975f9d595897a23060268d9859c2ebe3150bea",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-32",
+      "source_kind": "native_item",
       "decimal": "793",
       "reported_at": "2026-10-02T22:08:41.858Z",
       "unit": "count",
@@ -559,11 +560,11 @@
       "item_hash": "9c632d9f04d8ea3be92552d03e467a88444bc16208929633122e3f278c354ca9",
       "pointer": "/comments/3/text",
       "fragment_digest": "a32016c6f5c649380d6bb56a8acf5c56cecffeb1b04061e370efd9809cfc400a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-33",
+      "source_kind": "native_item",
       "decimal": "793",
       "reported_at": "2026-10-02T22:08:41.858Z",
       "unit": "count",
@@ -576,11 +577,11 @@
       "item_hash": "9c632d9f04d8ea3be92552d03e467a88444bc16208929633122e3f278c354ca9",
       "pointer": "/comments/3/text",
       "fragment_digest": "a32016c6f5c649380d6bb56a8acf5c56cecffeb1b04061e370efd9809cfc400a",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-34",
+      "source_kind": "native_item",
       "decimal": "100",
       "reported_at": "2026-11-04T22:24:39.646Z",
       "unit": "%",
@@ -593,11 +594,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/7/text",
       "fragment_digest": "375fef2ea5f41b55dee05aa8e359585e1c2b7e56f4ba7ecc4323b5ff191ce7e8",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-35",
+      "source_kind": "native_item",
       "decimal": "100",
       "reported_at": "2026-11-05T03:09:27.779Z",
       "unit": "%",
@@ -610,11 +611,11 @@
       "item_hash": "2617dc5befacf33fc6d8102460ab7d9b57f0d3b297580c78c3b7b93f89194960",
       "pointer": "/comments/16/text",
       "fragment_digest": "d38e852b1a722c9231273d04dd2f9f8d0de3717afc875be9b0566a050dda5d2f",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-36",
+      "source_kind": "native_item",
       "decimal": "0",
       "reported_at": "2026-11-05T11:09:21.499Z",
       "unit": "%",
@@ -627,11 +628,11 @@
       "item_hash": "3b04b1108c52cfe0905eac0ac540397b6d57384032ca0e7302286cf1525fda81",
       "pointer": "/comments/9/text",
       "fragment_digest": "b5d8ac78dd52c9ac33d969e0b44fb1c7e5089ef66dad9edacf9ea6c4b3c41b2e",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-37",
+      "source_kind": "native_item",
       "decimal": "100",
       "reported_at": "2026-10-20T00:22:35.697Z",
       "unit": "%",
@@ -644,11 +645,11 @@
       "item_hash": "ebd94d1e9bb3883ec0c2b1a6fc8878f7e508e56134db836d02b0c5ca0f1c3a66",
       "pointer": "/comments/5/text",
       "fragment_digest": "c71ea9986229e76b073c74ca9c975f9d595897a23060268d9859c2ebe3150bea",
-      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-vcs/tree/f2ab3c3412d87fbf766bc629b685a986b5400f61"
     },
     {
       "key": "fleet-38",
+      "source_kind": "native_item",
       "decimal": "1094",
       "reported_at": "2026-10-05T05:38:50.425Z",
       "unit": "token",
@@ -661,11 +662,11 @@
       "item_hash": "28ac440aca14cb3f44165b2a5af37fa33378150b8794545023d23d0dff6986cf",
       "pointer": "/comments/1/text",
       "fragment_digest": "d38f07d12a6136e5cbae90a90cfda5704b2545c329fbddd9d7913a6371d460b6",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "fleet-39",
+      "source_kind": "native_item",
       "decimal": "1094",
       "reported_at": "2026-10-13T13:11:48.302Z",
       "unit": "token",
@@ -678,11 +679,11 @@
       "item_hash": "a19d96a3ab2d774a20f577484355710ad159e38734a262080ea51f431cfdb1d4",
       "pointer": "/comments/6/text",
       "fragment_digest": "aa58761dd4ab68d8bf8ca77919e42f8f203d9060fea199b44b20fe42e45ade23",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "fleet-40",
+      "source_kind": "native_item",
       "decimal": "88",
       "reported_at": "2026-10-07T20:13:46.178Z",
       "unit": "token",
@@ -695,11 +696,11 @@
       "item_hash": "1512f79fc45961d6ec8669fe48f84ddb4c55564cf3ee9d4372181211285f378f",
       "pointer": "/comments/1/text",
       "fragment_digest": "a822d0384f2214d49bd42b71184146519c1b1b7fc566afb401d4e6ce934b47e6",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "fleet-41",
+      "source_kind": "native_item",
       "decimal": "0",
       "reported_at": "2026-10-18T18:44:53.988Z",
       "unit": "token",
@@ -712,11 +713,11 @@
       "item_hash": "0f3bb29d2ce9097a548412074c15806d955c6c559e0f2f91caaea40966c25f7d",
       "pointer": "/comments/6/text",
       "fragment_digest": "5ad8353ca3d51db39a626282d19a1c3cc8df191bc4df0b60c82535815f29f7a5",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "fleet-42",
+      "source_kind": "native_item",
       "decimal": "0",
       "reported_at": "2026-10-20T07:29:10.644Z",
       "unit": "token",
@@ -729,11 +730,11 @@
       "item_hash": "0f3bb29d2ce9097a548412074c15806d955c6c559e0f2f91caaea40966c25f7d",
       "pointer": "/comments/19/text",
       "fragment_digest": "610aaa3fd44ffa2d1d29e6e2ae654e39c291df547d2ea65c8eaebf63fb59c5ba",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "fleet-43",
+      "source_kind": "native_item",
       "decimal": "1152",
       "reported_at": "2026-10-15T22:16:06.750Z",
       "unit": "token",
@@ -746,11 +747,11 @@
       "item_hash": "eba6e40532cfe2253bb7b04020b967f02f42118add867b7e36b203a72b22178c",
       "pointer": "/comments/1/text",
       "fragment_digest": "f99bb0d17d04f7bd89dd1fad933f33a45b43effc133a79208aba1b55cfba076c",
-      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8",
-      "source_kind": "native_item"
+      "source": "https://github.com/unbraind/pm-rl/tree/962ac059ab8f6f8382dc93b1bc814cdc84b46fa8"
     },
     {
       "key": "earth-equatorial",
+      "source_kind": "external_document",
       "decimal": "6378.137",
       "reported_at": "2026-11-06T05:05:17.741Z",
       "unit": "km",
@@ -763,11 +764,11 @@
       "item_hash": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
       "pointer": "earth-equatorial",
       "fragment_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
-      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
-      "source_kind": "external_document"
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
     },
     {
       "key": "earth-polar",
+      "source_kind": "external_document",
       "decimal": "6356.752",
       "reported_at": "2026-11-06T05:05:17.741Z",
       "unit": "km",
@@ -780,11 +781,11 @@
       "item_hash": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
       "pointer": "earth-polar",
       "fragment_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
-      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
-      "source_kind": "external_document"
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
     },
     {
       "key": "earth-rotation",
+      "source_kind": "external_document",
       "decimal": "23.9345",
       "reported_at": "2026-11-06T05:05:17.741Z",
       "unit": "h",
@@ -797,8 +798,7 @@
       "item_hash": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
       "pointer": "earth-rotation",
       "fragment_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef",
-      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
-      "source_kind": "external_document"
+      "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html"
     }
   ],
   "sources": [
@@ -922,9 +922,9 @@
       "bytes": 29238
     }
   ],
-  "observer_policy": {
-    "source": "https://github.com/unbraind/pm-observer/blob/4728eca6adbfc85e562c4e71a2aa635ecbd999df/README.md",
-    "sha256": "c383c977373e2b0492055564a9f74541b06c92e9c06f5dadd21022ed14c22e47"
+  "policy_examples": {
+    "source": "https://github.com/unbraind/pm-unit/blob/5f0aeee30896065fd2a810497af3efcdec96e7b1/docs/policy-examples.md",
+    "sha256": "722ec7cf86fea04fe9f18d6baca415c2d33a528567498ccd70ebe19e78c294b3"
   },
   "raw_item_bytes": 290636,
   "physical_source_sha256": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"

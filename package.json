@@ -21,6 +21,7 @@
     "CHANGELOG.md",
     "ARCHITECTURE.md",
     "docs/real-data.md",
+    "docs/policy-examples.md",
     "docs/real-data-receipt.json"
   ],
   "scripts": {

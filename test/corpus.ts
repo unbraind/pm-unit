@@ -46,12 +46,27 @@ export interface Claim {
 }
 /** Independent decimal-to-rational oracle, without package arithmetic. */
 export function decimalFraction(text: string) { const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) }; }
+// Only these public source revisions may be archived; native reads use their scratch copies.
+const publicTrackers = [
+  { repo: 'pm-vcs', revision: 'f2ab3c3412d87fbf766bc629b685a986b5400f61' },
+  { repo: 'pm-rl', revision: '962ac059ab8f6f8382dc93b1bc814cdc84b46fa8' },
+] as const;
+const physicalSource = {
+  url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html',
+  sha256: '1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef',
+  reported_at: '2026-11-06T05:05:17.741Z',
+};
+/** Load this repository's public policy text and pin its exact bytes. */
+async function readPolicyExamples() {
+  const text = await readFile('docs/policy-examples.md', 'utf8');
+  return { text, anchor: { source: 'https://github.com/unbraind/pm-unit/blob/5f0aeee30896065fd2a810497af3efcdec96e7b1/docs/policy-examples.md', sha256: createHash('sha256').update(text).digest('hex') } };
+}
 /** Refresh curated numeric receipts from Git-tracked public fleet data into disposable non-Git copies. */
 export async function harvest() {
   const scratch = await mkdtemp(join(tmpdir(), 'unit-public-')); const claims: Claim[] = []; const sources: { repo: string; revision: string; item_id: string; item_hash: string; bytes: number }[] = []; const selected = new Set<string>();
   try {
-    for (const repo of ['pm-vcs', 'pm-rl']) {
-      const original = resolve('..', repo); const revision = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: original, encoding: 'utf8', env: npmEnvironment(process.env) }).trim();
+    for (const { repo, revision } of publicTrackers) {
+      const original = resolve('..', repo);
       const copy = join(scratch, repo); await mkdir(copy); const archive = execFileSync('git', ['archive', revision, '.agents/pm'], { cwd: original, maxBuffer: 32 * 1024 * 1024, env: npmEnvironment(process.env) });
       execFileSync('tar', ['-x', '-C', copy], { input: archive });
       const client = new PmClient({ cwd: copy, pmRoot: join(copy, '.agents/pm'), noExtensions: true }); const corpus = await client.listAllComplete({ includeBody: true }); certifyCompleteListResult(corpus);
@@ -86,28 +101,28 @@ export async function harvest() {
       }
     }
     assert.ok(claims.length >= 30, `Public measured corpus too small: ${claims.length}`);
-    const url = 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html'; const response = await fetch(url, { signal: AbortSignal.timeout(20000) }); assert.ok(response.ok); const html = await response.text(); const hash = createHash('sha256').update(html).digest('hex'); const retrievedAt = new Date().toISOString();
+    const response = await fetch(physicalSource.url, { signal: AbortSignal.timeout(20000) }); assert.ok(response.ok); const html = await response.text(); const hash = createHash('sha256').update(html).digest('hex');
+    assert.equal(hash, physicalSource.sha256, 'Physical source changed; review the public acquisition pin before refreshing');
     for (const [key, decimal, unit, to, scale, divisor, kind] of [
       ['earth-equatorial', '6378.137', 'km', 'm', '1000', '1', 'equatorial_radius'], ['earth-polar', '6356.752', 'km', 'm', '1000', '1', 'polar_radius'], ['earth-rotation', '23.9345', 'h', 's', '3600', '1', 'sidereal_rotation'],
-    ] as const) { assert.ok(html.includes(decimal)); claims.push({ key, source_kind: 'external_document', decimal, reported_at: retrievedAt, unit, to, scale, divisor, kind, population: digest('NASA Earth fact sheet'), item_id: 'nasa-earth-facts', item_hash: hash, pointer: key, fragment_digest: hash, source: url }); }
-    const observer = resolve('..', 'pm-observer'); const observerRevision = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: observer, encoding: 'utf8', env: npmEnvironment(process.env) }).trim();
-    const policy = execFileSync('git', ['show', observerRevision + ':README.md'], { cwd: observer, env: npmEnvironment(process.env) });
-    const observer_policy = { source: `https://github.com/unbraind/pm-observer/blob/${observerRevision}/README.md`, sha256: createHash('sha256').update(policy).digest('hex') };
-    const receipt = { schema_version: 1, claims, sources, observer_policy, raw_item_bytes: sources.reduce((sum, row) => sum + row.bytes, 0), physical_source_sha256: hash };
+    ] as const) { assert.ok(html.includes(decimal)); claims.push({ key, source_kind: 'external_document', decimal, reported_at: physicalSource.reported_at, unit, to, scale, divisor, kind, population: digest('NASA Earth fact sheet'), item_id: 'nasa-earth-facts', item_hash: hash, pointer: key, fragment_digest: hash, source: physicalSource.url }); }
+    const policy = await readPolicyExamples();
+    const receipt = { schema_version: 1, claims, sources, policy_examples: policy.anchor, raw_item_bytes: sources.reduce((sum, row) => sum + row.bytes, 0), physical_source_sha256: hash };
     await writeFile('test/fixtures/measurements.json', JSON.stringify(receipt, null, 2) + '\n'); return receipt;
   } finally { await rm(scratch, { recursive: true, force: true }); }
 }
 /** Evaluate public receipt claims with independent expected rationals and predeclared mismatch controls. */
 export async function evaluateCorpus() {
   const fixtureText = await readFile('test/fixtures/measurements.json', 'utf8');
-  const input = JSON.parse(fixtureText) as { claims: Claim[]; raw_item_bytes: number; sources: unknown[]; observer_policy: { source: string; sha256: string } };
+  const input = JSON.parse(fixtureText) as { claims: Claim[]; raw_item_bytes: number; sources: unknown[]; policy_examples: { source: string; sha256: string } };
+  const policy = await readPolicyExamples(); assert.deepEqual(input.policy_examples, policy.anchor, 'Policy anchor changed; refresh the public fixture before evaluation');
   const root = await mkdtemp(join(tmpdir(), 'unit-real-data-')); const started = performance.now(); let calls = 0;
   try {
     const pmRoot = join(root, '.agents/pm'); const native = new PmClient({ cwd: root, pmRoot, author: 'real-data', noExtensions: true }); await native.init('proof', { defaults: true, agentGuidance: 'skip', mergeFence: false });
     const external_source_anchors: { item: unknown; item_hash: string; source: string; content_digest: string }[] = [];
     /** Anchor explicitly selected public external facts in native items before referencing them. */
     async function anchor(key: string, source: string, content_digest: string, evidence: string) {
-      const body = `Public source: ${source}\nContent SHA-256: ${content_digest}\n${evidence}`;
+      const body = `Public source: ${source}\nContent SHA-256: ${content_digest}\n${evidence}`.trimEnd();
       await native.create({ id: key, title: 'Explicit public source anchor', type: 'Task', body }); calls++;
       const got = await native.get(key, { outputInclude: 'full', outputBudget: 'unbounded', outputLimit: 'unbounded' }); calls++; assert.ok('item' in got && 'item_hash' in got); assert.equal(got.item.body, body); guardSubmitted(got.item);
       external_source_anchors.push({ item: got.item, item_hash: got.item_hash as string, source, content_digest });
@@ -133,10 +148,10 @@ export async function evaluateCorpus() {
     const ratio = await convertQuantity(host, { id, quantity: 'ratio-proof', to: '%' }); calls++; assert.deepEqual(ratio.quantity.value, { numerator: '100', denominator: '1' });
     const controlsId = 'proof-controls'; await createQuantitySet(host, { id: controlsId, op: 'controls-birth', title: 'Public policy mismatch controls', quantity_set_key: 'controls' }); calls++;
     const baseline = (await readQuantitySet(host, id)).state.observations[0]; calls++;
-    const policyRef = await anchor('proof-observer-policy', input.observer_policy.source, input.observer_policy.sha256, 'Illustrative policy example: two parallel ten-second tools have ten seconds elapsed and twenty seconds summed duration. Cached input is a subset of total input; no cached-subset count is published by this selected policy source.');
+    const policyRef = await anchor('proof-policy-examples', input.policy_examples.source, input.policy_examples.sha256, policy.text);
     const controls: Quantity[] = [
-      { ...baseline, quantity_id: 'parallel-elapsed', value: { numerator: '10', denominator: '1' }, unit_code: 's', semantic_kind: 'elapsed_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative public observer policy example; not a new measured receipt.' },
-      { ...baseline, quantity_id: 'parallel-summed', value: { numerator: '20', denominator: '1' }, unit_code: 's', semantic_kind: 'summed_tool_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative public observer policy example; not a new measured receipt.' },
+      { ...baseline, quantity_id: 'parallel-elapsed', value: { numerator: '10', denominator: '1' }, unit_code: 's', semantic_kind: 'elapsed_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative repository policy example; not a new measured receipt.' },
+      { ...baseline, quantity_id: 'parallel-summed', value: { numerator: '20', denominator: '1' }, unit_code: 's', semantic_kind: 'summed_tool_duration', population_key: 'parallel-example', population_digest: digest('parallel-example'), provenance: [policyRef], acquisition: 'estimated', notes: 'Illustrative repository policy example; not a new measured receipt.' },
       { ...baseline, quantity_id: 'tokens-total', unit_code: 'token', semantic_kind: 'input_total', population_key: 'token-policy', population_digest: digest('token-policy'), provenance: [policyRef], acquisition: 'estimated', notes: 'Mismatch control; total is illustrative.' },
       { ...baseline, quantity_id: 'tokens-cached', unit_code: 'token', semantic_kind: 'cached_subset', population_key: 'token-policy', population_digest: digest('token-policy'), provenance: [policyRef], value: null, unknown_reason: 'No cached-subset count is published in this selected source.', notes: '' },
     ];
