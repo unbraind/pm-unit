@@ -47,6 +47,17 @@ const changes = [
   { crossWindow: true, name: 'native across-window flag registration removed', file: 'commands', pattern: /if \(name === 'compare'\)\s+flags.push\([^\n]+\);/, replacement: '', test: 'install.acceptance', filter: 'one captured artifact' },
   { crossWindow: true, name: 'arithmetic window mismatch mislabeled as population mismatch', file: 'kernel', pattern: /'window_mismatch', 'Multiplicative windows differ'/, replacement: "'population_mismatch', 'Multiplicative windows differ'", test: 'cross-window', filter: 'window-only mismatch' },
   { crossWindow: true, name: 'window refusal loses the context conflict exit code', file: 'errors', pattern: /'population_mismatch', 'window_mismatch',/, replacement: "'population_mismatch',", test: 'cross-window', filter: 'CLI and SDK share' },
+  { partition: true, name: 'reviewed addition support reverted', file: 'kernel', pattern: /const declaration = expressionDeclaration\(state, ast\);/, replacement: 'const declaration = undefined;', test: 'partitions', filter: 'reviewed partition sums' },
+  { partition: true, name: 'partition operand fingerprint validation removed', file: 'kernel', pattern: /digest\(value\) === pin.digest/, replacement: 'true', test: 'partitions', filter: 'refusals validate exact pins' },
+  { partition: true, name: 'partition meaning boundary removed', file: 'kernel', pattern: /left.semantic_kind === right.semantic_kind/, replacement: 'true', test: 'partitions', filter: 'review cannot override' },
+  { partition: true, name: 'partition evidence omitted from derived provenance', file: 'kernel', pattern: /\.\.\.\(declaration\?\.evidence \?\? \[\]\)/, replacement: '...[]', test: 'partitions', filter: 'conservatively propagates' },
+  { partition: true, name: 'immutable partition content fingerprint removed', file: 'kernel', pattern: /operation.result.digest === digest\(target\)/, replacement: 'true', test: 'partitions', filter: 'read-back rejects changed' },
+  { partition: true, name: 'partition CLI dispatch removed', file: 'commands', pattern: /command === 'declare'\)\s+data = await declarePartition/, replacement: "command === 'disabled') data = await declarePartition", test: 'partitions', filter: 'CLI shares SDK' },
+  { partition: true, name: 'partition CAS replaced with unconditional write', file: 'api', pattern: /const checked = await host\.client\.withExpectedItemRevisions\(\[\{ id: snapshot.id, itemHash: snapshot.revision \}\], \(\) => host\.client\.update\(snapshot.id, (\{[^\n]+\})\)\);/, replacement: 'const checked = { result: await host.client.update(snapshot.id, $1), checked: [snapshot.id], unchecked: [] };', test: 'partition-process', filter: 'process race' },
+  { partition: true, name: 'partition durable replay removed', file: 'api', pattern: /const found = state\.operations\.find\(row => row\.operation_id === op\);/, replacement: 'const found = undefined;', test: 'partition-process', filter: 'process killed' },
+  { partition: true, name: 'public partition union context lost', file: 'kernel', pattern: /population_digest: declaration.population_digest/, replacement: 'population_digest: left.population_digest', test: 'partition-public', filter: 'public tracker' },
+  { partition: true, name: 'partition explanation drops review witnesses', file: 'api', pattern: /declarations.length > 0 \? \{ declarations \} : \{\}/, replacement: 'false ? { declarations } : {}', test: 'partitions', filter: 'reviewed partition sums' },
+
 ];
 // Revert only the changed conversion function, preserving every other safeguard.
 for (const filter of ['boundary identity', 'boundary compatible', 'boundary SDK']) changes.push({
@@ -54,7 +65,7 @@ for (const filter of ['boundary identity', 'boundary compatible', 'boundary SDK'
   replacement: "export function convert(value, from, to) { parse(UnitCodeSchema, from); parse(UnitCodeSchema, to); insist(units[from].dimension === units[to].dimension, 'dimension_mismatch', 'Unit dimensions differ', 'Choose a unit with the same dimension'); return arithmetic(arithmetic(value, units[from].factor, 'multiply'), units[to].factor, 'divide'); }",
   test: 'conversion-boundary', filter,
 });
-const selected = process.argv.includes('--conversion-only') ? changes.filter(change => change.test === 'conversion-boundary') : process.argv.includes('--cross-window-only') ? changes.filter(change => 'crossWindow' in change && change.crossWindow) : process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
+const selected = process.argv.includes('--partitions-only') ? changes.filter(change => 'partition' in change && change.partition) : process.argv.includes('--conversion-only') ? changes.filter(change => change.test === 'conversion-boundary') : process.argv.includes('--cross-window-only') ? changes.filter(change => 'crossWindow' in change && change.crossWindow) : process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
 for (const change of selected) {
   const root = mkdtempSync(join(tmpdir(), 'unit-revert-'));
   try {
@@ -64,5 +75,5 @@ for (const change of selected) {
     assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`); assert.match(result.stdout + result.stderr, /AssertionError|Missing expected rejection|Missing expected exception|UnitRefusal:/, `Failure must be behavioral: ${change.name}`); if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch)); console.log(`EXPECTED FAIL: ${change.name}`);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
-const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/conversion-boundary.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
+const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/partitions.test.ts', 'test/partition-process.test.ts', 'test/partition-public.test.ts', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/conversion-boundary.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
 assert.equal(restored.status, 0, restored.stdout + restored.stderr); console.log(`revert-gate: ${selected.length} behavioral failures; unchanged implementation passes`);

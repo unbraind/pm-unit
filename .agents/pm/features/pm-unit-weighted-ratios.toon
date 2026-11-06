@@ -1,0 +1,13 @@
+id: pm-unit-weighted-ratios
+title: Evidence-backed weighted ratio aggregation
+description: ""
+type: Feature
+status: open
+priority: 2
+tags[1]: later
+created_at: "2026-11-06T20:20:24.159Z"
+updated_at: "2026-11-06T20:20:24.159Z"
+author: codex-astra
+acceptance_criteria: Aggregate ratios through explicit numerator denominator and weight witnesses without averaging percentages implicitly; Require compatible reviewed populations and windows with exact uncertainty unknown and zero-denominator behavior; Pin complete immutable operand and declaration witnesses in durable native state and verify no-git concurrency crash replay and behavioral reverts
+parent: pm-unit-release
+body: ""

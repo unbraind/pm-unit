@@ -1,0 +1,49 @@
+{
+  "repository": "unbraind/pm-unit",
+  "revision": "0578835e5d5b46aac334bb8368905deb04530b61",
+  "url": "https://github.com/unbraind/pm-unit/tree/0578835e5d5b46aac334bb8368905deb04530b61/.agents/pm",
+  "retrieved_at": "2026-11-06T20:39:07.414Z",
+  "rows": [
+    {
+      "id": "pm-unit-2h1z",
+      "type": "Feature",
+      "item_hash": "f23cbac7675169691892c96a91d0c479c9333bd18c83a8e66b93710a964221ea"
+    },
+    {
+      "id": "pm-unit-concurrency",
+      "type": "Feature",
+      "item_hash": "2a4b1f320a96444e6bcb3523779cfd92af91434cf212366fcb2ffb71a3ba76db"
+    },
+    {
+      "id": "pm-unit-declarations",
+      "type": "Feature",
+      "item_hash": "65070c80b6b49d3f0050ac46f400a879fe7c2a98107212b06b7faae8d5334b6e"
+    },
+    {
+      "id": "pm-unit-ledger",
+      "type": "Feature",
+      "item_hash": "b146fcf1ebbff2da4b4e94cf1e6a5dcfd174eeea5ee0efbab9a60f273f0d7fd1"
+    },
+    {
+      "id": "pm-unit-native-cursor",
+      "type": "Feature",
+      "item_hash": "103c957e22422d83f8b2b347ca7c3fac61a28e9680fdc26fa026171b1992e50f"
+    },
+    {
+      "id": "pm-unit-providers",
+      "type": "Feature",
+      "item_hash": "a7b37297585c2af01755ab11367b5e74bddf2bfd533b76faa72659d0c213b982"
+    },
+    {
+      "id": "pm-unit-quality",
+      "type": "Feature",
+      "item_hash": "6a7bff929fd63a348cdfcaddab51b6f1e3de4ddb84174a631950a22898174e83"
+    },
+    {
+      "id": "pm-unit-release",
+      "type": "Epic",
+      "item_hash": "0135659ad45fde1666e77b45591fff2f461dae2b791f38ca1ce20a514a376e43"
+    }
+  ],
+  "sha256": "f8ad9daeaf1b4b3f1f9068ce2e0b9244e297320796f2ff45a16f2e598bf99dbc"
+}

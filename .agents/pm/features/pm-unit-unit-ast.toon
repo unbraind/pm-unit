@@ -1,0 +1,13 @@
+id: pm-unit-unit-ast
+title: Bounded product division and integer exponent unit expressions
+description: ""
+type: Feature
+status: open
+priority: 2
+tags[1]: later
+created_at: "2026-11-06T20:20:22.535Z"
+updated_at: "2026-11-06T20:20:22.535Z"
+author: codex-astra
+acceptance_criteria: Typed bounded unit AST supports products division and bounded integer exponents with exact rational scaling and canonical dimension vectors; Existing finite unit codes retain their serialization and meaning with explicit resource and unsupported affine-unit refusals; Real no-git SDK trackers cover durable derived expressions replay and corruption with independent exact oracles and revert proofs
+parent: pm-unit-release
+body: ""
