@@ -20,7 +20,9 @@
     "LICENSE",
     "CHANGELOG.md",
     "ARCHITECTURE.md",
-    "docs/real-data.md"
+    "docs/real-data.md",
+    "docs/policy-examples.md",
+    "docs/real-data-receipt.json"
   ],
   "scripts": {
     "build": "tsc",
@@ -46,7 +48,8 @@
     "identity:check": "node scripts/identity-gate.ts",
     "test:real-data": "npm run build && node test/real-data.acceptance.ts",
     "test:revert": "npm run build && node test/revert.acceptance.ts",
-    "tracker:health": "node scripts/tracker-health.ts"
+    "tracker:health": "node scripts/tracker-health.ts",
+    "test:core": "npm run build && node --test --test-concurrency=2 test/core.test.ts"
   },
   "peerDependencies": {
     "@unbrained/pm-cli": ">=2026.11.5"

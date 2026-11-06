@@ -1,0 +1,16 @@
+id: pm-unit-native-cursor
+title: "SDK gap: native extension producer continuation"
+description: ""
+type: Feature
+status: open
+priority: 2
+tags[2]: release-blocker,sdk-gap
+created_at: "2026-11-06T04:52:37.677Z"
+updated_at: "2026-11-06T05:11:02.076Z"
+author: codex-agent
+acceptance_criteria: Host accepts package owner-revision cursors or exposes a producer continuation callback; packed native output-cursor parity passes without global flag shadowing
+parent: pm-unit-release
+comments[2]{created_at,author,text}:
+  "2026-11-06T04:52:39.470Z",codex-agent,"Packed no-git SDK 2026.11.5 reproduction: native output-cursor rejects the package owner-revision cursor before handler dispatch with read_output_cursor_invalid, while identical SDK and extension-harness continuation succeeds. Public ExtensionCommandReadOutput only exposes row_keys; native encodeReadOutputContinuationCursor requires a host collection fingerprint and applyReadOutputContinuation slices that collection after the handler. No producer-owned continuation callback or preflight bypass is public. Searched open upstream extension output cursor issues and found no match. Upstream source is read only and no issue was filed. Native CLI cursor parity remains an explicit first-release blocker."
+  "2026-11-06T05:11:02.071Z",codex-agent,A distinct package --cursor fallback now supports CLI continuation without shadowing the native global. Native post-processing can also compact a producer refusal after dispatch. The final scoped renderer refuses native string/row/result compaction and final envelopes above 32 KiB. A distinct package --budget preserves measured minimum-budget refusals. Both native integration gaps remain explicit; the fallback does not establish native producer parity.
+body: ""

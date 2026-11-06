@@ -1,0 +1,13 @@
+id: pm-unit-declarations
+title: "Later: reviewed declarations and general unit algebra"
+description: ""
+type: Feature
+status: open
+priority: 2
+tags[1]: later
+created_at: "2026-11-06T04:47:04.681Z"
+updated_at: "2026-11-06T04:47:04.681Z"
+author: codex-agent
+acceptance_criteria: Versioned evidence-backed compatibility and disjoint partition declarations; product division and bounded integer exponent unit AST; weighted ratio aggregation; immutable declaration pins
+parent: pm-unit-release
+body: ""
