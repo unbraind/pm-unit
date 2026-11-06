@@ -36,10 +36,11 @@ export function order(left: Rational, right: Rational): -1 | 0 | 1 {
 }
 /** Finite exact dictionary: dimension and rational scale to the base unit. */
 export const units: Record<UnitCode, { dimension: string; factor: Rational }> = {
-  s: { dimension: 'time', factor: { numerator: '1', denominator: '1' } }, min: { dimension: 'time', factor: { numerator: '60', denominator: '1' } }, h: { dimension: 'time', factor: { numerator: '3600', denominator: '1' } },
+  ms: { dimension: 'time', factor: { numerator: '1', denominator: '1000' } }, s: { dimension: 'time', factor: { numerator: '1', denominator: '1' } }, min: { dimension: 'time', factor: { numerator: '60', denominator: '1' } }, h: { dimension: 'time', factor: { numerator: '3600', denominator: '1' } },
   m: { dimension: 'length', factor: { numerator: '1', denominator: '1' } }, cm: { dimension: 'length', factor: { numerator: '1', denominator: '100' } }, km: { dimension: 'length', factor: { numerator: '1000', denominator: '1' } },
   g: { dimension: 'mass', factor: { numerator: '1', denominator: '1' } }, kg: { dimension: 'mass', factor: { numerator: '1000', denominator: '1' } },
-  B: { dimension: 'data', factor: { numerator: '1', denominator: '1' } }, KiB: { dimension: 'data', factor: { numerator: '1024', denominator: '1' } }, MiB: { dimension: 'data', factor: { numerator: '1048576', denominator: '1' } },
+  B: { dimension: 'data', factor: { numerator: '1', denominator: '1' } }, KiB: { dimension: 'data', factor: { numerator: '1024', denominator: '1' } }, MiB: { dimension: 'data', factor: { numerator: '1048576', denominator: '1' } }, GiB: { dimension: 'data', factor: { numerator: '1073741824', denominator: '1' } },
+  kB: { dimension: 'data', factor: { numerator: '1000', denominator: '1' } }, MB: { dimension: 'data', factor: { numerator: '1000000', denominator: '1' } }, GB: { dimension: 'data', factor: { numerator: '1000000000', denominator: '1' } },
   count: { dimension: 'count', factor: { numerator: '1', denominator: '1' } }, token: { dimension: 'token', factor: { numerator: '1', denominator: '1' } },
   ratio: { dimension: 'ratio', factor: { numerator: '1', denominator: '1' } }, '%': { dimension: 'ratio', factor: { numerator: '1', denominator: '100' } },
 };

@@ -1,0 +1,12 @@
+id: pm-unit-2h1z
+title: Compare one population across time windows with an explicit window reason
+description: "Manual test, 2026-11-06. Two daily counts of the same population (same subject_ref, population_key and population_digest; windows 11-04 and 11-05) are refused as population_mismatch. Agents routinely need day-over-day or release-over-release comparisons. Proposal: report window_mismatch as its own reason when only time_window differs, and add an explicit cross-window comparison (for example --across-windows) that orders the values. Its witness names both windows, and it stays refused for different populations or semantics."
+type: Feature
+status: open
+priority: 2
+tags[1]: agents;compare;manual-test
+created_at: "2026-11-06T07:22:31.895Z"
+updated_at: "2026-11-06T07:22:31.895Z"
+author: claude-orchestrator
+acceptance_criteria: "A time_window-only difference reports window_mismatch, not population_mismatch; an explicit cross-window comparison orders same-population values and names both windows in its witness; a different population, semantic kind or dimension is still refused; every case has tests through real SDK trackers"
+body: ""

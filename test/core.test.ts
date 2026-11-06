@@ -101,8 +101,11 @@ test('rational properties and all exact conversions use an independent integer o
     const q = rational({ numerator: String(i * 2), denominator: String(denominator * 2) }); assert.equal(BigInt(q.numerator) * BigInt(denominator), BigInt(i) * BigInt(q.denominator));
     assert.deepEqual(arithmetic(q, { numerator: '1', denominator: '1' }, 'multiply'), q);
     assert.deepEqual(arithmetic(arithmetic(q, { numerator: '17', denominator: '3' }, 'add'), { numerator: '17', denominator: '3' }, 'subtract'), q);
-    for (const [from, to] of [['s', 'h'], ['h', 'min'], ['m', 'cm'], ['km', 'm'], ['g', 'kg'], ['B', 'KiB'], ['MiB', 'B'], ['ratio', '%'], ['count', 'count'], ['token', 'token']] as const) assert.deepEqual(convert(convert(q, from, to), to, from), q);
+    for (const [from, to] of [['ms', 's'], ['ms', 'h'], ['s', 'h'], ['h', 'min'], ['kB', 'KiB'], ['MB', 'MiB'], ['GB', 'GiB'], ['GiB', 'B'], ['m', 'cm'], ['km', 'm'], ['g', 'kg'], ['B', 'KiB'], ['MiB', 'B'], ['ratio', '%'], ['count', 'count'], ['token', 'token']] as const) assert.deepEqual(convert(convert(q, from, to), to, from), q);
   }
+  assert.deepEqual(convert({ numerator: '4560', denominator: '1' }, 'ms', 's'), { numerator: '114', denominator: '25' });
+  assert.deepEqual(convert({ numerator: '1', denominator: '1' }, 'GiB', 'MB'), { numerator: '16777216', denominator: '15625' });
+  assert.deepEqual(convert({ numerator: '1500', denominator: '1' }, 'kB', 'B'), { numerator: '1500000', denominator: '1' });
   assert.equal(order({ numerator: '-1', denominator: '1' }, { numerator: '0', denominator: '1' }), -1); assert.equal(order({ numerator: '1', denominator: '1' }, { numerator: '0', denominator: '1' }), 1);
   assert.deepEqual(arithmetic({ numerator: '1', denominator: '3' }, { numerator: '-2', denominator: '3' }, 'divide'), { numerator: '-1', denominator: '2' });
   assert.throws(() => arithmetic({ numerator: '1', denominator: '1' }, { numerator: '0', denominator: '1' }, 'divide'), hasCode('divide_by_zero'));

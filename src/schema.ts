@@ -9,7 +9,7 @@ export const DigestSchema = z.string().regex(/^[a-f0-9]{64}$/);
 /** Exact bounded rational transport. Normalization belongs to rational(). */
 export const RationalSchema = z.strictObject({ numerator: z.string().regex(/^-?\d{1,80}$/), denominator: z.string().regex(/^\d{1,80}$/).refine(value => BigInt(value) > 0n) });
 /** Supported finite first-release units; no guesses, affine units or currencies. */
-export const UnitCodeSchema = z.enum(['s', 'min', 'h', 'm', 'cm', 'km', 'g', 'kg', 'B', 'KiB', 'MiB', 'count', 'token', 'ratio', '%']);
+export const UnitCodeSchema = z.enum(['ms', 's', 'min', 'h', 'm', 'cm', 'km', 'g', 'kg', 'B', 'kB', 'MB', 'GB', 'KiB', 'MiB', 'GiB', 'count', 'token', 'ratio', '%']);
 /** A source fragment pins a native revision, independently of current source truth. */
 export const ProvenanceSchema = z.strictObject({ item_id: KeySchema, item_hash: DigestSchema, field_pointer: z.string().min(1).max(256), citation_id: KeySchema.optional() });
 /** Inclusive conservative uncertainty bounds in the observation's unit. */

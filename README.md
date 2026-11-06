@@ -96,7 +96,7 @@ All runtime commands and SDK functions work in a plain tracker without Git on PA
 
 ## Safety and first-release limits
 
-Supported units are `s`, `min`, `h`, `m`, `cm`, `km`, `g`, `kg`, `B`, `KiB`, `MiB`, `count`, `token`, `ratio` and `%`. Fractions have at most 80 digits per component and use exact rational factors. No floating point value decides ordering.
+Supported units are `ms`, `s`, `min`, `h`, `m`, `cm`, `km`, `g`, `kg`, `B`, `kB`, `MB`, `GB`, `KiB`, `MiB`, `GiB`, `count`, `token`, `ratio` and `%`. Decimal (`kB`, `MB`, `GB`) and binary (`KiB`, `MiB`, `GiB`) data units are distinct and convert exactly. Fractions have at most 80 digits per component and use exact rational factors. No floating point value decides ordering.
 
 The first release supports typed binary expressions for subtraction, dimensionless scaling and same-dimension division. Addition refuses without a witnessed disjoint partition; reviewed declarations are deferred. It also refuses compound dimensions and population joins. Reviewed domain declarations, general product/exponent unit parsing and weighted ratio aggregation are deferred Features. Same dimension alone never authorizes comparison: semantic kind, subject, population key and digest, and time window must also agree. Overlapping uncertainty intervals abstain from ordering. Unknown operands propagate explicit missing identities.
 
