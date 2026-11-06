@@ -45,8 +45,8 @@ export const RecordQuantityInputSchema = z.strictObject({ ...mutation, quantity:
 export const DeriveQuantityInputSchema = z.strictObject({ ...mutation, quantity_id: KeySchema, expression: ExpressionSchema, notes: z.string().max(512).default('') });
 /** Read-only conversion query. */
 export const ConvertQuantityInputSchema = z.strictObject({ id: KeySchema, quantity: KeySchema, to: UnitCodeSchema });
-/** Read-only exact ordering query. */
-export const CompareQuantitiesInputSchema = z.strictObject({ id: KeySchema, left: KeySchema, right: KeySchema });
+/** Read-only exact ordering query; only an explicit option permits unequal windows. */
+export const CompareQuantitiesInputSchema = z.strictObject({ id: KeySchema, left: KeySchema, right: KeySchema, across_windows: z.boolean().default(false) });
 /** Exact dependency witness query. */
 export const ExplainQuantityInputSchema = z.strictObject({ id: KeySchema, quantity: KeySchema });
 /** Revision-bound packet query; cursor is opaque, never an offset alone. */

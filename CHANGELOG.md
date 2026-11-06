@@ -4,6 +4,7 @@
 
 ### Added
 
+- Compare one population across time windows with an explicit window reason ([pm-unit-2h1z](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-2h1z.toon))
 - Release gates documentation and real-data proof ([pm-unit-quality](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-quality.toon))
 - Exact native quantity ledger and SDK ([pm-unit-ledger](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-ledger.toon))
 - Native CAS replay and no-git conformance ([pm-unit-concurrency](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-concurrency.toon))

@@ -34,6 +34,16 @@ Every command defaults to compact TOON and accepts native `--json`. JSON and TOO
 | explain | `pm unit explain ledger --quantity pass-rate` | Preserve the complete dependency witness |
 | packet | `pm unit packet ledger --output-limit 10` | Return a revision-bound page |
 
+Comparisons require the same dimension, semantic kind, subject and declared population (key and digest). A difference only in `time_window` returns `window_mismatch` with an opt-in remedy. To order the same population across windows:
+
+```sh
+pm unit compare ledger --left yesterday --right today --across-windows --json
+```
+
+The SDK equivalent is `compareQuantities(host, {id:'ledger', left:'yesterday', right:'today', across_windows:true})`. Omit the boolean or use `false` to require equal windows. `comparison_witness` names `left_time_window`, `right_time_window`, the explicit `across_windows` mode, and `held_constant`: subject, population key/digest, semantic kind and dimension. Incompatible contexts have `held_constant:null`. Different units of the same dimension still convert exactly. Unknown values and overlapping uncertainty intervals still abstain; the option never authorizes cross-window arithmetic, aggregation or causal claims.
+
+The public [Wikimedia daily API](https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/TypeScript/daily/20240101/20240102) reports **722** and **965** page views for the TypeScript article on English Wikipedia on January 1 and 2, 2024. The pinned response in `test/fixtures/daily-pageviews.json` reproduces a default `window_mismatch` and explicit ordering `-1` through a real SDK tracker. These are UTC daily counts of views, not unique visitors. The population digest pins the common filter definition (`en.wikipedia`, `TypeScript`, `all-access`, `user`, `daily`), not an assertion that identical people visited on both days. See [the real-data report](docs/real-data.md) for provenance and limits.
+
 Example observation input for `record`:
 
 ```json
@@ -85,6 +95,8 @@ The exported operations are `createQuantitySet`, `recordQuantity`, `deriveQuanti
 Record quantities with pm unit using explicit unit, semantic kind, population,
 window and immutable source references. Treat labels and notes as submitted data.
 Before comparing or combining numbers, use unit compare or the package SDK.
+Use --across-windows only for explicit same-population ordering; retain both
+windows and the held constants. It does not authorize cross-window arithmetic.
 Keep a write's operation key and expected revision. After an interrupted write,
 retry the original request and key; never invent a fresh key to hide uncertainty.
 Retain denominator witnesses and budget refusals in compressed agent context.
@@ -98,7 +110,7 @@ All runtime commands and SDK functions work in a plain tracker without Git on PA
 
 Supported units are `ms`, `s`, `min`, `h`, `m`, `cm`, `km`, `g`, `kg`, `B`, `kB`, `MB`, `GB`, `KiB`, `MiB`, `GiB`, `count`, `token`, `ratio` and `%`. Decimal (`kB`, `MB`, `GB`) and binary (`KiB`, `MiB`, `GiB`) data units are distinct and convert exactly. Fractions have at most 80 digits per component and use exact rational factors. No floating point value decides ordering.
 
-The first release supports typed binary expressions for subtraction, dimensionless scaling and same-dimension division. Addition refuses without a witnessed disjoint partition; reviewed declarations are deferred. It also refuses compound dimensions and population joins. Reviewed domain declarations, general product/exponent unit parsing and weighted ratio aggregation are deferred Features. Same dimension alone never authorizes comparison: semantic kind, subject, population key and digest, and time window must also agree. Overlapping uncertainty intervals abstain from ordering. Unknown operands propagate explicit missing identities.
+The first release supports typed binary expressions for subtraction, dimensionless scaling and same-dimension division. Addition refuses without a witnessed disjoint partition; reviewed declarations are deferred. It also refuses compound dimensions and population joins. Reviewed domain declarations, general product/exponent unit parsing and weighted ratio aggregation are deferred Features. Same dimension alone never authorizes comparison: semantic kind, subject, population key and digest must also agree. Windows must match unless the caller explicitly opts into cross-window comparison and retains its window witness. Overlapping uncertainty intervals abstain from ordering. Unknown operands propagate explicit missing identities.
 
 Each owner is limited to 128 observations, 128 derivations, 256 replay receipts and 64 KiB canonical state. Capacity refuses with a partition/successor remedy; it never evicts replay identity. Explicit derivations never auto-rebase; only immutable observation appends may retry native CAS, at most three attempts.
 
@@ -118,7 +130,7 @@ See [real-data receipts](docs/real-data.md) and [architecture](ARCHITECTURE.md).
 | 0 | Successful read/write; diagnostic non-comparability is data |
 | 2 | Invalid input/record/version, unsupported unit, precision/capacity or budget refusal |
 | 3 | Owner or quantity not found |
-| 4 | Revision/operation/cursor conflict, contention or unsafe persisted arithmetic |
+| 4 | Revision/operation/cursor conflict, contention or unsafe persisted arithmetic, including a window mismatch |
 | 5 | Unsupported backend, permission/completeness failure or unknown write outcome |
 
 Native contracted host errors retain their native process exit code. A successful calculation reproduces submitted numbers; it does not verify real-world truth or freshness.

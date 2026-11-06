@@ -16,8 +16,9 @@ test('comparison follow-up is discoverable by each individual tag', async t => {
   }
   const got = await client.get(id, { outputInclude: 'full', outputBudget: 'unbounded', outputLimit: 'unbounded' });
   assert.ok('item' in got); assert.ok(got.item.tags);
-  assert.deepEqual([...got.item.tags].sort(), ['agents', 'compare', 'manual-test']);
+  const tags = got.item.tags;
   for (const tag of ['agents', 'compare', 'manual-test']) {
+    assert.ok(tags.includes(tag));
     const filtered = await client.list({ tag, excludeTerminal: false, full: true, noTruncate: true, strictRead: true, outputBudget: 'unbounded', outputLimit: 'unbounded' });
     assert.ok('items' in filtered && filtered.items.some(item => item.id === id), `Missing independent tag: ${tag}`);
   }

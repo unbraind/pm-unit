@@ -69,7 +69,8 @@ export function quantity(state: QuantitySet, id: string): Quantity {
 export function incompatibility(left: Quantity, right: Quantity): string | null {
   if (units[left.unit_code].dimension !== units[right.unit_code].dimension) return 'dimension_mismatch';
   if (left.semantic_kind !== right.semantic_kind) return 'semantic_mismatch';
-  if (left.subject_ref !== right.subject_ref || left.population_key !== right.population_key || left.population_digest !== right.population_digest || left.time_window !== right.time_window) return 'population_mismatch';
+  if (left.subject_ref !== right.subject_ref || left.population_key !== right.population_key || left.population_digest !== right.population_digest) return 'population_mismatch';
+  if (left.time_window !== right.time_window) return 'window_mismatch';
   return null;
 }
 /** Evaluate a bounded typed expression, retaining denominator witnesses and unknowns. */
@@ -82,7 +83,10 @@ export function evaluate(state: QuantitySet, ast: Expression): Quantity {
   if (additive) {
     const mismatch = incompatibility(left, right); insist(mismatch === null, mismatch ?? 'invalid_input', 'Operands have incompatible context', 'Record matching observations; reviewed compatibility declarations are deferred');
     insist(ast.op !== 'add', 'unsafe_overlap', 'A disjoint additive partition is not witnessed', 'Retain separate observations until reviewed partition declarations are supported');
-  } else insist(left.subject_ref === right.subject_ref && left.population_key === right.population_key && left.population_digest === right.population_digest && left.time_window === right.time_window, 'population_mismatch', 'Multiplicative populations differ', 'Record operands on the same explicit population and window');
+  } else {
+    insist(left.subject_ref === right.subject_ref && left.population_key === right.population_key && left.population_digest === right.population_digest, 'population_mismatch', 'Multiplicative populations differ', 'Record operands on the same explicit population and window');
+    insist(left.time_window === right.time_window, 'window_mismatch', 'Multiplicative windows differ', 'Record operands on the same explicit window; cross-window arithmetic is unsupported');
+  }
   let unit = left.unit_code; let rightUnit = right.unit_code;
   if (!additive) {
     if (units[right.unit_code].dimension === 'ratio') rightUnit = 'ratio';

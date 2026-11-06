@@ -10,7 +10,8 @@ const witness = z.strictObject({ quantity: QuantityInputSchema, derivation: Deri
 export const UnitDataSchema = z.union([
   z.strictObject({ ...owner, operation_id: z.string(), replayed: z.boolean(), attempts: z.number().int().min(1).max(3), result: CommittedResultSchema, result_digest: z.string(), outcome: z.literal('committed') }),
   z.strictObject({ ...owner, quantity: QuantityInputSchema, source_digest: z.string(), freshness: z.literal('unknown') }),
-  z.strictObject({ ...owner, usable: z.boolean(), comparison: z.enum(['comparable', 'not_comparable']), ordering: z.union([z.literal(-1), z.literal(0), z.literal(1), z.null()]), reason: z.string().nullable(), missing_ids: z.array(z.string()), left: QuantityInputSchema, right: QuantityInputSchema, remedy: z.string() }),
+  z.strictObject({ ...owner, usable: z.boolean(), comparison: z.enum(['comparable', 'not_comparable']), ordering: z.union([z.literal(-1), z.literal(0), z.literal(1), z.null()]), reason: z.string().nullable(), missing_ids: z.array(z.string()), left: QuantityInputSchema, right: QuantityInputSchema, remedy: z.string(),
+    comparison_witness: z.strictObject({ across_windows: z.boolean(), left_time_window: z.string(), right_time_window: z.string(), held_constant: z.strictObject({ subject_ref: z.string(), population_key: z.string(), population_digest: z.string(), semantic_kind: z.string(), dimension: z.string() }).nullable() }) }),
   witness.extend({ ...owner, freshness: z.literal('unknown') }),
   z.strictObject({ ...owner, rows: z.array(witness), returned: z.number().int(), omitted: z.number().int(), total: z.number().int(), continuation: z.string().nullable() }),
 ]);

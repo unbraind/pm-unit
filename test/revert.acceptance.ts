@@ -39,8 +39,16 @@ const changes = [
   { review: true, name: 'conversion factor validation removed before BigInt', file: 'corpus', path: 'test/corpus.ts', pattern: /export function conversionFactor\([\s\S]*?\n\}/, replacement: 'export function conversionFactor(text: string) { return BigInt(text); }', test: 'corpus-review', filter: 'decimal claims validate' },
   { review: true, name: 'denominator validation restored throwing BigInt refinement', file: 'schema', pattern: /regex\(\/\^\(\?!0\+\$\)\\d\{1,80\}\$\/\)/, replacement: 'regex(/^\\d{1,80}$/).refine(value => BigInt(value) > 0n)', test: 'core', filter: 'malformed rational denominators' },
   { review: true, name: 'shared derivation traversal memo removed', file: 'api', pattern: /if \(quantities.has\(id\)\)\s*return;/, replacement: 'if (false) return;', test: 'edge', filter: 'shared derivation graphs' },
+  { crossWindow: true, name: 'window mismatch reverted to population mismatch', file: 'kernel', pattern: /if \(left.time_window !== right.time_window\)\s+return 'window_mismatch';/, replacement: "if (left.time_window !== right.time_window) return 'population_mismatch';", test: 'cross-window', filter: 'window-only mismatch' },
+  { crossWindow: true, name: 'explicit across-window permission removed', file: 'api', pattern: /input.across_windows && contextMismatch === 'window_mismatch'/, replacement: 'false', test: 'cross-window', filter: 'window-only mismatch' },
+  { crossWindow: true, name: 'across-window option bypasses other context mismatches', file: 'api', pattern: /input.across_windows && contextMismatch === 'window_mismatch'/, replacement: 'input.across_windows', test: 'cross-window', filter: 'opt-in preserves' },
+  { crossWindow: true, name: 'comparison witness loses the right window', file: 'api', pattern: /right_time_window: right.time_window/, replacement: 'right_time_window: left.time_window', test: 'cross-window', filter: 'window-only mismatch' },
+  { crossWindow: true, name: 'CLI across-window option ignored', file: 'commands', pattern: /across_windows: flags.acrossWindows/, replacement: 'across_windows: undefined', test: 'cross-window', filter: 'CLI and SDK share' },
+  { crossWindow: true, name: 'native across-window flag registration removed', file: 'commands', pattern: /if \(name === 'compare'\)\s+flags.push\([^\n]+\);/, replacement: '', test: 'install.acceptance', filter: 'one captured artifact' },
+  { crossWindow: true, name: 'arithmetic window mismatch mislabeled as population mismatch', file: 'kernel', pattern: /'window_mismatch', 'Multiplicative windows differ'/, replacement: "'population_mismatch', 'Multiplicative windows differ'", test: 'cross-window', filter: 'window-only mismatch' },
+  { crossWindow: true, name: 'window refusal loses the context conflict exit code', file: 'errors', pattern: /'population_mismatch', 'window_mismatch',/, replacement: "'population_mismatch',", test: 'cross-window', filter: 'CLI and SDK share' },
 ];
-const selected = process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
+const selected = process.argv.includes('--cross-window-only') ? changes.filter(change => 'crossWindow' in change && change.crossWindow) : process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
 for (const change of selected) {
   const root = mkdtempSync(join(tmpdir(), 'unit-revert-'));
   try {
@@ -50,5 +58,5 @@ for (const change of selected) {
     assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`); assert.match(result.stdout + result.stderr, /AssertionError|Missing expected rejection|Missing expected exception|UnitRefusal:/, `Failure must be behavioral: ${change.name}`); if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch)); console.log(`EXPECTED FAIL: ${change.name}`);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
-const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
+const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 360000 });
 assert.equal(restored.status, 0, restored.stdout + restored.stderr); console.log(`revert-gate: ${selected.length} behavioral failures; unchanged implementation passes`);
