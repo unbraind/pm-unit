@@ -4,9 +4,9 @@ description: "Manual test, 2026-11-06. Two daily counts of the same population (
 type: Feature
 status: open
 priority: 2
-tags[1]: agents;compare;manual-test
+tags[3]: agents,compare,manual-test
 created_at: "2026-11-06T07:22:31.895Z"
-updated_at: "2026-11-06T07:22:31.895Z"
+updated_at: "2026-11-06T09:22:21.325Z"
 author: claude-orchestrator
 acceptance_criteria: "A time_window-only difference reports window_mismatch, not population_mismatch; an explicit cross-window comparison orders same-population values and names both windows in its witness; a different population, semantic kind or dimension is still refused; every case has tests through real SDK trackers"
 body: ""

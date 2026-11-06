@@ -4,8 +4,25 @@ import { mkdtempSync, mkdirSync, cpSync, symlinkSync, readFileSync, writeFileSyn
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
-import { corpusRoot, isEarthFactSource, matchClaims, harvestReviewLine } from './corpus.ts';
+import { corpusRoot, isEarthFactSource, matchClaims, harvestReviewLine, decimalFraction, conversionFactor } from './corpus.ts';
 import { npmEnvironment, testEnvironment } from '../scripts/environment.ts';
+
+test('decimal claims validate the complete input before BigInt and retain exact fixture fractions', () => {
+  for (const [text, numerator, denominator] of [['0', '0', '1'], ['00012', '12', '1'], ['001.020', '1020', '1000'], ['0.0001', '1', '10000']]) assert.deepEqual(decimalFraction(text, 'valid-claim'), { numerator, denominator });
+  const fixture = JSON.parse(readFileSync(join(corpusRoot, 'test/fixtures/measurements.json'), 'utf8')) as { claims: { key: string; decimal: string; scale: string; divisor: string }[] };
+  for (const claim of fixture.claims) { assert.doesNotThrow(() => decimalFraction(claim.decimal, claim.key)); assert.doesNotThrow(() => conversionFactor(claim.scale, claim.key)); assert.doesNotThrow(() => conversionFactor(claim.divisor, claim.key)); }
+  for (const value of [undefined, null, 1, {}, []]) {
+    assert.throws(() => decimalFraction(value as string, 'wrong-type'), /Invalid decimal claim "wrong-type"/);
+    assert.throws(() => conversionFactor(value as string, 'wrong-type'), /Invalid conversion factor for "wrong-type"/);
+  }
+  for (const [text, expected] of [['1', 1n], ['001', 1n], ['1048576', 1048576n]] as const) assert.equal(conversionFactor(text, 'valid-factor'), expected);
+  for (const text of ['', '0', '00', '1.5', '-1', '+1', '1e2', '1\n', ' 1', 'text']) assert.throws(() => conversionFactor(text, 'broken-factor'), error => {
+    assert.ok(error instanceof assert.AssertionError); assert.match(error.message, /Invalid conversion factor for "broken-factor"/); return true;
+  });
+  for (const text of ['', ' ', '1.', '.1', '1.2.3', '+1', '-1', '1e2', '0x10', 'NaN', 'Infinity', '1\n', '1\r\n', '1\t', ' 1', '1 ']) assert.throws(() => decimalFraction(text, 'broken-claim'), error => {
+    assert.ok(error instanceof assert.AssertionError); assert.match(error.message, /Invalid decimal claim "broken-claim"/); return true;
+  });
+});
 
 test('physical source classification parses the exact host instead of URL substrings', () => {
   for (const source of ['https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html', 'https://NSSDC.GSFC.NASA.GOV/facts']) assert.equal(isEarthFactSource(source), true);

@@ -66,7 +66,16 @@ export function harvestReviewLine(claim: Claim, fragment: string, index: number)
   return JSON.stringify({ selected_claim: claim, match_offset: index, excerpt: fragment.slice(Math.max(0, index - 80), index + 120) });
 }
 /** Independent decimal-to-rational oracle, without package arithmetic. */
-export function decimalFraction(text: string) { const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) }; }
+export function decimalFraction(text: string, claimKey = 'unspecified') {
+  // Absolute end-of-input also rejects a trailing newline, unlike the dollar anchor.
+  assert.ok(typeof text === 'string' && /^\d+(?:\.\d+)?(?![\s\S])/.test(text), `Invalid decimal claim ${JSON.stringify(claimKey)}: expected unsigned decimal digits`);
+  const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) };
+}
+/** Validate positive integer conversion factors before the independent oracle uses BigInt. */
+export function conversionFactor(text: string, claimKey: string): bigint {
+  const message = `Invalid conversion factor for ${JSON.stringify(claimKey)}: expected positive integer digits`;
+  assert.ok(typeof text === 'string' && /^\d+(?![\s\S])/.test(text), message); const value = BigInt(text); assert.ok(value > 0n, message); return value;
+}
 // Only these public source revisions may be archived; native reads use their scratch copies.
 const publicTrackers = [
   { repo: 'pm-vcs', revision: 'f2ab3c3412d87fbf766bc629b685a986b5400f61' },
@@ -155,10 +164,10 @@ export async function evaluateCorpus() {
     const host = createDirectoryHost(pmRoot, 'real-data'); const id = 'proof-ledger'; await createQuantitySet(host, { id, op: 'birth', title: 'Public measurement receipts', quantity_set_key: 'fleet' }); calls++;
     const results: { key: string; expected: { numerator: string; denominator: string }; actual: unknown }[] = [];
     for (const claim of input.claims) {
-      const q: Quantity = { quantity_id: claim.key, value: decimalFraction(claim.decimal), unit_code: claim.unit, semantic_kind: claim.kind, subject_ref: claim.key.startsWith('earth') ? 'earth' : 'public-fleet-run', population_key: claim.population, population_digest: claim.fragment_digest, time_window: `Measurement window unknown; receipt reported ${claim.reported_at}`, acquisition: 'reported', observed_at: claim.reported_at, provenance: [claim.source_kind === 'external_document' ? { ...physicalRef, citation_id: claim.key } : { item_id: claim.item_id, item_hash: claim.item_hash, field_pointer: claim.pointer }], notes: '' };
+      const q: Quantity = { quantity_id: claim.key, value: decimalFraction(claim.decimal, claim.key), unit_code: claim.unit, semantic_kind: claim.kind, subject_ref: claim.key.startsWith('earth') ? 'earth' : 'public-fleet-run', population_key: claim.population, population_digest: claim.fragment_digest, time_window: `Measurement window unknown; receipt reported ${claim.reported_at}`, acquisition: 'reported', observed_at: claim.reported_at, provenance: [claim.source_kind === 'external_document' ? { ...physicalRef, citation_id: claim.key } : { item_id: claim.item_id, item_hash: claim.item_hash, field_pointer: claim.pointer }], notes: '' };
       await recordQuantity(host, { id, op: claim.key, revision: (await readQuantitySet(host, id)).revision, quantity: q }); calls += 2;
       const actual = (await convertQuantity(host, { id, quantity: claim.key, to: claim.to })).quantity.value!; calls++;
-      const source = decimalFraction(claim.decimal); const expected = { numerator: String(BigInt(source.numerator) * BigInt(claim.scale)), denominator: String(BigInt(source.denominator) * BigInt(claim.divisor)) };
+      const source = decimalFraction(claim.decimal, claim.key); const expected = { numerator: String(BigInt(source.numerator) * conversionFactor(claim.scale, `${claim.key}.scale`)), denominator: String(BigInt(source.denominator) * conversionFactor(claim.divisor, `${claim.key}.divisor`)) };
       assert.equal(BigInt(actual.numerator) * BigInt(expected.denominator), BigInt(expected.numerator) * BigInt(actual.denominator)); results.push({ key: claim.key, expected, actual });
     }
     const comparisons: { left: string; right: string; reason: string | null }[] = [];
