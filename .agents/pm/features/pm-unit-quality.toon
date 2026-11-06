@@ -1,0 +1,13 @@
+id: pm-unit-quality
+title: Release gates documentation and real-data proof
+description: ""
+type: Feature
+status: open
+priority: 2
+tags: []
+created_at: "2026-11-06T04:32:09.688Z"
+updated_at: "2026-11-06T04:32:09.688Z"
+author: codex-agent
+acceptance_criteria: Exact 100 percent four-dimension source coverage; npm Bun npx bunx packed acceptance; real fleet and physical receipts; allowlisted artifact and gated release workflow
+parent: pm-unit-release
+body: ""

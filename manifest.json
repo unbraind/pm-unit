@@ -1,0 +1,14 @@
+{
+  "name": "pm-unit",
+  "version": "2026.11.6",
+  "description": "Exact quantities, units and population context for agents",
+  "author": "@unbraind",
+  "entry": "./dist/index.js",
+  "pm_min_version": "2026.11.5",
+  "priority": 90,
+  "capabilities": [
+    "commands",
+    "schema",
+    "renderers"
+  ]
+}

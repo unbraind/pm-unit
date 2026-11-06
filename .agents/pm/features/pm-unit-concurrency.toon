@@ -1,0 +1,13 @@
+id: pm-unit-concurrency
+title: Native CAS replay and no-git conformance
+description: ""
+type: Feature
+status: open
+priority: 2
+tags: []
+created_at: "2026-11-06T04:32:08.908Z"
+updated_at: "2026-11-06T04:32:08.908Z"
+author: codex-agent
+acceptance_criteria: Every interleaving boundary and crash rerun converges; two OS writers preserve acknowledged records; 500 seeded sequences match read-back
+parent: pm-unit-release
+body: ""
