@@ -1,14 +1,14 @@
 {
   "fixture_digest": "75131c98e5b96499b9e637bded2e25b04cff4628e0e970c76a33891f49744756",
-  "implementation_digest": "9ded29287ed3306f0e1a5cc87a5dc0d57ba235ca7f1466aab5a8618a3826fcbb",
+  "implementation_digest": "f291022387b92fa895fcebfc4ecbb2080a26eae3b690f63a331618b1cf58a534",
   "emitted_inventory": [
     {
       "path": "index.js",
-      "sha256": "b078a72d38993287e883bd7a3600726f91f5276bdfd2fd0f1ed5956d4a86d611"
+      "sha256": "d6c19cab5f034a2c8926b74aff41cb8b1fdfcfc8796315d1db366467be7d1eb6"
     },
     {
       "path": "src/api.js",
-      "sha256": "7177d0e2a3ba3ec96564a4e1c63b213dadccf10d9af1e0398c53f7d89a1e1a26"
+      "sha256": "aa17aa24c9410be86e524f5b4f545b8ceab6098d875c669549bac4d47d045766"
     },
     {
       "path": "src/commands.js",
@@ -24,15 +24,15 @@
     },
     {
       "path": "src/kernel.js",
-      "sha256": "4af564bf559be9e24298c0b6e199a3e51473609d644beb7d6cfb0dda49d304dd"
+      "sha256": "89a97dae4a6a56ddb753a25078ce356cf1386e4eadd118e922220b1de41c9d04"
     },
     {
       "path": "src/output.js",
-      "sha256": "4a885b9ef6db47af3f3d7f1497382058eabe6b1b62745198eda74f2c3d788257"
+      "sha256": "b815958dd39c2249254d07cc8b54743011e84a8dd21075293c28be84ce397f4a"
     },
     {
       "path": "src/schema.js",
-      "sha256": "4b46d2614ca6ccdb3b0588bd97c4082901b4e3783566851c96a08744f2ba868a"
+      "sha256": "64cc5215f734ff7af80259035c0ba4543df7aaaf96509fd0de63e2dd3b4cb079"
     }
   ],
   "sdk_version": "2026.11.5",
@@ -47,8 +47,8 @@
         "status": "open",
         "priority": 2,
         "tags": [],
-        "created_at": "2026-11-06T06:03:34.576Z",
-        "updated_at": "2026-11-06T06:03:34.576Z",
+        "created_at": "2026-11-06T06:46:39.692Z",
+        "updated_at": "2026-11-06T06:46:39.692Z",
         "author": "real-data",
         "comments": [],
         "notes": [],
@@ -72,7 +72,7 @@
         },
         "body": "Public source: https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html\nContent SHA-256: 1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef\nearth-equatorial: 6378.137 km; original measurement window unknown\nearth-polar: 6356.752 km; original measurement window unknown\nearth-rotation: 23.9345 h; original measurement window unknown"
       },
-      "item_hash": "d835d7eba0e623df794ef2c7571fd78c168f38f8e18d42ce555b6f5b008af9c2",
+      "item_hash": "354deff35547eff6babc1f13f1373d6d686700267f786f3687f13ba1e5888635",
       "source": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
       "content_digest": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"
     },
@@ -85,8 +85,8 @@
         "status": "open",
         "priority": 2,
         "tags": [],
-        "created_at": "2026-11-06T06:03:49.873Z",
-        "updated_at": "2026-11-06T06:03:49.873Z",
+        "created_at": "2026-11-06T06:46:54.120Z",
+        "updated_at": "2026-11-06T06:46:54.120Z",
         "author": "real-data",
         "comments": [],
         "notes": [],
@@ -110,7 +110,7 @@
         },
         "body": "Public source: https://github.com/unbraind/pm-observer/blob/4728eca6adbfc85e562c4e71a2aa635ecbd999df/README.md\nContent SHA-256: c383c977373e2b0492055564a9f74541b06c92e9c06f5dadd21022ed14c22e47\nIllustrative policy example: two parallel ten-second tools have ten seconds elapsed and twenty seconds summed duration. Cached input is a subset of total input; no cached-subset count is published by this selected policy source."
       },
-      "item_hash": "7c06706d7a798a839478f19c698c6278ac9f9678bfba220926fe42cb2474593e",
+      "item_hash": "497ca0b27dc6ff0fbba145a6ecab59d63b302c52c6b9f6083a7374ee924e1df5",
       "source": "https://github.com/unbraind/pm-observer/blob/4728eca6adbfc85e562c4e71a2aa635ecbd999df/README.md",
       "content_digest": "c383c977373e2b0492055564a9f74541b06c92e9c06f5dadd21022ed14c22e47"
     }
@@ -161,13 +161,13 @@
   ],
   "derived_ratios": 1,
   "packet_claims": 10,
-  "packet_bytes": 12516,
-  "packet_tokens": 3129,
-  "packet_minimum_budget": 3129,
+  "packet_bytes": 12876,
+  "packet_tokens": 3219,
+  "packet_minimum_budget": 3219,
   "raw_item_bytes": 290636,
   "raw_item_tokens": 72659,
   "calls": 173,
-  "wall_ms": 16427,
+  "wall_ms": 15961,
   "results": [
     {
       "key": "fleet-0",

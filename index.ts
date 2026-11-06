@@ -13,9 +13,9 @@ export { createDirectoryHost } from './src/host.ts';
 /** Authorized injected lifecycle port and complete selected-owner snapshot. */
 export type { Host, Snapshot } from './src/host.ts';
 /** Strict nested contracts for all submitted and stored quantity data. */
-export { QuantitySetSchema, QuantityInputSchema, UnitCodeSchema, RationalSchema, ProvenanceSchema, IntervalSchema, ExpressionSchema, DerivationSchema, ReplaySchema, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema, canonical, digest } from './src/schema.ts';
+export { QuantitySetSchema, QuantityInputSchema, UnitCodeSchema, RationalSchema, ProvenanceSchema, IntervalSchema, ExpressionSchema, DerivationSchema, DerivationWitnessSchema, ReplaySchema, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema, canonical, digest } from './src/schema.ts';
 /** Public request and domain types for in-process integrations. */
-export type { QuantitySet, Quantity, Rational, UnitCode, Expression, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './src/schema.ts';
+export type { QuantitySet, Quantity, Rational, UnitCode, Expression, DerivationWitness, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './src/schema.ts';
 /** Pure deterministic exact arithmetic and expression evaluation. */
 export { rational, arithmetic, order, convert, evaluateQuantityExpression, readState } from './src/kernel.ts';
 /** Strict output contract and serialized whole-envelope fitter. */

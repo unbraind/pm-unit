@@ -73,6 +73,8 @@ const packet = await quantityPacket(host, {id:owner.id, limit:10});
 const output = fitEnvelope(host, envelope(packet));
 ```
 
+Explanations include every intermediate formula in `derivation_witnesses`, with each dependency quantity delivered once. Shared dependency graphs use a deduplicated traversal.
+
 The exported operations are `createQuantitySet`, `recordQuantity`, `deriveQuantity`, `convertQuantity`, `compareQuantities`, `explainQuantity`, `quantityPacket` and `readQuantitySet`. Each takes a `Host` and a strict typed request. The same functions serve pm-context, pm-brief, pm-hypothesis and pm-rl in process. An embedding application supplies an authorized `PmClient`-shaped lifecycle port plus explicit `native_item_cas` and `create_if_absent` capability evidence; method presence alone proves neither capability nor authorization.
 
 `QuantitySetSchema`, `QuantityInputSchema`, `UnitCodeSchema`, `UnitResultSchema`, all request schemas, `RationalSchema`, `IntervalSchema`, `ProvenanceSchema` and `ExpressionSchema` are public strict contracts. Pure `rational`, `arithmetic`, `convert`, `order`, `digest`, `canonical`, `readState` and `evaluateQuantityExpression` have no storage dependency. `UnitRefusal` carries `{code,message,remedy,retryable,details}`. Write receipts separate the original committed result and digest from the current owner revision, and include replay status and CAS attempts.

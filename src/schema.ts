@@ -26,6 +26,10 @@ export const QuantityInputSchema = z.strictObject({
 export const ExpressionSchema = z.strictObject({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), left: KeySchema, right: KeySchema });
 /** Immutable derivation retains operands and exact source digests. */
 export const DerivationSchema = z.strictObject({ quantity: QuantityInputSchema, expression: ExpressionSchema, operands: z.array(z.strictObject({ quantity_id: KeySchema, digest: DigestSchema })).length(2), declaration_digest: DigestSchema, limitations: z.array(z.string().max(256)).max(8) });
+/** Compact exact intermediate derivation; its quantity is delivered once in the dependency list. */
+export const DerivationWitnessSchema = DerivationSchema.omit({ quantity: true }).extend({ quantity_id: KeySchema });
+/** Intermediate formula and immutable input fingerprints for an explanation. */
+export type DerivationWitness = z.infer<typeof DerivationWitnessSchema>;
 /** Immutable semantic mutation result, separate from the current owner revision. */
 export const CommittedResultSchema = z.strictObject({ kind: z.enum(['create', 'record', 'derive']), identity: KeySchema, sequence: z.number().int().min(1).max(256), digest: DigestSchema });
 /** Replay identity is never evicted to make room for later writes. */

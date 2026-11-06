@@ -3,7 +3,7 @@ import { capable } from './host.ts';
 import type { Host, Snapshot } from './host.ts';
 import { insist, UnitRefusal, refusal } from './errors.ts';
 import { parse, digest, canonical, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema } from './schema.ts';
-import type { QuantitySet, Quantity, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './schema.ts';
+import type { QuantitySet, Quantity, DerivationWitness, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './schema.ts';
 import { readState, normalizeQuantity, quantity, convert, incompatibility, order, evaluate } from './kernel.ts';
 /** Native committed receipt retains historical result separately from the current revision. */
 export interface UnitMutationReceipt {
@@ -133,12 +133,23 @@ export async function compareQuantities(host: Host, raw: CompareQuantitiesInput)
     remedy: ordering === null ? 'Record matching units, semantic kinds, subjects, populations and windows with known values' : 'Retain source witnesses; numerical agreement does not verify the source claim' };
 }
 /** Complete transitive dependency witness; never truncates operands or denominators. */
-export function explanation(state: QuantitySet, key: string, seen = new Set<string>()): { quantity: Quantity; derivation: QuantitySet['derivations'][number] | null; dependencies: ReturnType<typeof quantity>[] } {
-  insist(!seen.has(key), 'derivation_cycle', 'Stored derivation contains a cycle'); seen.add(key);
-  const q = quantity(state, key); const derivation = state.derivations.find(row => row.quantity.quantity_id === key) ?? null;
-  const dependencies = new Map<string, Quantity>();
-  if (derivation) for (const operand of derivation.operands) { const witness = explanation(state, operand.quantity_id, new Set(seen)); dependencies.set(witness.quantity.quantity_id, witness.quantity); for (const child of witness.dependencies) dependencies.set(child.quantity_id, child); }
-  return { quantity: q, derivation, dependencies: [...dependencies.values()] };
+export function explanation(state: QuantitySet, key: string, seen = new Set<string>()): { quantity: Quantity; derivation: QuantitySet['derivations'][number] | null; dependencies: Quantity[]; derivation_witnesses: DerivationWitness[] } {
+  const quantities = new Map<string, Quantity>(); const derivations = new Map<string, QuantitySet['derivations'][number]>(); const visiting = new Set(seen);
+  const source = new Map(state.observations.map(value => [value.quantity_id, value])); const formulas = new Map<string, QuantitySet['derivations'][number]>();
+  for (const row of state.derivations) { const value = row.quantity; source.set(value.quantity_id, value); formulas.set(value.quantity_id, row); }
+  /** Walk each reachable node once while detecting cycles on the active path. */
+  function visit(id: string): void {
+    insist(!visiting.has(id), 'derivation_cycle', 'Stored derivation contains a cycle');
+    if (quantities.has(id)) return;
+    const value = source.get(id); insist(value, 'not_found', 'Quantity identity was not found', 'Select an existing quantity from unit packet');
+    visiting.add(id); quantities.set(id, value);
+    const row = formulas.get(id);
+    if (row) { derivations.set(id, row); for (const operand of row.operands) visit(operand.quantity_id); }
+    visiting.delete(id);
+  }
+  visit(key); const result = quantities.get(key)!; const derivation = derivations.get(key) ?? null; quantities.delete(key); derivations.delete(key);
+  const witnesses = [...derivations.values()].map(row => { const { quantity: value, ...metadata } = row; return { quantity_id: value.quantity_id, ...metadata }; });
+  return { quantity: result, derivation, dependencies: [...quantities.values()], derivation_witnesses: witnesses };
 }
 /** Explain exact operands and pinned provenance at one owner revision. */
 export async function explainQuantity(host: Host, raw: ExplainQuantityInput) {

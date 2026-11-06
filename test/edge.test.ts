@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { fitOutputEnvelope, OutputEnvelopeFitError } from '@unbrained/pm-cli/sdk';
 import { PmClient } from '@unbrained/pm-cli/sdk/core';
 import { createQuantitySet, recordQuantity, compareQuantities, deriveQuantity, readQuantitySet, quantityPacket, envelope, fitEnvelope, UnitRefusal, digest } from '../dist/index.js';
+import { explanation } from '../dist/src/api.js';
 import { persistedSchemaPort } from '../dist/src/host.js';
 import { renderOutput } from '../dist/src/output.js';
 import { runCommand } from '../dist/src/commands.js';
@@ -94,4 +95,18 @@ test('known zero denominators refuse even when another operand is unknown', asyn
   const before = await host.client.readItemRevision(id);
   await assert.rejects(deriveQuantity(host, { id, revision: before.item_hash, op: 'unsafe-zero', quantity_id: 'unsafe-zero', expression: { op: 'divide', left: 'missing', right: 'zero' } }), hasCode('divide_by_zero'));
   assert.deepEqual(await host.client.readItemRevision(id), before);
+});
+
+
+test('shared derivation graphs retain every formula with a linear number of visits', async t => {
+  const { host, id } = await fixture(t); let left = 'base-a', right = 'base-b';
+  for (const key of [left, right]) await recordQuantity(host, await request(host, id, key, { unit_code: 'ratio', semantic_kind: 'scale', value: { numerator: '1', denominator: '1' } }));
+  for (let index = 0; index < 22; index++) {
+    const key = `shared-${index}`; await deriveQuantity(host, { id, op: key, revision: (await readQuantitySet(host, id)).revision, quantity_id: key, expression: { op: 'multiply', left, right } }); right = left; left = key;
+  }
+  const owner = await readQuantitySet(host, id); let reads = 0;
+  // Count quantity reads in an SDK snapshot without replacing any SDK operation.
+  for (const row of owner.state.derivations) { const value = row.quantity; Object.defineProperty(row, 'quantity', { get: () => { reads++; return value; }, enumerable: true }); }
+  const result = explanation(owner.state, left); assert.equal(result.dependencies.length, 23); assert.equal(result.derivation_witnesses.length, 21); assert.equal(reads, 43);
+  assert.throws(() => explanation(owner.state, left, new Set([left])), hasCode('derivation_cycle'));
 });

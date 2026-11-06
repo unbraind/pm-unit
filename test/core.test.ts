@@ -39,7 +39,7 @@ test('exact binary derivations retain operands and denominator population', asyn
   for (const [key, value] of [['passed', '29'], ['total', '30']] as const) await recordQuantity(host, await request(host, id, key, { value: { numerator: value, denominator: '1' }, unit_code: 'count', semantic_kind: 'test_count' }));
   const input = { id, op: 'ratio', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'pass-ratio', expression: { op: 'divide' as const, left: 'passed', right: 'total' } };
   await deriveQuantity(host, input); assert.equal((await deriveQuantity(host, input)).replayed, true);
-  const witness = await explainQuantity(host, { id, quantity: 'pass-ratio' }); assert.deepEqual(witness.quantity.value, { numerator: '29', denominator: '30' }); assert.equal(witness.dependencies.length, 2); assert.ok(witness.derivation?.operands.every(row => row.digest.length === 64));
+  const witness = await explainQuantity(host, { id, quantity: 'pass-ratio' }); assert.deepEqual(witness.quantity.value, { numerator: '29', denominator: '30' }); assert.match(witness.quantity.semantic_kind, /^divide\.[a-f0-9]{64}$/); assert.equal(witness.dependencies.length, 2); assert.ok(witness.derivation?.operands.every(row => row.digest.length === 64));
   assert.deepEqual((await convertQuantity(host, { id, quantity: 'pass-ratio', to: '%' })).quantity.value, { numerator: '290', denominator: '3' });
   const state = (await readQuantitySet(host, id)).state; assert.deepEqual(evaluateQuantityExpression(state, input.expression).value, witness.quantity.value);
   await assert.rejects(deriveQuantity(host, { ...input, op: 'stale-derived', quantity_id: 'other' }), hasCode('revision_conflict'));
@@ -47,7 +47,13 @@ test('exact binary derivations retain operands and denominator population', asyn
   await assert.rejects(deriveQuantity(host, { ...input, op: 'overlap', revision: (await readQuantitySet(host, id)).revision, expression: { ...input.expression, op: 'add' } }), hasCode('unsafe_overlap'));
   await recordQuantity(host, await request(host, id, 'ratio-second', { unit_code: 'ratio', semantic_kind: witness.quantity.semantic_kind, value: { numerator: '1', denominator: '1' } }));
   await deriveQuantity(host, { id, op: 'nested', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'nested', expression: { op: 'multiply', left: 'pass-ratio', right: 'ratio-second' } });
-  assert.equal((await explainQuantity(host, { id, quantity: 'nested' })).dependencies.length, 4);
+  const nested = await explainQuantity(host, { id, quantity: 'nested' }); assert.equal(nested.dependencies.length, 4);
+  assert.deepEqual(nested.derivation_witnesses.map(row => ({ id: row.quantity_id, expression: row.expression })), [{ id: 'pass-ratio', expression: input.expression }]);
+  await deriveQuantity(host, { id, op: 'deep', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'deep', expression: { op: 'multiply', left: 'nested', right: 'pass-ratio' } });
+  const deep = await explainQuantity(host, { id, quantity: 'deep' }); assert.equal(deep.dependencies.length, 5); assert.deepEqual(deep.derivation_witnesses.map(row => row.quantity_id).sort(), ['nested', 'pass-ratio']);
+  const values = new Map(deep.dependencies.map(row => [row.quantity_id, row]));
+  for (const formula of deep.derivation_witnesses) for (const operand of formula.operands) assert.equal(operand.digest, digest(values.get(operand.quantity_id)));
+
 });
 
 test('unknowns and conservative intervals never invent evidence', async t => {
@@ -55,6 +61,8 @@ test('unknowns and conservative intervals never invent evidence', async t => {
   await recordQuantity(host, await request(host, id, 'uncertain', { uncertainty: interval }));
   await recordQuantity(host, await request(host, id, 'exact'));
   const converted = await convertQuantity(host, { id, quantity: 'uncertain', to: 'min' }); assert.deepEqual(converted.quantity.uncertainty?.lower, { numerator: '11', denominator: '6' });
+  await deriveQuantity(host, { id, op: 'difference', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'difference', expression: { op: 'subtract', left: 'uncertain', right: 'exact' } });
+  assert.equal((await compareQuantities(host, { id, left: 'difference', right: 'exact' })).reason, 'semantic_mismatch');
   const state = (await readQuantitySet(host, id)).state;
   for (const op of ['subtract', 'divide'] as const) { const result = evaluateQuantityExpression(state, { op, left: 'uncertain', right: 'exact' }); assert.ok(result.uncertainty); }
   await recordQuantity(host, await request(host, id, 'unknown', { value: null, unknown_reason: 'No authorized measurement' }));

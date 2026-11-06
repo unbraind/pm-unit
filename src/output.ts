@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import { encode } from '@toon-format/toon';
 import { fitOutputEnvelope, OutputEnvelopeFitError } from '@unbrained/pm-cli/sdk';
-import { QuantityInputSchema, DerivationSchema, CommittedResultSchema, parse } from './schema.ts';
+import { QuantityInputSchema, DerivationSchema, DerivationWitnessSchema, CommittedResultSchema, parse } from './schema.ts';
 import { UnitRefusal, insist, exitCode } from './errors.ts';
 import type { Host } from './host.ts';
 const owner = { owner_id: z.string(), revision: z.string() };
-const witness = z.strictObject({ quantity: QuantityInputSchema, derivation: DerivationSchema.nullable(), dependencies: z.array(QuantityInputSchema) });
+const witness = z.strictObject({ quantity: QuantityInputSchema, derivation: DerivationSchema.nullable(), dependencies: z.array(QuantityInputSchema), derivation_witnesses: z.array(DerivationWitnessSchema) });
 /** Strict success payloads for every shipped operation. */
 export const UnitDataSchema = z.union([
   z.strictObject({ ...owner, operation_id: z.string(), replayed: z.boolean(), attempts: z.number().int().min(1).max(3), result: CommittedResultSchema, result_digest: z.string(), outcome: z.literal('committed') }),

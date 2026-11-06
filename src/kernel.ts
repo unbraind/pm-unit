@@ -90,7 +90,7 @@ export function evaluate(state: QuantitySet, ast: Expression): Quantity {
   const valueRight = right.value === null ? null : convert(right.value, right.unit_code, rightUnit);
   if (ast.op === 'divide' && valueRight !== null) insist(BigInt(valueRight.numerator) !== 0n, 'divide_by_zero', 'The denominator witness is zero', 'Record a nonzero denominator witness');
   const result = { ...left, quantity_id: 'evaluated', value: left.value === null || valueRight === null ? null : arithmetic(left.value, valueRight, ast.op), unit_code: unit,
-    semantic_kind: additive ? left.semantic_kind : `${ast.op}.${digest([left.semantic_kind, right.semantic_kind]).slice(0, 24)}`,
+    semantic_kind: `${ast.op}.${digest([left.semantic_kind, right.semantic_kind])}`,
     provenance: [...new Map([...left.provenance, ...right.provenance].map(ref => [digest(ref), ref])).values()], notes: '', acquisition: 'estimated' as const,
   };
   delete result.uncertainty; delete result.supersedes; delete result.correction_reason; delete result.unknown_reason;
