@@ -44,11 +44,13 @@ export const units: Record<UnitCode, { dimension: string; factor: Rational }> = 
   count: { dimension: 'count', factor: { numerator: '1', denominator: '1' } }, token: { dimension: 'token', factor: { numerator: '1', denominator: '1' } },
   ratio: { dimension: 'ratio', factor: { numerator: '1', denominator: '1' } }, '%': { dimension: 'ratio', factor: { numerator: '1', denominator: '100' } },
 };
-/** Convert one exact value between compatible dimensions. */
+/** Convert using a reduced scale ratio, bounding the final result rather than a base-unit intermediate. */
 export function convert(value: Rational, from: UnitCode, to: UnitCode): Rational {
   parse(UnitCodeSchema, from); parse(UnitCodeSchema, to);
   insist(units[from].dimension === units[to].dimension, 'dimension_mismatch', 'Unit dimensions differ', 'Choose a unit with the same dimension');
-  return arithmetic(arithmetic(value, units[from].factor, 'multiply'), units[to].factor, 'divide');
+  if (from === to) return rational(value);
+  const factor = arithmetic(units[from].factor, units[to].factor, 'divide');
+  return arithmetic(value, factor, 'multiply');
 }
 /** Normalize both submitted and persisted observations through the same function. */
 export function normalizeQuantity(raw: unknown): Quantity {

@@ -1,0 +1,25 @@
+id: pm-unit-exact-conversion
+title: Convert admitted exact quantities without intermediate overflow
+description: "Issue #6: identity conversion must normalize directly, and compatible-unit scaling must reduce the factor ratio before multiplying. Reject only oversized exact final results; cover both component boundaries and public SDK read paths."
+type: Issue
+status: in_progress
+priority: 2
+tags[1]: "gh:unbraind/pm-unit#6"
+created_at: "2026-11-06T17:49:46.669Z"
+updated_at: "2026-11-06T18:57:51.021Z"
+author: codex-sol
+comments[5]{created_at,author,text}:
+  "2026-11-06T17:50:14.937Z",codex-sol,"Confirmed main 0578835 still fails: built public convert returns limit_exceeded for 80-digit GB and h identity conversions; m identity succeeds. Source applies checked source-to-base multiplication before destination division. Plan: normalize identity directly, reduce source/destination factor ratio before one multiplication, and verify both component boundaries with an independent oracle plus real SDK non-git tracker reads."
+  "2026-11-06T17:51:09.554Z",codex-sol,"Failing-test proof before the fix: node --test --test-concurrency=2 test/conversion-boundary.test.ts failed all three tests (identity property, compatible-unit oracle property, real SDK conversion/self-comparison). Implemented direct rational normalization for identity and one multiplication by the pre-reduced scale ratio; no precision threshold changed."
+  "2026-11-06T17:54:14.224Z",codex-sol,"Behavioral revert proof: node test/revert.acceptance.ts --conversion-only reports EXPECTED FAIL independently for boundary identity, boundary compatible and boundary SDK when only convert is replaced with main behavior in disposable copies. Targeted tests pass 3/3 with 6518 fitting and 2762 oversized distinct-unit oracle cases; npm run lint, npm run typecheck, npm run duplication and npm run docstring pass. Real non-git SDK coverage additionally exercises cross-unit comparison, persisted subtraction and uncertainty conversion. Full npm and Bun release gates and queued bot review remain required before handoff."
+  "2026-11-06T18:27:48.095Z",codex-sol,"Implementation d04347b verified. npm run release:check and bun run release:check both PASS serially in a disposable checkout with isolated HOME and Git configuration: 81/81 tests, statements/branches/functions/lines each 100%, 0% duplication, all 83 docstrings, zero production vulnerabilities, packed npm/Bun acceptance, 43 expected behavioral revert failures and passing restored tests. Targeted boundary tests pass 3/3, including 6518 fitting and 2762 oversized distinct-unit oracle cases; pinned pm test --run --progress also passes. Each of the three new tests fails when only convert is reverted. CI Node 22, Node 26 and CodeQL PASS on d04347b. PR https://github.com/unbraind/pm-unit/pull/7 closes #6. CodeRabbit queued via the mandated shared queue; initial automatic-review skip is missing review evidence, with zero threads so far. Local worktree merge-driver path drift was avoided with installed drivers in the disposable checkout; no gate changed. Keep this item in progress for orchestrator verification. Final tracker commit will require fresh CI checks."
+  "2026-11-06T18:57:51.021Z",codex-sol,"Bounded verification handoff near the prescribed 30-minute CI wait cutoff: on gate-evidence head 31f509a, Node 22 and Node 26 remain queued in https://github.com/unbraind/pm-unit/actions/runs/42271000237 ; CodeQL passed in https://github.com/unbraind/pm-unit/actions/runs/42271000140 . The implementation commit d04347b has green Node 22, Node 26 and CodeQL, and both local release gates passed. The shared CodeRabbit queue still contains PR #7 and has not produced a review or NOT REVIEWED receipt; zero completed review rounds, zero unresolved threads and zero unvoted bot comments were confirmed with pr-state.sh. No fixes or refusals were required because no review findings were posted. gh pr checks --watch stopped on a GraphQL rate-limit error; REST reads confirmed the pending jobs. This handoff receipt changes only tracker evidence; fresh CI and bot review on the resulting head remain explicit pending risks for the orchestrator. Claim remains released and item stays in_progress. No PM CLI or SDK defect was established during this fix."
+files[3]{path,scope}:
+  src/kernel.ts,project
+  test/conversion-boundary.test.ts,project
+  test/revert.acceptance.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  npm run build && node --test --test-concurrency=2 test/conversion-boundary.test.ts,project,codex-sol,"2026-11-06T17:51:19.629Z",local_mutation,exact-conversion-without-intermediate-overflow
+docs[1]{path,scope}:
+  README.md,project
+body: ""
