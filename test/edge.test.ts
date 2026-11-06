@@ -105,8 +105,8 @@ test('shared derivation graphs retain every formula with a linear number of visi
     const key = `shared-${index}`; await deriveQuantity(host, { id, op: key, revision: (await readQuantitySet(host, id)).revision, quantity_id: key, expression: { op: 'multiply', left, right } }); right = left; left = key;
   }
   const owner = await readQuantitySet(host, id); let reads = 0;
-  // Count quantity reads in an SDK snapshot without replacing any SDK operation.
-  for (const row of owner.state.derivations) { const value = row.quantity; Object.defineProperty(row, 'quantity', { get: () => { reads++; return value; }, enumerable: true }); }
+  // Count actual operand visits and witness copies in an SDK snapshot, without replacing SDK operations.
+  for (const row of owner.state.derivations) { const operands = row.operands; Object.defineProperty(row, 'operands', { get: () => { reads++; return operands; }, enumerable: true }); }
   const result = explanation(owner.state, left); assert.equal(result.dependencies.length, 23); assert.equal(result.derivation_witnesses.length, 21); assert.equal(reads, 43);
   assert.throws(() => explanation(owner.state, left, new Set([left])), hasCode('derivation_cycle'));
 });

@@ -25,6 +25,11 @@ test('native harness executes all commands and round-trips scoped JSON and TOON 
   const second = await run('record', ['corpus-cli'], { op: 'second', revision: first.revision, input: JSON.stringify({ quantity: observation('second') }) }); assert.equal(second.ok, true);
   const derived = await run('derive', ['corpus-cli'], { op: 'derive', revision: second.revision, input: JSON.stringify({ quantity_id: 'ratio', expression: { op: 'divide', left: 'first', right: 'second' } }) }); assert.equal(derived.ok, true);
   for (const [command, options] of [['convert', { quantity: 'first', to: 'min' }], ['compare', { left: 'first', right: 'second' }], ['explain', { quantity: 'ratio' }], ['packet', { quantity: 'first' }]] as const) assert.equal((await run(command, ['corpus-cli'], options, { outputBudget: 'unbounded' })).ok, true);
+  for (const denominator of ['1.5', 'abc']) {
+    const rejected = await run('record', ['corpus-cli'], { op: 'malformed-rational', revision: derived.revision, input: JSON.stringify({ quantity: observation('invalid', { value: { numerator: '1', denominator } }) }) });
+    assert.equal(rejected.refusal?.code, 'invalid_input'); assert.equal(rejected.exit_code, 2);
+  }
+  assert.equal((await native.readItemRevision('corpus-cli')).item_hash, derived.revision);
   const result = await run('packet', ['corpus-cli'], { limit: '1' }); assert.ok(result.continuation);
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputCursor: result.continuation })).ok, true);
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1', cursor: result.continuation })).ok, true);

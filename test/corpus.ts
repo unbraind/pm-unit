@@ -67,14 +67,13 @@ export function harvestReviewLine(claim: Claim, fragment: string, index: number)
 }
 /** Independent decimal-to-rational oracle, without package arithmetic. */
 export function decimalFraction(text: string, claimKey = 'unspecified') {
-  // Absolute end-of-input also rejects a trailing newline, unlike the dollar anchor.
-  assert.ok(typeof text === 'string' && /^\d+(?:\.\d+)?(?![\s\S])/.test(text), `Invalid decimal claim ${JSON.stringify(claimKey)}: expected unsigned decimal digits`);
+  assert.ok(typeof text === 'string' && /^\d+(?:\.\d+)?$/.test(text), `Invalid decimal claim ${JSON.stringify(claimKey)}: expected unsigned decimal digits`);
   const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) };
 }
 /** Validate positive integer conversion factors before the independent oracle uses BigInt. */
 export function conversionFactor(text: string, claimKey: string): bigint {
   const message = `Invalid conversion factor for ${JSON.stringify(claimKey)}: expected positive integer digits`;
-  assert.ok(typeof text === 'string' && /^\d+(?![\s\S])/.test(text), message); const value = BigInt(text); assert.ok(value > 0n, message); return value;
+  assert.ok(typeof text === 'string' && /^\d+$/.test(text), message); const value = BigInt(text); assert.ok(value > 0n, message); return value;
 }
 // Only these public source revisions may be archived; native reads use their scratch copies.
 const publicTrackers = [

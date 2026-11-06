@@ -37,6 +37,8 @@ const changes = [
   { review: true, name: 'packed acceptance prerequisite guard removed', file: 'install-tools', path: 'test/install-tools.ts', pattern: /export function packedRequirement\([\s\S]*?\n\}/, replacement: 'export function packedRequirement() { return null; }', test: 'install-tools', filter: 'packed acceptance names' },
   { review: true, name: 'decimal validation reverted before BigInt', file: 'corpus', path: 'test/corpus.ts', pattern: /export function decimalFraction\([\s\S]*?\n\}/, replacement: "export function decimalFraction(text: string) { const [whole, fraction = ''] = text.split('.'); return { numerator: String(BigInt(whole + fraction)), denominator: String(10n ** BigInt(fraction.length)) }; }", test: 'corpus-review', filter: 'decimal claims validate' },
   { review: true, name: 'conversion factor validation removed before BigInt', file: 'corpus', path: 'test/corpus.ts', pattern: /export function conversionFactor\([\s\S]*?\n\}/, replacement: 'export function conversionFactor(text: string) { return BigInt(text); }', test: 'corpus-review', filter: 'decimal claims validate' },
+  { review: true, name: 'denominator validation restored throwing BigInt refinement', file: 'schema', pattern: /regex\(\/\^\(\?!0\+\$\)\\d\{1,80\}\$\/\)/, replacement: 'regex(/^\\d{1,80}$/).refine(value => BigInt(value) > 0n)', test: 'core', filter: 'malformed rational denominators' },
+  { review: true, name: 'shared derivation traversal memo removed', file: 'api', pattern: /if \(quantities.has\(id\)\)\s*return;/, replacement: 'if (false) return;', test: 'edge', filter: 'shared derivation graphs' },
 ];
 const selected = process.argv.includes('--review-only') ? changes.filter(change => 'review' in change && change.review) : changes;
 for (const change of selected) {
@@ -48,5 +50,5 @@ for (const change of selected) {
     assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`); assert.match(result.stdout + result.stderr, /AssertionError|Missing expected rejection|Missing expected exception|UnitRefusal:/, `Failure must be behavioral: ${change.name}`); if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch)); console.log(`EXPECTED FAIL: ${change.name}`);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
-const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/core.test.ts', 'test/contracts.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 180000 });
+const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: 180000 });
 assert.equal(restored.status, 0, restored.stdout + restored.stderr); console.log(`revert-gate: ${selected.length} behavioral failures; unchanged implementation passes`);

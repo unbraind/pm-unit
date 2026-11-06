@@ -20,7 +20,7 @@ Measured receipt from the initial 2026.11.6 candidate:
 | Default 1,600-token request | Refused; measured minimum retry budget 3,219 |
 | Raw selected native item text baseline | 290,636 bytes / 72,659 estimated tokens |
 | Explicit SDK calls in the evaluator | 173 |
-| Ledger/evaluation wall time | 11,344 ms |
+| Ledger/evaluation wall time | 29,686 ms |
 
 The call count is explicit package and native SDK invocations, not backend I/O operations. The wall time starts after fixture loading and excludes public-corpus harvesting. Delivered packet bytes are the larger native-fitter measurement across exact JSON and TOON renderings including fit metadata. The raw baseline is the sum of complete serialized native source items used by the corpus, with bytes/4 rounded upward. It is a manual-reading context baseline, not a claim of measured human reading speed or an equal-size projection. Ten selected claims are shown from a larger selected source corpus, so the token ratio is descriptive and not a universal compression factor.
 

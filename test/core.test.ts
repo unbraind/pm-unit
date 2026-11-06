@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createQuantitySet, recordQuantity, deriveQuantity, convertQuantity, compareQuantities, explainQuantity, quantityPacket, readQuantitySet, rational, arithmetic, convert, order, digest, canonical, evaluateQuantityExpression, readState, UnitRefusal, exitCode } from '../dist/index.js';
+import { createQuantitySet, recordQuantity, deriveQuantity, convertQuantity, compareQuantities, explainQuantity, quantityPacket, readQuantitySet, rational, arithmetic, convert, order, digest, canonical, evaluateQuantityExpression, readState, RationalSchema, UnitRefusal, exitCode } from '../dist/index.js';
 import { normalizeQuantity, incompatibility } from '../dist/src/kernel.js';
 import { guardSubmitted, parse, QuantityInputSchema } from '../dist/src/schema.js';
 import { refusal } from '../dist/src/errors.js';
@@ -149,4 +149,18 @@ test('strict privacy must-refuse and must-allow corpora', () => {
   Object.assign(nativeRemedy, { remedy: 'Select the authorized backend' }); assert.equal(refusal(nativeRemedy).remedy, 'Select the authorized backend');
   Object.assign(nativeRemedy, { remedy: 1 }); assert.equal(refusal(nativeRemedy).remedy, 'Request authorized access');
   for (const [code, expected] of [['not_found', 3], ['revision_conflict', 4], ['backend_unsupported', 5], ['invalid_input', 2]] as const) assert.equal(exitCode(code), expected); assert.equal(exitCode('native', 77), 77);
+});
+
+test('malformed rational denominators refuse with typed errors before native mutation', async t => {
+  const { host, id, pmRoot } = await fixture(t); const before = await readQuantitySet(host, id);
+  const history = await readFile(join(pmRoot, 'history', `${id}.jsonl`), 'utf8');
+  for (const denominator of ['1.5', 'abc', '', ' ', '0', '00', '-1', '1e2', '0x10', 'Infinity', '9'.repeat(81)]) {
+    assert.doesNotThrow(() => assert.equal(RationalSchema.safeParse({ numerator: '1', denominator }).success, false));
+    assert.throws(() => rational({ numerator: '1', denominator }), hasCode('invalid_input'));
+    await assert.rejects(recordQuantity(host, { id, op: 'invalid-denominator', revision: before.revision, quantity: observation('invalid', { value: { numerator: '1', denominator } }) }), hasCode('invalid_input'));
+  }
+  assert.equal((await readQuantitySet(host, id)).revision, before.revision); assert.equal(await readFile(join(pmRoot, 'history', `${id}.jsonl`), 'utf8'), history);
+  for (const denominator of ['1', '0002', '9'.repeat(80)]) assert.equal(RationalSchema.safeParse({ numerator: '1', denominator }).success, true);
+  await recordQuantity(host, { id, op: 'valid-denominator', revision: before.revision, quantity: observation('valid', { value: { numerator: '1', denominator: '0002' } }) });
+  assert.deepEqual((await readQuantitySet(host, id)).state.observations[0].value, { numerator: '1', denominator: '2' });
 });
