@@ -1,6 +1,6 @@
 import { insist, UnitRefusal } from './errors.ts';
 import { parse, RationalSchema, UnitCodeSchema, QuantityInputSchema, QuantitySetSchema, ExpressionSchema, digest, canonical } from './schema.ts';
-import type { Rational, Quantity, QuantitySet, UnitCode, Expression } from './schema.ts';
+import type { Rational, Quantity, QuantitySet, UnitCode, Expression, PartitionDeclaration } from './schema.ts';
 /** Exact rational reduction, including safe negative zero and precision limits. */
 export function rational(value: Rational): Rational {
   const input = parse(RationalSchema, value); let n = BigInt(input.numerator); let d = BigInt(input.denominator);
@@ -73,6 +73,32 @@ export function incompatibility(left: Quantity, right: Quantity): string | null 
   if (left.time_window !== right.time_window) return 'window_mismatch';
   return null;
 }
+/** Resolve an immutable reviewed assertion; declaration and quantity namespaces are separate. */
+export function partitionDeclaration(state: QuantitySet, id: string): PartitionDeclaration {
+  const found = state.declarations?.find(row => row.declaration_id === id);
+  insist(found, 'not_found', 'Partition declaration was not found', 'Select a reviewed declaration from the owner state'); return found;
+}
+/** Verify exact operand pins and the contextual boundaries that a review cannot override. */
+export function validatePartition(state: QuantitySet, declaration: PartitionDeclaration): void {
+  const [left, right] = declaration.operands.map(pin => {
+    const value = quantity(state, pin.quantity_id);
+    insist(digest(value) === pin.digest, 'invalid_input', 'Partition operand digest differs', 'Review the exact immutable operands again'); return value;
+  });
+  insist(left.quantity_id !== right.quantity_id && left.population_key !== right.population_key && left.population_digest !== right.population_digest, 'unsafe_overlap', 'Partition members must name distinct populations', 'Do not add a population to itself or to its subset');
+  insist(units[left.unit_code].dimension === units[right.unit_code].dimension, 'dimension_mismatch', 'Partition dimensions differ');
+  insist(left.semantic_kind === right.semantic_kind, 'semantic_mismatch', 'Partition meanings differ');
+  insist(left.subject_ref === right.subject_ref, 'population_mismatch', 'Partition subjects differ');
+  insist(left.time_window === right.time_window, 'window_mismatch', 'Partition windows differ');
+  insist([left, right].every(value => value.population_key !== declaration.population_key && value.population_digest !== declaration.population_digest), 'unsafe_overlap', 'Union must have a distinct population identity', 'Name the union explicitly instead of reusing a member population');
+}
+/** Select a declaration only for its ordered, pinned additive operands. */
+export function expressionDeclaration(state: QuantitySet, ast: Expression): PartitionDeclaration | undefined {
+  if (ast.declaration_id === undefined) return undefined;
+  insist(ast.op === 'add', 'invalid_input', 'Partition declarations authorize addition only');
+  const declaration = partitionDeclaration(state, ast.declaration_id);
+  insist(declaration.operands[0].quantity_id === ast.left && declaration.operands[1].quantity_id === ast.right, 'invalid_input', 'Expression differs from the reviewed partition operands');
+  validatePartition(state, declaration); return declaration;
+}
 /** Evaluate a bounded typed expression, retaining denominator witnesses and unknowns. */
 export function evaluateQuantityExpression(raw: QuantitySet, expression: Expression): Quantity {
   const state = readState(raw); const ast = parse(ExpressionSchema, expression); return evaluate(state, ast);
@@ -80,9 +106,12 @@ export function evaluateQuantityExpression(raw: QuantitySet, expression: Express
 /** Shared deterministic evaluator for admitted state; no shell or expression evaluation. */
 export function evaluate(state: QuantitySet, ast: Expression): Quantity {
   const left = quantity(state, ast.left); const right = quantity(state, ast.right); const additive = ast.op === 'add' || ast.op === 'subtract';
+  const declaration = expressionDeclaration(state, ast);
   if (additive) {
-    const mismatch = incompatibility(left, right); insist(mismatch === null, mismatch ?? 'invalid_input', 'Operands have incompatible context', 'Record matching observations; reviewed compatibility declarations are deferred');
-    insist(ast.op !== 'add', 'unsafe_overlap', 'A disjoint additive partition is not witnessed', 'Retain separate observations until reviewed partition declarations are supported');
+    if (!declaration) {
+      const mismatch = incompatibility(left, right); insist(mismatch === null, mismatch ?? 'invalid_input', 'Operands have incompatible context', 'Record matching observations or explicitly review a disjoint additive partition');
+      insist(ast.op !== 'add', 'unsafe_overlap', 'A disjoint additive partition is not witnessed', 'Record a reviewed partition with exact operand pins and evidence');
+    }
   } else {
     insist(left.subject_ref === right.subject_ref && left.population_key === right.population_key && left.population_digest === right.population_digest, 'population_mismatch', 'Multiplicative populations differ', 'Record operands on the same explicit population and window');
     insist(left.time_window === right.time_window, 'window_mismatch', 'Multiplicative windows differ', 'Record operands on the same explicit window; cross-window arithmetic is unsupported');
@@ -94,9 +123,10 @@ export function evaluate(state: QuantitySet, ast: Expression): Quantity {
   } else rightUnit = left.unit_code;
   const valueRight = right.value === null ? null : convert(right.value, right.unit_code, rightUnit);
   if (ast.op === 'divide' && valueRight !== null) insist(BigInt(valueRight.numerator) !== 0n, 'divide_by_zero', 'The denominator witness is zero', 'Record a nonzero denominator witness');
-  const mergedProvenance = [...new Map([...left.provenance, ...right.provenance].map(ref => [digest(ref), ref])).values()];
+  const mergedProvenance = [...new Map([...left.provenance, ...right.provenance, ...(declaration?.evidence ?? [])].map(ref => [digest(ref), ref])).values()];
   insist(mergedProvenance.length <= 16, 'limit_exceeded', 'Derived quantity would retain more than sixteen distinct source fragments', 'Use operands with fewer distinct sources or partition the calculation');
   const result = { ...left, quantity_id: 'evaluated', value: left.value === null || valueRight === null ? null : arithmetic(left.value, valueRight, ast.op), unit_code: unit,
+    ...(declaration ? { population_key: declaration.population_key, population_digest: declaration.population_digest } : {}),
     semantic_kind: `${ast.op}.${digest([left.semantic_kind, right.semantic_kind])}`,
     provenance: mergedProvenance, notes: '', acquisition: 'estimated' as const,
   };
@@ -114,22 +144,27 @@ export function evaluate(state: QuantitySet, ast: Expression): Quantity {
 /** Fail closed on corruption, unsupported versions and broken immutable replay witnesses. */
 export function readState(raw: unknown): QuantitySet {
   insist(typeof raw === 'object' && raw !== null && 'version' in raw, 'invalid_record', 'Missing unit state');
-  insist(raw.version === 1, 'unsupported_version', 'Unsupported quantity state version', 'Upgrade the package; do not rewrite future state');
+  insist(raw.version === 1 || raw.version === 2, 'unsupported_version', 'Unsupported quantity state version', 'Upgrade the package; do not rewrite future state');
   try {
   const state = parse(QuantitySetSchema, raw, true);
+  const declarations = state.declarations ?? [];
+  insist(new Set(declarations.map(row => row.declaration_id)).size === declarations.length, 'invalid_record', 'Duplicate declaration identities');
+  for (const declaration of declarations) validatePartition(state, declaration);
   const all = [...state.observations, ...state.derivations.map(row => row.quantity)];
   insist(new Set(all.map(row => row.quantity_id)).size === all.length && new Set(state.operations.map(row => row.operation_id)).size === state.operations.length, 'invalid_record', 'Duplicate immutable identities');
   for (const row of all) { insist(canonical(normalizeQuantity(row)) === canonical(row), 'invalid_record', 'Stored quantity is not canonical'); if (row.supersedes) insist(row.supersedes !== row.quantity_id && all.some(prior => prior.quantity_id === row.supersedes), 'invalid_record', 'Correction reference is invalid'); }
   for (const row of state.derivations) {
-    insist(row.declaration_digest === digest({ policy: 'exact-context-v1' }) && row.operands.length === 2, 'invalid_record', 'Derivation declaration is not pinned');
+    insist(row.declaration_digest === digest(expressionDeclaration(state, row.expression) ?? { policy: 'exact-context-v1' }) && row.operands.length === 2, 'invalid_record', 'Derivation declaration is not pinned');
     for (const [index, key] of [row.expression.left, row.expression.right].entries()) insist(row.operands[index].quantity_id === key && key !== row.quantity.quantity_id && row.operands[index].digest === digest(quantity(state, key)), 'invalid_record', 'Derivation input digest changed');
   }
   for (const [index, operation] of state.operations.entries()) {
     insist(operation.result.sequence === index + 1 && operation.result_digest === digest(operation.result), 'invalid_record', 'Replay result is corrupted');
-    const target = operation.result.kind === 'create' ? { quantity_set_key: state.quantity_set_key } : quantity(state, operation.result.identity);
+    const target = operation.result.kind === 'create' ? { quantity_set_key: state.quantity_set_key } : operation.result.kind === 'declare' ? partitionDeclaration(state, operation.result.identity) : quantity(state, operation.result.identity);
     insist(operation.result.digest === digest(target), 'invalid_record', 'Immutable quantity content changed outside its recorded operation');
   }
-  insist(state.operations[0].result.kind === 'create' && state.operations.filter(row => row.result.kind === 'create').length === 1 && state.operations.length === all.length + 1, 'invalid_record', 'Record and replay inventories differ');
+  insist(state.operations[0].result.kind === 'create' && state.operations.filter(row => row.result.kind === 'create').length === 1 && state.operations.length === all.length + declarations.length + 1, 'invalid_record', 'Record and replay inventories differ');
+  const declarationOperations = state.operations.filter(row => row.result.kind === 'declare');
+  insist(declarationOperations.length === declarations.length && new Set(declarationOperations.map(row => row.result.identity)).size === declarations.length, 'invalid_record', 'Declaration and replay inventories differ');
   const available = new Set(state.observations.map(row => row.quantity_id));
   for (const row of state.derivations) {
     insist(row.operands.every(operand => available.has(operand.quantity_id)), 'invalid_record', 'Derivation dependencies are not acyclic');

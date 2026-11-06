@@ -1,13 +1,43 @@
 id: pm-unit-declarations
-title: "Later: reviewed declarations and general unit algebra"
+title: Reviewed disjoint partition declarations and exact addition
 description: ""
 type: Feature
-status: open
+status: in_progress
 priority: 2
-tags[1]: later
+tags: []
 created_at: "2026-11-06T04:47:04.681Z"
-updated_at: "2026-11-06T04:47:04.681Z"
+updated_at: "2026-11-06T20:33:47.305Z"
+assignee: codex-astra
+claim_principal: codex-astra
 author: codex-agent
-acceptance_criteria: Versioned evidence-backed compatibility and disjoint partition declarations; product division and bounded integer exponent unit AST; weighted ratio aggregation; immutable declaration pins
+acceptance_criteria: Versioned evidence-backed disjoint partition declarations with immutable operand and declaration pins; Explicit reviewed addition preserves union population source evidence uncertainty and unknowns while incompatible contexts refuse before writes; Real no-git SDK trackers verify native CAS process concurrency crash replay backward reads and behavioral revert proofs; README and ARCHITECTURE document a pinned public tracker example and scoped limits
 parent: pm-unit-release
+comments[5]{created_at,author,text}:
+  "2026-11-06T20:18:14.828Z",codex-astra,"Scope: deliver versioned evidence-backed disjoint partition declarations, native CAS/replay, immutable operand and declaration pins, and safe exact addition. Preserve existing version-1 records. General compatibility mappings, product/division/exponent unit AST, and weighted ratio aggregation will be separate Feature items with explicit acceptance criteria. Validate with real no-git SDK trackers, shared OS-process writers, crash/replay boundaries and isolated behavioral reverts."
+  "2026-11-06T20:20:27.213Z",codex-astra,"Split remaining original scope into pm-unit-compatibility, pm-unit-unit-ast and pm-unit-weighted-ratios. New declarations upgrade only their owner to state version 2; version-1 reads and exact-context derivations remain unchanged. Review attribution is submitted evidence, not authenticated approval or a proof of real-world disjointness."
+  "2026-11-06T20:26:41.155Z",codex-astra,"Focused declaration suite: 10/10 passed using real SDK trackers. Independent OS callers raced at before_update: exactly one committed and the other received revision_conflict; explicit re-review preserved both declarations. SIGKILL before and after the durable update converged on one declaration and audit event using the original key. Public read-only tracker copy at 0578835e5d5b46aac334bb8368905deb04530b61 contains seven Features plus one Epic; pinned membership evidence reproduces eight items. Lint, docstrings and zero-duplication gates passed. Full coverage, packed consumers and isolated behavioral reverts are in progress."
+  "2026-11-06T20:30:47.459Z",codex-astra,"The required pm test run completed successfully: 10 tests, 10 passed, zero failed/skipped/cancelled. Linked command includes build, test typecheck and the three declaration test files. Tracker test-result tracking is disabled by existing policy, so this comment preserves the successful result without changing tracker settings. The initial full suite passed 88/88; its coverage measurement was invalidated by a concurrent rebuild and is being rerun serially before any coverage claim."
+  "2026-11-06T20:33:47.304Z",codex-astra,"Behavioral revert proofs: all 10 new safeguard removals failed in disposable emitted-code copies, covering admission, operand fingerprints, semantic boundaries, evidence capacity, immutable declaration fingerprints, CLI dispatch, cross-process native CAS, process-kill replay, union identity and transitive declaration witnesses. The linked-worktree SDK health check reports merge-driver configuration drift against the enclosing repository despite Git resolving this package correctly; no other repository was changed. Full gates will run in a standalone package clone to isolate that SDK discovery issue."
+files[15]{path,scope}:
+  index.ts,project
+  src/api.ts,project
+  src/commands.ts,project
+  src/kernel.ts,project
+  src/output.ts,project
+  src/schema.ts,project
+  test/contracts.test.ts,project
+  test/fixtures/partition-tracker.json,project
+  test/install.acceptance.ts,project
+  test/partition-helpers.ts,project
+  test/partition-process.test.ts,project
+  test/partition-public.test.ts,project
+  test/partition-worker.ts,project
+  test/partitions.test.ts,project
+  test/revert.acceptance.ts,project
+tests[1]{command,scope,timeout_seconds,provenance{author,created_at,source_kind,source_ref}}:
+  "npm run build && npm run build:test && node --test --test-concurrency=2 test/partitions.test.ts test/partition-process.test.ts test/partition-public.test.ts",project,180,codex-astra,"2026-11-06T20:29:42.509Z",local_mutation,reviewed-declarations-and-unit-expressions
+docs[3]{path,scope}:
+  ARCHITECTURE.md,project
+  docs/real-data.md,project
+  README.md,project
 body: ""

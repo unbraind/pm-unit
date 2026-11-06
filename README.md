@@ -22,12 +22,13 @@ For an existing tracker: `pm package install npm:pm-unit`. Use `pm unit --help`,
 
 ## Commands
 
-Every command defaults to compact TOON and accepts native `--json`. JSON and TOON contain the same versioned envelope. Mutations take an explicit operation key; record and derive also take the native owner revision.
+Every command defaults to compact TOON and accepts native `--json`. JSON and TOON contain the same versioned envelope. Mutations take an explicit operation key; record, declare and derive also take the native owner revision.
 
 | Command | Example | Effect |
 | --- | --- | --- |
 | create | `pm unit create --id ledger --op birth --input '{"title":"Measurements","quantity_set_key":"requests"}'` | Create one native QuantitySet |
 | record | `pm unit record ledger --revision <hash> --op observed-1 --input -` | Append an immutable observation from stdin |
+| declare | `pm unit declare ledger --revision <hash> --op review-1 --input -` | Pin a reviewed disjoint partition and evidence |
 | derive | `pm unit derive ledger --revision <hash> --op ratio-1 --input '{"quantity_id":"pass-rate","expression":{"op":"divide","left":"passed","right":"total"}}'` | Pin an exact binary derivation |
 | convert | `pm unit convert ledger --quantity elapsed --to min` | Convert exactly, read only |
 | compare | `pm unit compare ledger --left elapsed --right summed` | Order compatible values or explain refusal |
@@ -85,9 +86,31 @@ const output = fitEnvelope(host, envelope(packet));
 
 Explanations include every intermediate formula in `derivation_witnesses`, with each dependency quantity delivered once. Shared dependency graphs use a deduplicated traversal.
 
-The exported operations are `createQuantitySet`, `recordQuantity`, `deriveQuantity`, `convertQuantity`, `compareQuantities`, `explainQuantity`, `quantityPacket` and `readQuantitySet`. Each takes a `Host` and a strict typed request. The same functions serve pm-context, pm-brief, pm-hypothesis and pm-rl in process. An embedding application supplies an authorized `PmClient`-shaped lifecycle port plus explicit `native_item_cas` and `create_if_absent` capability evidence; method presence alone proves neither capability nor authorization.
+The exported operations are `createQuantitySet`, `recordQuantity`, `declarePartition`, `deriveQuantity`, `convertQuantity`, `compareQuantities`, `explainQuantity`, `quantityPacket` and `readQuantitySet`. Each takes a `Host` and a strict typed request. The same functions serve pm-context, pm-brief, pm-hypothesis and pm-rl in process. An embedding application supplies an authorized `PmClient`-shaped lifecycle port plus explicit `native_item_cas` and `create_if_absent` capability evidence; method presence alone proves neither capability nor authorization.
 
 `QuantitySetSchema`, `QuantityInputSchema`, `UnitCodeSchema`, `UnitResultSchema`, all request schemas, `RationalSchema`, `IntervalSchema`, `ProvenanceSchema` and `ExpressionSchema` are public strict contracts. Pure `rational`, `arithmetic`, `convert`, `order`, `digest`, `canonical`, `readState` and `evaluateQuantityExpression` have no storage dependency. `UnitRefusal` carries `{code,message,remedy,retryable,details}`. Write receipts separate the original committed result and digest from the current owner revision, and include replay status and CAS attempts.
+
+## Reviewed partition addition
+
+Addition requires an explicit `declaration_id` in its binary expression. A version-1 `PartitionDeclarationSchema` names exactly two ordered operand IDs and their `digest(quantity)` values, a new union `population_key` and `population_digest`, `reviewed_by`, `reviewed_at`, a nonempty `rationale`, and one to sixteen immutable `evidence` references. `kind` is `disjoint_partition`. `DeclarePartitionInputSchema` wraps it with `id`, `op` and `revision`; CLI input is `{"declaration": ...}`. Get canonical operands through `readQuantitySet` or `packet` before computing their digests. The caller reviews and declares the union identity; the runtime does not infer membership.
+
+```ts
+import { declarePartition, deriveQuantity } from 'pm-unit';
+// declaration is the reviewed PartitionDeclarationSchema record described above.
+const reviewed = await declarePartition(host, {
+  id: owner.id, revision: owner.revision, op: 'review-1', declaration,
+});
+await deriveQuantity(host, {
+  id: owner.id, revision: reviewed.revision, op: 'sum-1', quantity_id: 'total',
+  expression: { op: 'add', left: 'features', right: 'epics', declaration_id: declaration.declaration_id },
+});
+```
+
+The members must have different population keys **and** digests, equal subject, meaning, dimension and window, and a union identity different from either member. Exact conversion, uncertainty bounds and unknowns follow the ordinary evaluator. Different population names alone do not prove disjointness: the review must justify it. `reviewed_by` is submitted attribution, not authenticated approval. No declaration can authorize another operator, another ordered operand pair, or a cross-window sum. A correction never redirects an existing pin; review a new declaration ID for corrected quantities. Explanations and packet rows include full reachable `declarations` alongside their digest pins and evidence. Complete witnesses may require `--budget 8192` or a narrower packet.
+
+The [public pm-unit tracker at revision 0578835](https://github.com/unbraind/pm-unit/tree/0578835e5d5b46aac334bb8368905deb04530b61/.agents/pm) contains seven Features and one Epic. A complete SDK read of an isolated copy supplied `test/fixtures/partition-tracker.json`, with each item ID, native revision and type. `test/partition-public.test.ts` verifies disjoint ID sets and complete union membership, anchors that snapshot in a real no-git tracker, and derives **7 + 1 = 8 items** using a reviewed partition. The population is that pinned snapshot, not today's tracker or a claim about completed work. See [the acquisition details](docs/real-data.md).
+
+The first declaration atomically upgrades its owner from state version 1 to version 2. Version-1 quantities and derivations remain readable without rewriting; older package versions will refuse a version-2 owner. Review appends never auto-rebase. Retry an interrupted request with its original revision and operation key to recover its one durable receipt. There are at most 32 declarations per owner; the existing 256-receipt and 64 KiB limits also apply. Declarations are immutable and cannot be deleted to reclaim capacity.
 
 ## AGENTS.md snippet
 
@@ -110,9 +133,9 @@ All runtime commands and SDK functions work in a plain tracker without Git on PA
 
 Supported units are `ms`, `s`, `min`, `h`, `m`, `cm`, `km`, `g`, `kg`, `B`, `kB`, `MB`, `GB`, `KiB`, `MiB`, `GiB`, `count`, `token`, `ratio` and `%`. Decimal (`kB`, `MB`, `GB`) and binary (`KiB`, `MiB`, `GiB`) data units are distinct and convert exactly. Fractions have at most 80 digits per component and use exact rational factors. No floating point value decides ordering.
 
-The first release supports typed binary expressions for subtraction, dimensionless scaling and same-dimension division. Addition refuses without a witnessed disjoint partition; reviewed declarations are deferred. It also refuses compound dimensions and population joins. Reviewed domain declarations, general product/exponent unit parsing and weighted ratio aggregation are deferred Features. Same dimension alone never authorizes comparison: semantic kind, subject, population key and digest must also agree. Windows must match unless the caller explicitly opts into cross-window comparison and retains its window witness. Overlapping uncertainty intervals abstain from ordering. Unknown operands propagate explicit missing identities.
+The package supports typed binary expressions for subtraction, dimensionless scaling, same-dimension division and explicitly reviewed disjoint-partition addition. It refuses unwitnessed addition, compound dimensions and general population joins. Broader compatibility declarations, product/division/exponent unit ASTs and weighted ratio aggregation remain separate Features (`pm-unit-compatibility`, `pm-unit-unit-ast`, `pm-unit-weighted-ratios`). Same dimension alone never authorizes comparison: semantic kind, subject, population key and digest must also agree. Windows must match unless the caller explicitly opts into cross-window comparison and retains its window witness. Overlapping uncertainty intervals abstain from ordering. Unknown operands propagate explicit missing identities.
 
-Each owner is limited to 128 observations, 128 derivations, 256 replay receipts and 64 KiB canonical state. Capacity refuses with a partition/successor remedy; it never evicts replay identity. Explicit derivations never auto-rebase; only immutable observation appends may retry native CAS, at most three attempts.
+Each owner is limited to 128 observations, 128 derivations, 32 declarations, 256 replay receipts and 64 KiB canonical state. Capacity refuses with a partition/successor remedy; it never evicts replay identity. Explicit declarations and derivations never auto-rebase; only immutable observation appends may retry native CAS, at most three attempts.
 
 The SDK privacy scanner rejects credential-shaped values; home paths, email shapes, malformed Unicode, ANSI/control sequences, prototype keys, cyclic objects and oversized strings are refused before writes. Email detection is a heuristic. Instruction-like prose is inert data in structured output, never executable code. Native immutable history can retain previous submissions: use host history-redaction and provider retention policy for sensitive material. Attribution is not authenticated identity or access control. There is no telemetry, model call or network egress in the package runtime.
 

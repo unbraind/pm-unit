@@ -82,7 +82,7 @@ test('stored records reject future versions corruption out-of-band edits and bro
   for (const key of ['a', 'b']) await recordQuantity(host, await request(host, id, key));
   await deriveQuantity(host, { id, op: 'ratio', revision: (await readQuantitySet(host, id)).revision, quantity_id: 'ratio', expression: { op: 'divide', left: 'a', right: 'b' } });
   const state = (await readQuantitySet(host, id)).state;
-  for (const [raw, code] of [[null, 'invalid_record'], [{}, 'invalid_record'], [{ version: 2 }, 'unsupported_version'], [{ version: 1, unknown: true }, 'invalid_record']] as const) assert.throws(() => readState(raw), hasCode(code));
+  for (const [raw, code] of [[null, 'invalid_record'], [{}, 'invalid_record'], [{ version: 3 }, 'unsupported_version'], [{ version: 1, unknown: true }, 'invalid_record']] as const) assert.throws(() => readState(raw), hasCode(code));
   const changes = [
     (copy: typeof state) => { copy.quantity_set_key = 'changed-domain'; },
     (copy: typeof state) => copy.observations.push(copy.observations[0]),
