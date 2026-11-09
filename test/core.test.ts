@@ -164,3 +164,9 @@ test('malformed rational denominators refuse with typed errors before native mut
   await recordQuantity(host, { id, op: 'valid-denominator', revision: before.revision, quantity: observation('valid', { value: { numerator: '1', denominator: '0002' } }) });
   assert.deepEqual((await readQuantitySet(host, id)).state.observations[0].value, { numerator: '1', denominator: '2' });
 });
+
+test('guardSubmitted refuses sparse arrays whose length exceeds the traversal budget', () => {
+  // Few own entries, huge length: without the bound, schema validation would iterate every empty slot.
+  for (const rows of [new Array(2 ** 31), new Array(32769)]) assert.throws(() => guardSubmitted({ rows }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
+  guardSubmitted({ rows: new Array(64).fill('public') });
+});

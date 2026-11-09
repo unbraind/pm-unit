@@ -94,6 +94,8 @@ export function guardSubmitted(value: unknown, seen = new Set<object>(), depth =
   } else if (value !== null && typeof value === 'object') {
     const prototype = Object.getPrototypeOf(value);
     insist(Array.isArray(value) || prototype === Object.prototype || prototype === null, 'invalid_input', 'Only plain JSON data is supported');
+    // A sparse array has few own entries but a huge length that schema validation would walk slot by slot.
+    insist(!Array.isArray(value) || value.length <= 32768, 'invalid_input', 'Input arrays exceed the traversal budget');
     insist(!seen.has(value), 'invalid_input', 'Cyclic input is forbidden'); seen.add(value);
     for (const name of Reflect.ownKeys(value)) {
       const descriptor = Object.getOwnPropertyDescriptor(value, name)!;
