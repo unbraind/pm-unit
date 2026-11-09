@@ -57,6 +57,7 @@ const changes = [
   { partition: true, name: 'partition durable replay removed', file: 'api', pattern: /const found = state\.operations\.find\(row => row\.operation_id === op\);/, replacement: 'const found = undefined;', test: 'partition-process', filter: 'process killed' },
   { partition: true, name: 'public partition union context lost', file: 'kernel', pattern: /population_digest: declaration.population_digest/, replacement: 'population_digest: left.population_digest', test: 'partition-public', filter: 'public tracker' },
   { partition: true, name: 'partition explanation drops review witnesses', file: 'api', pattern: /declarations.length > 0 \? \{ declarations \} : \{\}/, replacement: 'false ? { declarations } : {}', test: 'partitions', filter: 'reviewed partition sums' },
+  { partition: true, name: 'declaration admission preview removed', file: 'api', pattern: /evaluate\(state, \{ op: 'add', left: declaration\.operands\[0\]\.quantity_id, right: declaration\.operands\[1\]\.quantity_id, declaration_id: declaration\.declaration_id \}\);/, replacement: '', test: 'partitions', filter: 'cannot persist' },
 
 ];
 // Revert only the changed conversion function, preserving every other safeguard.

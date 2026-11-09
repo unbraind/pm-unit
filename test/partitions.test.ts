@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createExtensionTestHarness, decodeToon } from '@unbrained/pm-cli/sdk/testing';
 import extension, { declarePartition, deriveQuantity, readQuantitySet, recordQuantity, readState, digest, canonical, explainQuantity, quantityPacket, envelope, fitEnvelope, evaluateQuantityExpression } from '../dist/index.js';
 import type { Quantity, PartitionDeclaration, UnitResult } from '../dist/index.js';
-import { hasCode, request, historyEvents } from './helpers.ts';
+import { hasCode, request, historyEvents, fixture } from './helpers.ts';
 import { partitionFixture, partitionRequest, sumRequest } from './partition-helpers.ts';
 
 test('reviewed partition sums exact units and retains immutable evidence through transitive explanations', async t => {
@@ -58,7 +58,9 @@ test('partition refusals validate exact pins and context before every side effec
   await declarePartition(host, input); const sum = await sumRequest(host, id);
   for (const expression of [{ ...sum.expression, op: 'subtract' as const }, { ...sum.expression, left: 'right', right: 'left' }, { ...sum.expression, right: 'left' }]) await assert.rejects(deriveQuantity(host, { ...sum, expression }), hasCode('invalid_input'));
   await assert.rejects(deriveQuantity(host, { ...sum, expression: { op: 'add', left: 'left', right: 'right' } }), hasCode('population_mismatch'));
-  assert.equal((await readQuantitySet(host, id)).revision, sum.revision);
+  const prior = (await readQuantitySet(host, id)).state; const excess = await partitionRequest(host, id);
+  await assert.rejects(declarePartition(host, { ...excess, op: 'excess-key', declaration: { ...excess.declaration, declaration_id: 'excess-union', evidence: Array.from({ length: 16 }, (_, i) => ({ item_id: `review-${i}`, item_hash: digest(i), field_pointer: '/body' })) } }), hasCode('limit_exceeded'));
+  assert.equal((await readQuantitySet(host, id)).revision, sum.revision); assert.deepEqual((await readQuantitySet(host, id)).state, prior);
   const other = { ...input, op: 'other', declaration: { ...input.declaration, declaration_id: 'other' } };
   await assert.rejects(declarePartition(host, other), hasCode('revision_conflict'));
   await declarePartition(host, { ...other, revision: sum.revision });
@@ -81,10 +83,24 @@ test('partition addition conservatively propagates intervals unknowns and eviden
     if (unknown) { assert.equal(quantity.value, null); assert.equal(quantity.unknown_reason, 'Missing operands: right'); }
     else assert.deepEqual(quantity.uncertainty, { lower: { numerator: '220', denominator: '1' }, upper: { numerator: '260', denominator: '1' } });
   }
-  const { host, id } = await partitionFixture(t); const input = await partitionRequest(host, id);
+  const { host, id, pmRoot } = await partitionFixture(t); const input = await partitionRequest(host, id); const before = await historyEvents(pmRoot, id);
   input.declaration.evidence = Array.from({ length: 16 }, (_, i) => ({ item_id: `review-${i}`, item_hash: digest(i), field_pointer: '/body' }));
-  await declarePartition(host, input); const sum = await sumRequest(host, id);
-  await assert.rejects(deriveQuantity(host, sum), hasCode('limit_exceeded')); assert.equal((await readQuantitySet(host, id)).revision, sum.revision);
+  await assert.rejects(declarePartition(host, input), hasCode('limit_exceeded'));
+  assert.equal((await readQuantitySet(host, id)).revision, input.revision); assert.equal((await readQuantitySet(host, id)).state.version, 1);
+  assert.equal(await historyEvents(pmRoot, id), before);
+  const bounded = await partitionRequest(host, id); bounded.declaration.evidence = Array.from({ length: 15 }, (_, i) => ({ item_id: `review-${i}`, item_hash: digest(i), field_pointer: '/body' }));
+  await declarePartition(host, bounded); await deriveQuantity(host, await sumRequest(host, id));
+  assert.equal((await readQuantitySet(host, id)).state.derivations[0].quantity.provenance.length, 16);
+});
+test('partition admission refuses exact operands whose reviewed sum cannot persist', async t => {
+  const { host, id, pmRoot } = await fixture(t);
+  await recordQuantity(host, await request(host, id, 'left', { value: { numerator: '1', denominator: '7'.repeat(80) }, population_key: 'left', population_digest: digest('left') }));
+  await recordQuantity(host, await request(host, id, 'right', { value: { numerator: '1', denominator: '8'.repeat(80) }, population_key: 'right', population_digest: digest('right') }));
+  const input = await partitionRequest(host, id); const before = await historyEvents(pmRoot, id);
+  await assert.rejects(declarePartition(host, input), hasCode('limit_exceeded'));
+  const owner = await readQuantitySet(host, id);
+  assert.equal(owner.revision, input.revision); assert.equal(owner.state.version, 1); assert.equal(Object.hasOwn(owner.state, 'declarations'), false);
+  assert.equal(await historyEvents(pmRoot, id), before);
 });
 
 test('partition read-back rejects changed declarations pins inventories and unsupported states', async t => {
