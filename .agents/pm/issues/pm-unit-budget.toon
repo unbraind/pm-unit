@@ -1,0 +1,22 @@
+id: pm-unit-budget
+title: Read the stored budget setting only when no explicit budget is given
+description: "Validate a stored output_budget only when no explicit budget transport is supplied; retain refusal of invalid fallback values. "
+type: Issue
+status: in_progress
+priority: 2
+tags: []
+created_at: "2026-11-09T20:06:08.507Z"
+updated_at: "2026-11-09T20:12:44.249Z"
+author: codex-agent
+comments[3]{created_at,author,text}:
+  "2026-11-09T20:06:11.457Z",codex-agent,"Continuation inspection found no existing fix item, remote fix branch or PR. Plan: add lazy budget selection and real SDK-settings regressions for both explicit transports; verify behavioral reverts and targeted gates."
+  "2026-11-09T20:12:00.968Z",codex-agent,"Implemented lazy stored-budget fallback for package --budget and host --output-budget, including unbounded; selected fallback values over 8192 refuse, while invalid explicit inputs still refuse. Searched all package source: no other eager stored-setting fallback remains. Isolated behavioral revert: restoring only src/commands.ts from the base and rebuilding makes 'an explicit budget is not refused by an invalid stored budget setting' fail (exit 1); restoring the fixed implementation and rebuilding passes (exit 0). Focused contracts: 7/7 passed; npm run typecheck and npm run lint passed; linked tests executed successfully through pinned pm."
+  "2026-11-09T20:12:44.249Z",codex-agent,"Additional local tracker:health check reports existing extension_host_pm_cli_version_skew (pinned host 2026.11.6 versus pm-github requiring 2026.11.8) and shared merge_driver_configuration_drift. History drift passes. No SDK bump, extension changes or merge configuration edits are included; targeted typecheck, lint and changelog checks pass. CI will certify the clean-checkout full gate."
+files[2]{path,scope}:
+  src/commands.ts,project
+  test/contracts.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/contracts.test.ts,project,codex-agent,"2026-11-09T20:09:21.338Z",local_mutation,fix/explicit-budget-over-stored-setting
+docs[1]{path,scope}:
+  CHANGELOG.md,project
+body: ""
