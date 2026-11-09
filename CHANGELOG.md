@@ -4,6 +4,7 @@
 
 ### Added
 
+- Reviewed disjoint partition declarations and exact addition ([pm-unit-declarations](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-declarations.toon))
 - Compare one population across time windows with an explicit window reason ([pm-unit-2h1z](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-2h1z.toon))
 - Release gates documentation and real-data proof ([pm-unit-quality](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-quality.toon))
 - Native CAS replay and no-git conformance ([pm-unit-concurrency](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-concurrency.toon))

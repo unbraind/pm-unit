@@ -1,8 +1,8 @@
 import { readSettings, normalizeItemId } from '@unbrained/pm-cli/sdk';
 import { defineCommand } from '@unbrained/pm-cli/sdk/authoring';
 import type { CommandHandlerContext, ExtensionApi, FlagDefinition } from '@unbrained/pm-cli/sdk/authoring';
-import { createQuantitySet, recordQuantity, deriveQuantity, convertQuantity, compareQuantities, explainQuantity, quantityPacket } from './api.ts';
-import { parse, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema } from './schema.ts';
+import { createQuantitySet, declarePartition, recordQuantity, deriveQuantity, convertQuantity, compareQuantities, explainQuantity, quantityPacket } from './api.ts';
+import { parse, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, DeclarePartitionInputSchema } from './schema.ts';
 import { persistedSchemaPort } from './host.ts';
 import type { Host } from './host.ts';
 import { insist, refusal, UnitRefusal } from './errors.ts';
@@ -45,12 +45,13 @@ export async function runCommand(command: string, ctx: CommandHandlerContext): P
     insist(flags.cursor === undefined || ctx.global.outputCursor === undefined, 'invalid_input', 'Choose one continuation transport', 'Use --cursor for the package cursor; native producer continuation remains upstream work');
     insist(flags.limit === undefined || ctx.global.outputLimit === undefined, 'invalid_input', 'Choose one limit transport', 'Use --limit or --output-limit, not both');
     const id = await host.normalizeId!(command === 'create' ? scalar(flags.id) : scalar(ctx.args[0])); let data: UnitData;
-    if (['create', 'record', 'derive'].includes(command)) {
+    if (['create', 'record', 'derive', 'declare'].includes(command)) {
       const raw = await inputJson(flags.input); insist(!Object.keys(raw).some(key => ['id', 'op', 'revision'].includes(key)), 'invalid_input', 'Use explicit identity and revision flags');
       const op = scalar(flags.op); const revision = command === 'create' ? undefined : scalar(flags.revision);
-      fitEnvelope(host, envelope({ owner_id: id, revision: 'f'.repeat(64), operation_id: op, replayed: false, attempts: 3, result: { kind: 'create', identity: 'x'.repeat(96), sequence: 256, digest: 'f'.repeat(64) }, result_digest: 'f'.repeat(64), outcome: 'committed' }), budget);
+      fitEnvelope(host, envelope({ owner_id: id, revision: 'f'.repeat(64), operation_id: op, replayed: false, attempts: 3, result: { kind: 'declare', identity: 'x'.repeat(96), sequence: 256, digest: 'f'.repeat(64) }, result_digest: 'f'.repeat(64), outcome: 'committed' }), budget);
       if (command === 'create') data = await createQuantitySet(host, parse(CreateQuantitySetInputSchema, { ...raw, id, op }));
       else if (command === 'record') data = await recordQuantity(host, parse(RecordQuantityInputSchema, { ...raw, id, op, revision }));
+      else if (command === 'declare') data = await declarePartition(host, parse(DeclarePartitionInputSchema, { ...raw, id, op, revision }));
       else data = await deriveQuantity(host, parse(DeriveQuantityInputSchema, { ...raw, id, op, revision }));
     } else if (command === 'convert') data = await convertQuantity(host, { id, quantity: scalar(flags.quantity), to: scalar(flags.to) } as Parameters<typeof convertQuantity>[1]);
     else if (command === 'compare') data = await compareQuantities(host, { id, left: scalar(flags.left), right: scalar(flags.right), across_windows: flags.acrossWindows as boolean | undefined });
@@ -66,6 +67,7 @@ export function register(api: ExtensionApi): void {
   const definitions = [
     ['create', [], ['id', 'input', 'op'], 'Create a caller-owned quantity set', 'pm unit create --id ledger --op birth --input -'],
     ['record', ['id'], ['input', 'op', 'revision'], 'Record an immutable exact observation', 'pm unit record ledger --op observation --revision <hash> --input -'],
+    ['declare', ['id'], ['input', 'op', 'revision'], 'Pin a reviewed disjoint partition', 'pm unit declare ledger --op partition --revision <hash> --input -'],
     ['derive', ['id'], ['input', 'op', 'revision'], 'Persist a bounded exact binary derivation', 'pm unit derive ledger --op derivation --revision <hash> --input -'],
     ['convert', ['id'], ['quantity', 'to'], 'Convert without losing exact context', 'pm unit convert ledger --quantity elapsed --to min'],
     ['compare', ['id'], ['left', 'right'], 'Refuse incompatible meanings or populations', 'pm unit compare ledger --left elapsed --right summed'],
