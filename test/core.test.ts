@@ -165,8 +165,10 @@ test('malformed rational denominators refuse with typed errors before native mut
   assert.deepEqual((await readQuantitySet(host, id)).state.observations[0].value, { numerator: '1', denominator: '2' });
 });
 
-test('guardSubmitted refuses sparse arrays whose length exceeds the traversal budget', () => {
+test('guardSubmitted charges every array slot against one aggregate traversal budget', () => {
   // Few own entries, huge length: without the bound, schema validation would iterate every empty slot.
-  for (const rows of [new Array(2 ** 31), new Array(32769)]) assert.throws(() => guardSubmitted({ rows }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
+  for (const rows of [new Array(2 ** 31), new Array(262145)]) assert.throws(() => guardSubmitted({ rows }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
   guardSubmitted({ rows: new Array(64).fill('public') });
+  // Many arrays below any single-array size still share one aggregate budget.
+  assert.throws(() => guardSubmitted({ partitions: Array.from({ length: 127 }, () => ({ members: new Array(32768) })) }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
 });
