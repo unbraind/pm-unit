@@ -113,7 +113,9 @@ export function guardSubmitted(value: unknown, seen = new Set<object>(), depth =
     // array's slots are charged to one aggregate budget shared across the whole input.
     if (Array.isArray(value)) {
       insist(value.length <= 32768, 'invalid_input', 'Input arrays exceed the traversal budget');
-      insist(Object.keys(value).length === value.length, 'invalid_input', 'Sparse arrays are not plain JSON data');
+      // Exactly the indices 0..length-1: a key count alone is fooled by named properties standing in for holes.
+      const keys = Object.keys(value);
+      insist(keys.length === value.length && keys.every((key, index) => key === String(index)), 'invalid_input', 'Sparse arrays are not plain JSON data');
       budget.slots += value.length; insist(budget.slots <= 262144, 'invalid_input', 'Input arrays exceed the traversal budget');
     }
     insist(!seen.has(value), 'invalid_input', 'Cyclic input is forbidden'); seen.add(value);
