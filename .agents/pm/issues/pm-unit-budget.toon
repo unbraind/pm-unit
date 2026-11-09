@@ -6,12 +6,13 @@ status: in_progress
 priority: 2
 tags: []
 created_at: "2026-11-09T20:06:08.507Z"
-updated_at: "2026-11-09T20:12:44.249Z"
+updated_at: "2026-11-09T20:17:58.289Z"
 author: codex-agent
-comments[3]{created_at,author,text}:
+comments[4]{created_at,author,text}:
   "2026-11-09T20:06:11.457Z",codex-agent,"Continuation inspection found no existing fix item, remote fix branch or PR. Plan: add lazy budget selection and real SDK-settings regressions for both explicit transports; verify behavioral reverts and targeted gates."
   "2026-11-09T20:12:00.968Z",codex-agent,"Implemented lazy stored-budget fallback for package --budget and host --output-budget, including unbounded; selected fallback values over 8192 refuse, while invalid explicit inputs still refuse. Searched all package source: no other eager stored-setting fallback remains. Isolated behavioral revert: restoring only src/commands.ts from the base and rebuilding makes 'an explicit budget is not refused by an invalid stored budget setting' fail (exit 1); restoring the fixed implementation and rebuilding passes (exit 0). Focused contracts: 7/7 passed; npm run typecheck and npm run lint passed; linked tests executed successfully through pinned pm."
   "2026-11-09T20:12:44.249Z",codex-agent,"Additional local tracker:health check reports existing extension_host_pm_cli_version_skew (pinned host 2026.11.6 versus pm-github requiring 2026.11.8) and shared merge_driver_configuration_drift. History drift passes. No SDK bump, extension changes or merge configuration edits are included; targeted typecheck, lint and changelog checks pass. CI will certify the clean-checkout full gate."
+  "2026-11-09T20:17:58.289Z",codex-agent,"Handoff: PR https://github.com/unbraind/pm-unit/pull/12; source fix ea95313551a1d26288110066e997859fe79764f6. Exact source-head checks observed queued: CI test (22), test (26), https://github.com/unbraind/pm-unit/actions/runs/42690913473; CodeQL https://github.com/unbraind/pm-unit/actions/runs/42690913452. Automated reviews are skipped or neutral and are not approval. Full CI certification remains pending; the orchestrator owns verification and closure. The baseline tracker from origin/main independently reproduces the installed pm-github host-version skew; the shared Git configuration warning is separate and no merge configuration is modified."
 files[2]{path,scope}:
   src/commands.ts,project
   test/contracts.test.ts,project
