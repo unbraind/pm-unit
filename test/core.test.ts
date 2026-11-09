@@ -165,10 +165,15 @@ test('malformed rational denominators refuse with typed errors before native mut
   assert.deepEqual((await readQuantitySet(host, id)).state.observations[0].value, { numerator: '1', denominator: '2' });
 });
 
-test('guardSubmitted charges every array slot against one aggregate traversal budget', () => {
-  // Few own entries, huge length: without the bound, schema validation would iterate every empty slot.
-  for (const rows of [new Array(2 ** 31), new Array(262145)]) assert.throws(() => guardSubmitted({ rows }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
-  guardSubmitted({ rows: new Array(64).fill('public') });
-  // Many arrays below any single-array size still share one aggregate budget.
-  assert.throws(() => guardSubmitted({ partitions: Array.from({ length: 127 }, () => ({ members: new Array(32768) })) }), (error: unknown) => error instanceof Error && /traversal budget/u.test(error.message));
+test('guardSubmitted accepts only dense arrays within the per-array limit and one aggregate budget', () => {
+  const refused = (input: unknown, message: RegExp) => assert.throws(() => guardSubmitted(input), (error: unknown) => error instanceof Error && message.test(error.message));
+  // Holes are never JSON: refused whatever their length, so schema validation never walks or inherits through them.
+  for (const rows of [new Array(2 ** 31), new Array(2), Object.assign(new Array(3), { 1: 'public' })]) refused({ rows }, /traversal budget|Sparse arrays/u);
+  refused({ rows: Array.from({ length: 32769 }, () => 0) }, /traversal budget/u);
+  refused({ partitions: Array.from({ length: 9 }, () => Array.from({ length: 32768 }, () => 0)) }, /traversal budget/u);
+  guardSubmitted({ rows: new Array(64).fill('public'), more: Array.from({ length: 32768 }, () => 0) });
+  // A credential-shaped value inherited through a hole must never reach validation unscanned.
+  Object.defineProperty(Array.prototype, 0, { value: 'AIza' + 'x'.repeat(35), configurable: true, writable: true });
+  try { refused({ related: Object.assign(new Array(2), { 1: 'public' }) }, /Sparse arrays/u); }
+  finally { delete (Array.prototype as unknown as Record<number, unknown>)[0]; }
 });

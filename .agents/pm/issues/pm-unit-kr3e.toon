@@ -6,13 +6,14 @@ status: in_progress
 priority: 1
 tags[3]: dos,input-guard,privacy
 created_at: "2026-11-09T12:57:32.952Z"
-updated_at: "2026-11-09T15:09:54.605Z"
+updated_at: "2026-11-09T17:19:50.320Z"
 assignee: "harness:claude-code"
 author: "harness:claude-code"
 acceptance_criteria: Arrays longer than 32768 are refused with invalid_input before validation; a regression covers 2^31 and 32769 (refused) and 64 (allowed) and fails on revert.
-comments[2]{created_at,author,text}:
+comments[3]{created_at,author,text}:
   "2026-11-09T12:57:36.523Z","harness:claude-code","Revert proof: the new test 'guardSubmitted refuses sparse arrays whose length exceeds the traversal budget' fails without the bound and passes with it; test/core.test.ts passes in full."
   "2026-11-09T15:09:54.605Z","harness:claude-code","Class follow-up from CodeRabbit on pm-screen (PRRT_kwDOVll0Ws61TTim): a per-array cap still let many arrays just below it add up to millions of slots (127 x 32768). The guard now charges every array's length to one aggregate slot budget (262144) shared across the input, passed through the recursion, so no set of arrays can make schema validation unbounded. Full suite 82/82; 'guardSubmitted charges every array slot against one aggregate traversal budget' fails against main's guard and passes restored."
+  "2026-11-09T17:19:50.316Z","harness:claude-code","CodeRabbit PRRT_kwDOVk5Fqc61W0uO and PRRT_kwDOVk5Fqc61W0uX: holes are now refused outright, because JSON arrays never have holes and a hole lets schema validation read values inherited from Array.prototype that the guard never scanned. The 32768 per-array limit from the acceptance criteria is back, alongside the 262144 aggregate slot budget. Regression 'guardSubmitted accepts only dense arrays within the per-array limit and one aggregate budget' covers 2^31, 2-slot and partly-filled sparse arrays, a dense 32769 array, 9 x 32768 dense arrays, an allowed dense 32768 array, and an inherited credential-shaped value. It fails against the previous head; full suite 94/94."
 files[2]{path,scope}:
   src/schema.ts,project
   test/core.test.ts,project
