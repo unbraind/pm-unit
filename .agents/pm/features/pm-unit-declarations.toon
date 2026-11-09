@@ -6,9 +6,7 @@ status: in_progress
 priority: 2
 tags: []
 created_at: "2026-11-06T04:47:04.681Z"
-updated_at: "2026-11-09T11:42:05.567Z"
-assignee: pi-glm
-claim_principal: pi-glm
+updated_at: "2026-11-09T11:52:47.095Z"
 author: codex-agent
 acceptance_criteria: Versioned evidence-backed disjoint partition declarations with immutable operand and declaration pins; Explicit reviewed addition preserves union population source evidence uncertainty and unknowns while incompatible contexts refuse before writes; Real no-git SDK trackers verify native CAS process concurrency crash replay backward reads and behavioral revert proofs; README and ARCHITECTURE document a pinned public tracker example and scoped limits
 parent: pm-unit-release
