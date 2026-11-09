@@ -103,6 +103,23 @@ test('partition admission refuses exact operands whose reviewed sum cannot persi
   assert.equal(await historyEvents(pmRoot, id), before);
 });
 
+test('previously admitted over-capacity partitions remain readable and replayable without rewriting', async t => {
+  const { host, id, pmRoot } = await partitionFixture(t); const input = await partitionRequest(host, id);
+  input.declaration.evidence = Array.from({ length: 16 }, (_, i) => ({ item_id: `review-${i}`, item_hash: digest(i), field_pointer: '/body' }));
+  // Reproduce the pre-preview writer's persisted version-2 declaration and receipt.
+  const state = (await readQuantitySet(host, id)).state;
+  state.version = 2; state.declarations = [input.declaration];
+  const result = { kind: 'declare' as const, identity: input.declaration.declaration_id, sequence: state.operations.length + 1, digest: digest(input.declaration) };
+  state.operations.push({ operation_id: input.op, request_digest: digest(input), result, result_digest: digest(result) });
+  await host.client.update(id, { field: [`unit_state=${canonical(state)}`] });
+  const owner = await readQuantitySet(host, id); const before = await historyEvents(pmRoot, id);
+  assert.equal(canonical(readState(state)), canonical(state)); assert.deepEqual(owner.state, state);
+  const replay = await declarePartition(host, input);
+  assert.equal(replay.replayed, true); assert.deepEqual(replay.result, result); assert.equal(replay.revision, owner.revision);
+  await assert.rejects(deriveQuantity(host, await sumRequest(host, id)), hasCode('limit_exceeded'));
+  assert.equal((await readQuantitySet(host, id)).revision, owner.revision); assert.equal(await historyEvents(pmRoot, id), before);
+});
+
 test('partition read-back rejects changed declarations pins inventories and unsupported states', async t => {
   const { host, id } = await partitionFixture(t); await declarePartition(host, await partitionRequest(host, id));
   const unused = (await readQuantitySet(host, id)).state; unused.declarations![0].rationale = 'Changed before any derivation'; assert.throws(() => readState(unused), hasCode('invalid_record'));
