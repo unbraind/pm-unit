@@ -79,6 +79,8 @@ function appendMutation(state: QuantitySet, input: ReturnType<typeof RecordQuant
     insist(!(state.declarations ?? []).some(row => row.declaration_id === declaration.declaration_id), 'operation_conflict', 'Immutable declaration identity already exists', 'Use the original replay key or a new reviewed identity');
     validatePartition(state, declaration);
     state.version = 2; state.declarations = [...(state.declarations ?? []), declaration];
+    // Admission previews the authorized addition through the shared evaluator, so an unusable declaration refuses before the durable write or any declaration, replay or version upgrade is consumed.
+    evaluate(state, { op: 'add', left: declaration.operands[0].quantity_id, right: declaration.operands[1].quantity_id, declaration_id: declaration.declaration_id });
     return { identity: declaration.declaration_id, content: declaration };
   }
   let next: Quantity;
