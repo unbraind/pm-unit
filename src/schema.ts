@@ -23,7 +23,15 @@ export const QuantityInputSchema = z.strictObject({
   supersedes: KeySchema.optional(), correction_reason: z.string().min(1).max(512).optional(),
 }).refine(value => (value.value !== null || value.unknown_reason !== undefined) && ((value.supersedes === undefined) === (value.correction_reason === undefined)));
 /** A deliberately bounded first-release exact binary expression, with no executable text. */
-export const ExpressionSchema = z.strictObject({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), left: KeySchema, right: KeySchema });
+export const ExpressionSchema = z.strictObject({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), left: KeySchema, right: KeySchema, declaration_id: KeySchema.optional() });
+/** Reviewed assertion about two exact immutable operands, not inferred disjointness. */
+export const PartitionDeclarationSchema = z.strictObject({
+  version: z.literal(1), declaration_id: KeySchema, kind: z.literal('disjoint_partition'),
+  operands: z.array(z.strictObject({ quantity_id: KeySchema, digest: DigestSchema })).length(2),
+  population_key: KeySchema, population_digest: DigestSchema,
+  reviewed_by: KeySchema, reviewed_at: z.iso.datetime(), rationale: z.string().trim().min(1).max(512),
+  evidence: z.array(ProvenanceSchema).min(1).max(16),
+});
 /** Immutable derivation retains operands and exact source digests. */
 export const DerivationSchema = z.strictObject({ quantity: QuantityInputSchema, expression: ExpressionSchema, operands: z.array(z.strictObject({ quantity_id: KeySchema, digest: DigestSchema })).length(2), declaration_digest: DigestSchema, limitations: z.array(z.string().max(256)).max(8) });
 /** Compact exact intermediate derivation; its quantity is delivered once in the dependency list. */
@@ -31,11 +39,11 @@ export const DerivationWitnessSchema = DerivationSchema.omit({ quantity: true })
 /** Intermediate formula and immutable input fingerprints for an explanation. */
 export type DerivationWitness = z.infer<typeof DerivationWitnessSchema>;
 /** Immutable semantic mutation result, separate from the current owner revision. */
-export const CommittedResultSchema = z.strictObject({ kind: z.enum(['create', 'record', 'derive']), identity: KeySchema, sequence: z.number().int().min(1).max(256), digest: DigestSchema });
+export const CommittedResultSchema = z.strictObject({ kind: z.enum(['create', 'record', 'derive', 'declare']), identity: KeySchema, sequence: z.number().int().min(1).max(256), digest: DigestSchema });
 /** Replay identity is never evicted to make room for later writes. */
 export const ReplaySchema = z.strictObject({ operation_id: KeySchema, request_digest: DigestSchema, result: CommittedResultSchema, result_digest: DigestSchema });
 /** Versioned strict aggregate stored only in native unit_state. */
-export const QuantitySetSchema = z.strictObject({ version: z.literal(1), quantity_set_key: KeySchema, observations: z.array(QuantityInputSchema).max(128), derivations: z.array(DerivationSchema).max(128), operations: z.array(ReplaySchema).min(1).max(256) });
+export const QuantitySetSchema = z.strictObject({ version: z.union([z.literal(1), z.literal(2)]), quantity_set_key: KeySchema, observations: z.array(QuantityInputSchema).max(128), derivations: z.array(DerivationSchema).max(128), operations: z.array(ReplaySchema).min(1).max(256), declarations: z.array(PartitionDeclarationSchema).min(1).max(32).optional() }).refine(state => (state.version === 2) === (state.declarations !== undefined));
 /** Explicit caller-owned create identity and creation request. */
 export const CreateQuantitySetInputSchema = z.strictObject({ id: KeySchema, op: KeySchema, title: z.string().trim().min(1).max(256), quantity_set_key: KeySchema, related: z.array(KeySchema).max(16).default([]) });
 const mutation = { id: KeySchema, op: KeySchema, revision: DigestSchema };
@@ -43,6 +51,12 @@ const mutation = { id: KeySchema, op: KeySchema, revision: DigestSchema };
 export const RecordQuantityInputSchema = z.strictObject({ ...mutation, quantity: QuantityInputSchema });
 /** Exact binary derivation append; explicit edits never auto-rebase. */
 export const DeriveQuantityInputSchema = z.strictObject({ ...mutation, quantity_id: KeySchema, expression: ExpressionSchema, notes: z.string().max(512).default('') });
+/** Append one reviewed partition without rebasing its explicit owner revision. */
+export const DeclarePartitionInputSchema = z.strictObject({ ...mutation, declaration: PartitionDeclarationSchema });
+/** Immutable reviewed disjointness assertion and its submitted evidence. */
+export type PartitionDeclaration = z.infer<typeof PartitionDeclarationSchema>;
+/** Public SDK partition declaration request. */
+export type DeclarePartitionInput = z.input<typeof DeclarePartitionInputSchema>;
 /** Read-only conversion query. */
 export const ConvertQuantityInputSchema = z.strictObject({ id: KeySchema, quantity: KeySchema, to: UnitCodeSchema });
 /** Read-only exact ordering query; only an explicit option permits unequal windows. */
