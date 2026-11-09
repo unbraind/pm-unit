@@ -7,13 +7,5 @@
 - Reviewed disjoint partition declarations and exact addition ([pm-unit-declarations](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-declarations.toon))
 - Compare one population across time windows with an explicit window reason ([pm-unit-2h1z](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-2h1z.toon))
 - Release gates documentation and real-data proof ([pm-unit-quality](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-quality.toon))
-- Exact native quantity ledger and SDK ([pm-unit-ledger](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-ledger.toon))
 - Native CAS replay and no-git conformance ([pm-unit-concurrency](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-concurrency.toon))
-
-### Fixed
-
-- Convert admitted exact quantities without intermediate overflow ([pm-unit-exact-conversion](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-exact-conversion.toon))
-
-### Other
-
-- Release exact quantity context first slice ([pm-unit-release](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/epics/pm-unit-release.toon))
+- Exact native quantity ledger and SDK ([pm-unit-ledger](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/features/pm-unit-ledger.toon))

@@ -2,20 +2,42 @@ id: pm-unit-concurrency
 title: Native CAS replay and no-git conformance
 description: ""
 type: Feature
-status: in_progress
+status: closed
 priority: 2
 tags: []
 created_at: "2026-11-06T04:32:08.908Z"
-updated_at: "2026-11-06T06:07:36.151Z"
+updated_at: "2026-11-06T21:30:42.684Z"
+closed_at: "2026-11-06T21:30:41.228Z"
+completed_at: "2026-11-06T21:30:41.228Z"
 author: codex-agent
 acceptance_criteria: Every interleaving boundary and crash rerun converges; two OS writers preserve acknowledged records; 500 seeded sequences match read-back
 parent: pm-unit-release
-comments[2]{created_at,author,text}:
+resolution: First-slice acceptance delivered by merged PR #4 (e723ebeb6dcc7dffed097cb787e0e3639a5dcfdc) and verified on main.
+expected_result: All mutation/create interleavings and crash reruns converge; two OS writers retain all acknowledged records; 500 seeded sequences match native SDK read-back.
+actual_result: "Read test/concurrency.test.ts, test/model.test.ts and native revision-guarded mutate path. Full gate passes competing and identical requests at every boundary, hard OS-exit replay, two independent writers and the independent 500-sequence/1000-operation model with 500 SDK read-backs."
+comments[4]{created_at,author,text}:
   "2026-11-06T04:47:00.317Z",codex-agent,"Boundary tests passed: six competing-write boundaries, two create collisions, six mutation crash points, two create crash points, contention exhaustion and explicit stale derivation refusal. Independent OS writers acknowledged 18 records and explicitly refused 2 conflicts; all 18 survived. Replay added no history events."
   "2026-11-06T05:33:17.232Z",codex-agent,"The linked concurrency suite passed 33 of 33 tests through pm test, including identical record and derivation requests at every boundary and hard OS exits before update, after update and before receipt. Independent writers acknowledged 18 of 20 requests, explicitly refused 2 conflicts, and preserved every acknowledged record."
+  "2026-11-06T21:15:05.998Z",codex-sol,"Closure verification on main after merged PR #4 (e723ebeb6dcc7dffed097cb787e0e3639a5dcfdc) and PR #5 (0578835e5d5b46aac334bb8368905deb04530b61). Read the acceptance criteria and corresponding source/tests; run existing focused and full package gates before deciding closure. Native cursor parity, arbitrary providers and declaration algebra remain separate unfinished features. No publication is authorized."
+  "2026-11-06T21:30:34.847Z",codex-sol,"Main closure verification (current-main CI run 42251057235; local linked core/cross-window tests 12/12): Read test/concurrency.test.ts, test/model.test.ts and native revision-guarded mutate path. Full gate passes competing and identical requests at every boundary, hard OS-exit replay, two independent writers and the independent 500-sequence/1000-operation model with 500 SDK read-backs. The local linked-worktree health gate sees shared/enclosing merge configuration drift; the independent disposable clone health is clean apart from optional missing-driver warnings. Local npm and Bun gates are being rerun serially; their results and exact-head remote CI/review evidence will be reported in the PR handoff without rewriting tracker history."
 files[2]{path,scope}:
   test/concurrency.test.ts,project
   test/model.test.ts,project
-tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
-  node --test --test-concurrency=2 test/concurrency.test.ts,project,codex-agent,"2026-11-06T05:04:31.543Z",local_mutation,feat/unit
+tests[2]:
+  - command: node --test --test-concurrency=2 test/concurrency.test.ts
+    scope: project
+    provenance:
+      author: codex-agent
+      created_at: "2026-11-06T05:04:31.543Z"
+      source_kind: local_mutation
+      source_ref: feat/unit
+  - command: npm run build && node --test --test-concurrency=2 test/concurrency.test.ts test/model.test.ts
+    scope: project
+    timeout_seconds: 600
+    provenance:
+      author: codex-sol
+      created_at: "2026-11-06T21:16:06.950Z"
+      source_kind: local_mutation
+      source_ref: chore/close-delivered-items-1106
+close_reason: "PR #4; commit e723ebeb6dcc7dffed097cb787e0e3639a5dcfdc; main CI run 42251057235; local core/cross-window 12/12; Read test/concurrency.test.ts, test/model.test.ts and native revision-guarded mutate path. Full gate passes competing and identical requests at every boundary, hard OS-exit replay, two independent writers and the independent 500-sequence/1000-operation model with 500 SDK read-backs."
 body: ""
