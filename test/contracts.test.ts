@@ -145,7 +145,7 @@ test('an explicit budget is not refused by an invalid stored budget setting', as
     }
     for (const transport of ['options', 'global']) {
       for (const budget of ['1', 'unbounded']) {
-        const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '4', ...(transport === 'options' ? { budget } : {}) }, global: transport === 'global' ? { outputBudget: budget } : {}, pmRoot }); if (ran.cause) throw ran.cause;
+        const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: budget === '1' ? '1' : '4', ...(transport === 'options' ? { budget } : {}) }, global: transport === 'global' ? { outputBudget: budget } : {}, pmRoot }); if (ran.cause) throw ran.cause;
         const result = ran.result as UnitResult;
         if (budget === '1') assert.equal(result.refusal?.code, 'output_budget', 'proof:explicit_tiny_budget');
         else { assert.equal(result.ok, true, 'proof:explicit_unbounded'); assert.ok((result as UnitResult & { output_fit: { estimated_tokens: number } }).output_fit.estimated_tokens > 1600, 'proof:exceeds_default'); }
