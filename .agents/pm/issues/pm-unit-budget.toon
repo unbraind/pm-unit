@@ -6,9 +6,9 @@ status: in_progress
 priority: 2
 tags[1]: "gh:unbraind/pm-unit#12"
 created_at: "2026-11-09T20:06:08.507Z"
-updated_at: "2026-11-10T21:43:40.709Z"
+updated_at: "2026-11-10T22:42:04.447Z"
 author: codex-agent
-comments[7]{created_at,author,text}:
+comments[9]{created_at,author,text}:
   "2026-11-09T20:06:11.457Z",codex-agent,"Continuation inspection found no existing fix item, remote fix branch or PR. Plan: add lazy budget selection and real SDK-settings regressions for both explicit transports; verify behavioral reverts and targeted gates."
   "2026-11-09T20:12:00.968Z",codex-agent,"Implemented lazy stored-budget fallback for package --budget and host --output-budget, including unbounded; selected fallback values over 8192 refuse, while invalid explicit inputs still refuse. Searched all package source: no other eager stored-setting fallback remains. Isolated behavioral revert: restoring only src/commands.ts from the base and rebuilding makes 'an explicit budget is not refused by an invalid stored budget setting' fail (exit 1); restoring the fixed implementation and rebuilding passes (exit 0). Focused contracts: 7/7 passed; npm run typecheck and npm run lint passed; linked tests executed successfully through pinned pm."
   "2026-11-09T20:12:44.249Z",codex-agent,"Additional local tracker:health check reports existing extension_host_pm_cli_version_skew (pinned host 2026.11.6 versus pm-github requiring 2026.11.8) and shared merge_driver_configuration_drift. History drift passes. No SDK bump, extension changes or merge configuration edits are included; targeted typecheck, lint and changelog checks pass. CI will certify the clean-checkout full gate."
@@ -16,11 +16,27 @@ comments[7]{created_at,author,text}:
   "2026-11-10T21:36:39.222Z",codex-smallfix2-1110,"Full review finding verified: successful explicit 1600 requests cannot distinguish using the explicit budget from falling back to the default. Add budget-one refusals on both transports and unbounded packets larger than the default, then prove sensitivity to restoring a default-only command budget."
   "2026-11-10T21:38:00.021Z",codex-smallfix2-1110,"Strengthened both option/global transports: budget 1 must return output_budget, and unbounded must return a successful packet measured above 1600 tokens. Revert proof: default-only budget mutation fails at proof:explicit_tiny_budget; separately mapping unbounded to 1600 fails at proof:explicit_unbounded, each exit 1. Both mutations restored and focused boundary rerun passed. Focused node --test --test-concurrency=2 test/contracts.test.ts passed 7/7, including pm test --run --only-last --progress. timeout 2700 npm test passed 94/94 with zero failures/skips; typecheck and lint passed."
   "2026-11-10T21:43:39.090Z",codex-smallfix2-1110,"Final test refinement uses a small one-row packet for budget 1, separately from the four-row packet above the default for unbounded. This makes the tiny-budget assertion distinguish budget 1 from fallback 1600. Correction to the earlier proof description: the first default-only mutation had failed at the unbounded assertion. Final independent mutations now fail specifically at proof:explicit_tiny_budget and proof:explicit_unbounded respectively (exit 1 each). Restored contracts file passes 7/7 via pm test; typecheck and lint pass. The full suite passed 94/94 before this final test-only refinement; production source is unchanged."
+  "2026-11-10T22:24:40.877Z",codex-smallfix2-1110,"Queued a full npm test recheck on the final tiny-budget test refinement, after the current longer package gate finishes, so the final branch has full-suite evidence in addition to the passing 7/7 focused contracts. No additional test workers are started while that prerequisite gate is running. The inherited non-bot branch author remains outside this patch; the final refinement is local pending the requested author-audit exception."
+  "2026-11-10T22:42:02.658Z",codex-smallfix2-1110,"Final authoritative verification uses the fetched lockfile exactly: CLI 2026.11.7, pm-changelog 2026.11.6 and pm-ops 2026.11.6 installed in the isolated package dependencies. Earlier runs used older installed tools and are superseded. Pinned focused contracts pass 7/7; timeout 2700 npm test passes 94/94 with zero failures, cancellations or skips. Typecheck and lint pass. Both revert proofs were repeated with these exact dependencies: replacing explicit numeric budgets with 1600 fails proof:explicit_tiny_budget, and mapping unbounded to 1600 fails proof:explicit_unbounded (exit 1 each). Mutations restored and the focused suite passed 7/7 again. The branch still contains an inherited non-bot author, so the final refinement remains local pending the author-audit exception."
 files[2]{path,scope}:
   src/commands.ts,project
   test/contracts.test.ts,project
-tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
-  node --test --test-concurrency=2 test/contracts.test.ts,project,codex-agent,"2026-11-09T20:09:21.338Z",local_mutation,fix/explicit-budget-over-stored-setting
+tests[2]:
+  - command: node --test --test-concurrency=2 test/contracts.test.ts
+    scope: project
+    provenance:
+      author: codex-agent
+      created_at: "2026-11-09T20:09:21.338Z"
+      source_kind: local_mutation
+      source_ref: fix/explicit-budget-over-stored-setting
+  - command: timeout 2700 npm test
+    scope: project
+    timeout_seconds: 2750
+    provenance:
+      author: codex-smallfix2-1110
+      created_at: "2026-11-10T22:42:03.482Z"
+      source_kind: local_mutation
+      source_ref: fix/explicit-budget-over-stored-setting
 docs[1]{path,scope}:
   CHANGELOG.md,project
 body: ""
