@@ -135,12 +135,21 @@ test('whole envelopes preserve witnesses and return verified retry budgets', asy
 });
 
 test('an explicit budget is not refused by an invalid stored budget setting', async t => {
-  const { pmRoot, id } = await fixture(t); const ext = await createExtensionTestHarness(extension, { capabilities: ['commands', 'schema', 'renderers'] }); t.after(() => ext.deactivate());
+  const { pmRoot, id, host } = await fixture(t); const ext = await createExtensionTestHarness(extension, { capabilities: ['commands', 'schema', 'renderers'] }); t.after(() => ext.deactivate());
+  for (let at = 0; at < 4; at++) await recordQuantity(host, await request(host, id, `budget-${at}`, { notes: 'Public context. '.repeat(30) }));
   for (const stored of [0, -1, 1.5, 8193]) {
     await writeSettingsSection(pmRoot, 'unit', { output_budget: stored }, { author: 'fixture' });
     for (const transport of [{ options: { budget: '1600' }, global: {} }, { options: {}, global: { outputBudget: '1600' } }, { options: {}, global: { outputBudget: 'unbounded' } }]) {
       const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '1', ...transport.options }, global: transport.global, pmRoot }); if (ran.cause) throw ran.cause;
       assert.equal((ran.result as UnitResult).ok, true, `Explicit budget must override stored ${stored}`);
+    }
+    for (const transport of ['options', 'global']) {
+      for (const budget of ['1', 'unbounded']) {
+        const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '4', ...(transport === 'options' ? { budget } : {}) }, global: transport === 'global' ? { outputBudget: budget } : {}, pmRoot }); if (ran.cause) throw ran.cause;
+        const result = ran.result as UnitResult;
+        if (budget === '1') assert.equal(result.refusal?.code, 'output_budget', 'proof:explicit_tiny_budget');
+        else { assert.equal(result.ok, true, 'proof:explicit_unbounded'); assert.ok((result as UnitResult & { output_fit: { estimated_tokens: number } }).output_fit.estimated_tokens > 1600, 'proof:exceeds_default'); }
+      }
     }
     const fallback = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '1' }, pmRoot }); if (fallback.cause) throw fallback.cause;
     assert.equal((fallback.result as UnitResult).ok, false, `Invalid stored ${stored} must still refuse without an explicit budget`);
