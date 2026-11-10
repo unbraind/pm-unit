@@ -166,7 +166,7 @@ test('malformed rational denominators refuse with typed errors before native mut
 });
 
 test('guardSubmitted accepts only dense arrays within the per-array limit and one aggregate budget', () => {
-  const refused = (input: unknown, message: RegExp) => assert.throws(() => guardSubmitted(input), (error: unknown) => error instanceof Error && message.test(error.message));
+  const refused = (input: unknown, message: RegExp) => assert.throws(() => guardSubmitted(input), (error: unknown) => error instanceof Error && hasCode('invalid_input')(error) && message.test(error.message));
   // Holes are never JSON: refused whatever their length, so schema validation never walks or inherits through them.
   for (const rows of [new Array(2 ** 31), new Array(2), Object.assign(new Array(3), { 1: 'public' }), Object.assign(new Array(2), { x: 'public', y: 'public' })]) refused({ rows }, /traversal budget|Sparse arrays/u);
   refused({ rows: Array.from({ length: 32769 }, () => 0) }, /traversal budget/u);
