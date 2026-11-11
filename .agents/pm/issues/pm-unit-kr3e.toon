@@ -1,0 +1,64 @@
+id: pm-unit-kr3e
+title: Refuse sparse arrays longer than the traversal budget before schema validation
+description: "guardSubmitted bounded visited entries but not array length, so a sparse new Array(2 ** 31) passed the guard and schema validation would iterate every empty slot before the schema's max check. Same class CodeRabbit raised on pm-reduce (fixed there in bf3dff0); pm-case and pm-glossary already bound array length."
+type: Issue
+status: in_progress
+priority: 1
+tags[3]: dos,input-guard,privacy
+created_at: "2026-11-09T12:57:32.952Z"
+updated_at: "2026-11-10T21:02:17.032Z"
+author: "harness:claude-code"
+acceptance_criteria: Arrays longer than 32768 are refused with invalid_input before validation; a regression covers 2^31 and 32769 (refused) and 64 (allowed) and fails on revert.
+comments[8]{created_at,author,text}:
+  "2026-11-09T12:57:36.523Z","harness:claude-code","Revert proof: the new test 'guardSubmitted refuses sparse arrays whose length exceeds the traversal budget' fails without the bound and passes with it; test/core.test.ts passes in full."
+  "2026-11-09T15:09:54.605Z","harness:claude-code","Class follow-up from CodeRabbit on pm-screen (PRRT_kwDOVll0Ws61TTim): a per-array cap still let many arrays just below it add up to millions of slots (127 x 32768). The guard now charges every array's length to one aggregate slot budget (262144) shared across the input, passed through the recursion, so no set of arrays can make schema validation unbounded. Full suite 82/82; 'guardSubmitted charges every array slot against one aggregate traversal budget' fails against main's guard and passes restored."
+  "2026-11-09T17:19:50.316Z","harness:claude-code","CodeRabbit PRRT_kwDOVk5Fqc61W0uO and PRRT_kwDOVk5Fqc61W0uX: holes are now refused outright, because JSON arrays never have holes and a hole lets schema validation read values inherited from Array.prototype that the guard never scanned. The 32768 per-array limit from the acceptance criteria is back, alongside the 262144 aggregate slot budget. Regression 'guardSubmitted accepts only dense arrays within the per-array limit and one aggregate budget' covers 2^31, 2-slot and partly-filled sparse arrays, a dense 32769 array, 9 x 32768 dense arrays, an allowed dense 32768 array, and an inherited credential-shaped value. It fails against the previous head; full suite 94/94."
+  "2026-11-10T20:46:33.730Z",codex-smallfix-1110,This session explicitly assigns PR #11 to codex-smallfix-1110. The prior harness assignment is from the previous review session; the worktree has no uncommitted source or tracker edits. Coordinated takeover is limited to the requested boundary-test assertion fix. The pre-existing shared dependency symlink will be preserved while a matching local install is used; its target will not be modified.
+  "2026-11-10T20:48:41.748Z",codex-smallfix-1110,Verified the full CodeRabbit finding and added hasCode(invalid_input) to the existing refused helper. Test-only revert proof uses a compiled guard mutation that preserves every message but changes the three array-refusal codes to invalid_record. Original helper misses it (selected boundary test 1 passed/0 failed); fixed helper detects it (0 passed/1 failed). Reverting only the new assertion makes the required-failure mutation-detection gate fail because the boundary test incorrectly passes again. Compiled guard and fixed test were restored in finally; production source is unchanged.
+  "2026-11-10T20:51:40.748Z",codex-smallfix-1110,"Fixed-side focused core suite passed 9/9 through pm test --run --only-last --progress; typecheck and lint passed. The normal full npm test command already specifies test-concurrency=2 and is now running under timeout 2700 with isolated npm configuration. History audit also identified an older published merge with an unapproved identity; source changes can be prepared and verified locally, but replacing published history requires explicit approval. No force push has been performed."
+  "2026-11-10T20:58:41.696Z",codex-smallfix-1110,"Final local verification: focused core tests 9/9 through pm test --run, full npm test 94/94 with zero failed/skipped/cancelled, typecheck, lint and changelog:check passed. The wrong-code mutation is missed by the original helper and detected by the fixed helper; reverting only the assertion fails the required-failure proof gate. Production source is unchanged. An older signed published merge has an unapproved author identity; repairing its metadata would change descendant hashes and cannot retain that signature. Preparing source-identical publication candidates; no force push is authorized or performed. Releasing the claim without closing the item."
+  "2026-11-10T21:02:17.031Z",codex-smallfix-1110,"Clarification after inspecting repository policy: the older signed merge author and committer are already approved by .github/approved-git-identities.txt. The blocker is the current brief requiring only the SteveBot address in origin/main..HEAD, rather than a repository identity-policy failure. All new session commits use the exact requested SteveBot identity. User decision is needed between retaining this approved historical merge with a narrow exception to that brief check, or authorizing a guarded identity repair that cannot retain its old signature. Source content and test results are unchanged; the original dependency link has been restored."
+files[2]{path,scope}:
+  src/schema.ts,project
+  test/core.test.ts,project
+tests[5]:
+  - command: node --test test/core.test.ts
+    scope: project
+    provenance:
+      author: "harness:claude-code"
+      created_at: "2026-11-09T12:57:35.510Z"
+      source_kind: local_mutation
+      source_ref: fix/bound-sparse-array-length
+  - command: node --test --test-concurrency=2 test/core.test.ts
+    scope: project
+    timeout_seconds: 600
+    provenance:
+      author: codex-smallfix-1110
+      created_at: "2026-11-10T20:48:43.693Z"
+      source_kind: local_mutation
+      source_ref: fix/bound-sparse-array-length
+  - command: env -u npm_config_allow_scripts -u NPM_CONFIG_ALLOW_SCRIPTS NPM_CONFIG_USERCONFIG=/dev/null npm_config_userconfig=/dev/null timeout 2700 npm test
+    scope: project
+    timeout_seconds: 2800
+    provenance:
+      author: codex-smallfix-1110
+      created_at: "2026-11-10T20:55:49.167Z"
+      source_kind: local_mutation
+      source_ref: fix/bound-sparse-array-length
+  - command: npm run typecheck
+    scope: project
+    timeout_seconds: 600
+    provenance:
+      author: codex-smallfix-1110
+      created_at: "2026-11-10T20:55:50.936Z"
+      source_kind: local_mutation
+      source_ref: fix/bound-sparse-array-length
+  - command: npm run lint
+    scope: project
+    timeout_seconds: 600
+    provenance:
+      author: codex-smallfix-1110
+      created_at: "2026-11-10T20:55:52.155Z"
+      source_kind: local_mutation
+      source_ref: fix/bound-sparse-array-length
+body: ""

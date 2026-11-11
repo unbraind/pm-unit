@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { parse } from '@babel/parser';
 
 const privateRepositories = ['pm-observer', 'pm-web-hosted', 'pm-gpt'];
-const guardedFiles = ['test/corpus.ts', 'test/fixtures/measurements.json', 'docs/real-data-receipt.json'];
+const guardedFiles = ['test/corpus.ts', 'test/fixtures/measurements.json', 'docs/real-data-receipt.json', 'test/fixtures/daily-pageviews.json'];
 
 /** Reject non-public citations without attempting to access the named repository. */
 function checkPublicText(text: string) {

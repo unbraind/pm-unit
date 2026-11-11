@@ -2,9 +2,9 @@ import { isItemAlreadyExistsError } from '@unbrained/pm-cli/sdk';
 import { capable } from './host.ts';
 import type { Host, Snapshot } from './host.ts';
 import { insist, UnitRefusal, refusal } from './errors.ts';
-import { parse, digest, canonical, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema } from './schema.ts';
-import type { QuantitySet, Quantity, DerivationWitness, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput } from './schema.ts';
-import { readState, normalizeQuantity, quantity, convert, incompatibility, order, evaluate } from './kernel.ts';
+import { parse, digest, canonical, CreateQuantitySetInputSchema, RecordQuantityInputSchema, DeriveQuantityInputSchema, ConvertQuantityInputSchema, CompareQuantitiesInputSchema, ExplainQuantityInputSchema, QuantityPacketInputSchema, DeclarePartitionInputSchema } from './schema.ts';
+import type { QuantitySet, Quantity, DerivationWitness, CreateQuantitySetInput, RecordQuantityInput, DeriveQuantityInput, ConvertQuantityInput, CompareQuantitiesInput, ExplainQuantityInput, QuantityPacketInput, DeclarePartitionInput, PartitionDeclaration } from './schema.ts';
+import { readState, normalizeQuantity, quantity, convert, incompatibility, order, evaluate, units, expressionDeclaration, validatePartition } from './kernel.ts';
 /** Native committed receipt retains historical result separately from the current revision. */
 export interface UnitMutationReceipt {
   /** Canonical native identity. */
@@ -42,8 +42,8 @@ function replay(state: QuantitySet, op: string, request: unknown) {
   if (found) insist(found.request_digest === digest(request), 'operation_conflict', 'Operation key belongs to another request', 'Use the original request or a new key for a separately reviewed operation'); return found;
 }
 /** Append replay identity before checking aggregate resource ceilings. */
-function remember(state: QuantitySet, op: string, request: unknown, kind: 'create' | 'record' | 'derive', identity: string, content: unknown) {
-  insist(state.operations.length < 256 && state.observations.length <= 128 && state.derivations.length <= 128, 'limit_exceeded', 'Quantity aggregate count limit reached', 'Create a successor or partition the set; receipts are never evicted');
+function remember(state: QuantitySet, op: string, request: unknown, kind: 'create' | 'record' | 'derive' | 'declare', identity: string, content: unknown) {
+  insist(state.operations.length < 256 && state.observations.length <= 128 && state.derivations.length <= 128 && (state.declarations?.length ?? 0) <= 32, 'limit_exceeded', 'Quantity aggregate count limit reached', 'Create a successor or partition the set; receipts are never evicted');
   const result = { kind, identity, sequence: state.operations.length + 1, digest: digest(content) }; const operation = { operation_id: op, request_digest: digest(request), result, result_digest: digest(result) };
   state.operations.push(operation); readState(state); return operation;
 }
@@ -72,24 +72,38 @@ export async function createQuantitySet(host: Host, raw: CreateQuantitySetInput)
     }
   } catch (error) { throw refusal(error); }
 }
+/** Append validated immutable content before one shared native CAS and replay receipt. */
+function appendMutation(state: QuantitySet, input: ReturnType<typeof RecordQuantityInputSchema.parse> | ReturnType<typeof DeriveQuantityInputSchema.parse> | ReturnType<typeof DeclarePartitionInputSchema.parse>) {
+  if ('declaration' in input) {
+    const declaration = input.declaration;
+    insist(!(state.declarations ?? []).some(row => row.declaration_id === declaration.declaration_id), 'operation_conflict', 'Immutable declaration identity already exists', 'Use the original replay key or a new reviewed identity');
+    validatePartition(state, declaration);
+    state.version = 2; state.declarations = [...(state.declarations ?? []), declaration];
+    // Admission previews the authorized addition through the shared evaluator, so an unusable declaration refuses before the durable write or any declaration, replay or version upgrade is consumed.
+    evaluate(state, { op: 'add', left: declaration.operands[0].quantity_id, right: declaration.operands[1].quantity_id, declaration_id: declaration.declaration_id });
+    return { identity: declaration.declaration_id, content: declaration };
+  }
+  let next: Quantity;
+  if ('quantity' in input) next = input.quantity;
+  else {
+    insist(input.quantity_id !== input.expression.left && input.quantity_id !== input.expression.right, 'derivation_cycle', 'Derivation cannot reference itself');
+    next = { ...evaluate(state, input.expression), quantity_id: input.quantity_id, notes: input.notes };
+  }
+  insist(![...state.observations, ...state.derivations.map(row => row.quantity)].some(row => row.quantity_id === next.quantity_id), 'operation_conflict', 'Immutable quantity identity already exists', 'Use its original replay key or append a correction with supersedes');
+  if (next.supersedes) insist(state.observations.some(row => row.quantity_id === next.supersedes), 'invalid_input', 'Correction must name an existing observation');
+  if ('quantity' in input) state.observations.push(next);
+  else state.derivations.push({ quantity: next, expression: input.expression, operands: [input.expression.left, input.expression.right].map(key => ({ quantity_id: key, digest: digest(quantity(state, key)) })), declaration_digest: digest(expressionDeclaration(state, input.expression) ?? { policy: 'exact-context-v1' }), limitations: ['Declared context only; source truth and freshness are unknown.'] });
+  return { identity: next.quantity_id, content: next };
+}
 /** Shared native CAS mutation; commutative observation additions retry at most three times. */
-async function mutate(host: Host, input: ReturnType<typeof RecordQuantityInputSchema.parse> | ReturnType<typeof DeriveQuantityInputSchema.parse>, kind: 'record' | 'derive'): Promise<UnitMutationReceipt> {
+async function mutate(host: Host, input: ReturnType<typeof RecordQuantityInputSchema.parse> | ReturnType<typeof DeriveQuantityInputSchema.parse> | ReturnType<typeof DeclarePartitionInputSchema.parse>, kind: 'record' | 'derive' | 'declare'): Promise<UnitMutationReceipt> {
   try {
     for (let attempt = 1; attempt <= 3; attempt++) {
       const snapshot = await readQuantitySet(host, input.id); await boundary(host, 'after_read'); const normalized = { ...input, id: snapshot.id };
       const previous = replay(snapshot.state, input.op, normalized); if (previous) return await receipt(host, snapshot.id, previous, true, attempt);
       if (attempt === 1) insist(snapshot.revision === input.revision, 'revision_conflict', 'Caller revision is stale', 'Reread the owner and explicitly review the request');
-      const state = structuredClone(snapshot.state); let next: Quantity;
-      if ('quantity' in input) next = input.quantity;
-      else {
-        insist(input.quantity_id !== input.expression.left && input.quantity_id !== input.expression.right, 'derivation_cycle', 'Derivation cannot reference itself');
-        next = { ...evaluate(state, input.expression), quantity_id: input.quantity_id, notes: input.notes };
-      }
-      insist(![...state.observations, ...state.derivations.map(row => row.quantity)].some(row => row.quantity_id === next.quantity_id), 'operation_conflict', 'Immutable quantity identity already exists', 'Use its original replay key or append a correction with supersedes');
-      if (next.supersedes) insist(state.observations.some(row => row.quantity_id === next.supersedes), 'invalid_input', 'Correction must name an existing observation');
-      if ('quantity' in input) state.observations.push(next);
-      else state.derivations.push({ quantity: next, expression: input.expression, operands: [input.expression.left, input.expression.right].map(key => ({ quantity_id: key, digest: digest(quantity(state, key)) })), declaration_digest: digest({ policy: 'exact-context-v1' }), limitations: ['Declared context only; source truth and freshness are unknown.'] });
-      const operation = remember(state, input.op, normalized, kind, next.quantity_id, next);
+      const state = structuredClone(snapshot.state); const next = appendMutation(state, input);
+      const operation = remember(state, input.op, normalized, kind, next.identity, next.content);
       try {
         await boundary(host, 'before_guard'); await boundary(host, 'before_update');
         const checked = await host.client.withExpectedItemRevisions([{ id: snapshot.id, itemHash: snapshot.revision }], () => host.client.update(snapshot.id, { field: [`unit_state=${canonical(state)}`], comment: [`unit:${kind} explicit acquisition or derivation; rationale retained as data`] }));
@@ -107,6 +121,8 @@ export async function recordQuantity(host: Host, raw: RecordQuantityInput): Prom
 }
 /** Persist one exact binary derivation at the caller's explicit owner revision. */
 export async function deriveQuantity(host: Host, raw: DeriveQuantityInput): Promise<UnitMutationReceipt> { return mutate(host, parse(DeriveQuantityInputSchema, raw), 'derive'); }
+/** Persist a reviewed disjoint partition with native CAS and durable replay identity. */
+export async function declarePartition(host: Host, raw: DeclarePartitionInput): Promise<UnitMutationReceipt> { return mutate(host, parse(DeclarePartitionInputSchema, raw), 'declare'); }
 /** Read-only conversion keeps meaning, population, uncertainty and provenance intact. */
 export async function convertQuantity(host: Host, raw: ConvertQuantityInput) {
   const input = parse(ConvertQuantityInputSchema, raw); const owner = await readQuantitySet(host, input.id); const q = quantity(owner.state, input.quantity);
@@ -115,9 +131,10 @@ export async function convertQuantity(host: Host, raw: ConvertQuantityInput) {
   if (q.uncertainty) converted.uncertainty = { lower: convert(q.uncertainty.lower, q.unit_code, input.to), upper: convert(q.uncertainty.upper, q.unit_code, input.to) };
   return { owner_id: owner.id, revision: owner.revision, quantity: converted, source_digest: digest(q), freshness: 'unknown' as const };
 }
-/** Diagnose non-comparability without turning numerical agreement into source verification. */
+/** Order declared contexts, optionally across windows, retaining constants and both windows. */
 export async function compareQuantities(host: Host, raw: CompareQuantitiesInput) {
-  const input = parse(CompareQuantitiesInputSchema, raw); const owner = await readQuantitySet(host, input.id); const left = quantity(owner.state, input.left); const right = quantity(owner.state, input.right); const mismatch = incompatibility(left, right);
+  const input = parse(CompareQuantitiesInputSchema, raw); const owner = await readQuantitySet(host, input.id); const left = quantity(owner.state, input.left); const right = quantity(owner.state, input.right); const contextMismatch = incompatibility(left, right);
+  const mismatch = input.across_windows && contextMismatch === 'window_mismatch' ? null : contextMismatch;
   const missing = [left, right].filter(q => q.value === null).map(q => q.quantity_id);
   let ordering = mismatch !== null || missing.length > 0 ? null : order(left.value!, convert(right.value!, right.unit_code, left.unit_code));
   let intervalReason: string | null = null;
@@ -130,10 +147,12 @@ export async function compareQuantities(host: Host, raw: CompareQuantitiesInput)
   }
   return { owner_id: owner.id, revision: owner.revision, usable: ordering !== null, comparison: ordering === null ? 'not_comparable' as const : 'comparable' as const, ordering, reason: mismatch ?? (missing.length > 0 ? 'unknown_operand' : intervalReason), missing_ids: missing,
     left, right,
-    remedy: ordering === null ? 'Record matching units, semantic kinds, subjects, populations and windows with known values' : 'Retain source witnesses; numerical agreement does not verify the source claim' };
+    comparison_witness: { across_windows: input.across_windows, left_time_window: left.time_window, right_time_window: right.time_window,
+      held_constant: contextMismatch === null || contextMismatch === 'window_mismatch' ? { subject_ref: left.subject_ref, population_key: left.population_key, population_digest: left.population_digest, semantic_kind: left.semantic_kind, dimension: units[left.unit_code].dimension } : null },
+    remedy: mismatch === 'window_mismatch' ? 'Opt in with --across-windows (SDK across_windows: true) to compare this same declared population across the named windows' : ordering === null ? 'Record compatible units, semantic kinds, subjects and populations with known values and separable uncertainty intervals' : 'Retain source witnesses; numerical agreement does not verify the source claim' };
 }
 /** Complete transitive dependency witness; never truncates operands or denominators. */
-export function explanation(state: QuantitySet, key: string, seen = new Set<string>()): { quantity: Quantity; derivation: QuantitySet['derivations'][number] | null; dependencies: Quantity[]; derivation_witnesses: DerivationWitness[] } {
+export function explanation(state: QuantitySet, key: string, seen = new Set<string>()): { quantity: Quantity; derivation: QuantitySet['derivations'][number] | null; dependencies: Quantity[]; derivation_witnesses: DerivationWitness[]; declarations?: PartitionDeclaration[] } {
   const quantities = new Map<string, Quantity>(); const derivations = new Map<string, QuantitySet['derivations'][number]>(); const visiting = new Set(seen);
   const source = new Map(state.observations.map(value => [value.quantity_id, value])); const formulas = new Map<string, QuantitySet['derivations'][number]>();
   for (const row of state.derivations) { const value = row.quantity; source.set(value.quantity_id, value); formulas.set(value.quantity_id, row); }
@@ -147,9 +166,11 @@ export function explanation(state: QuantitySet, key: string, seen = new Set<stri
     if (row) { derivations.set(id, row); for (const operand of row.operands) visit(operand.quantity_id); }
     visiting.delete(id);
   }
-  visit(key); const result = quantities.get(key)!; const derivation = derivations.get(key) ?? null; quantities.delete(key); derivations.delete(key);
+  visit(key);
+  const declarations = [...new Map([...derivations.values()].filter(row => row.expression.declaration_id !== undefined).map(row => { const declaration = expressionDeclaration(state, row.expression)!; return [declaration.declaration_id, declaration]; })).values()];
+  const result = quantities.get(key)!; const derivation = derivations.get(key) ?? null; quantities.delete(key); derivations.delete(key);
   const witnesses = [...derivations.values()].map(row => { const { quantity: value, ...metadata } = row; return { quantity_id: value.quantity_id, ...metadata }; });
-  return { quantity: result, derivation, dependencies: [...quantities.values()], derivation_witnesses: witnesses };
+  return { quantity: result, derivation, dependencies: [...quantities.values()], derivation_witnesses: witnesses, ...(declarations.length > 0 ? { declarations } : {}) };
 }
 /** Explain exact operands and pinned provenance at one owner revision. */
 export async function explainQuantity(host: Host, raw: ExplainQuantityInput) {
