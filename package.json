@@ -64,7 +64,7 @@
     "eslint": "10.14.0",
     "fast-glob": "3.3.3",
     "jscpd": "5.4.2",
-    "pm-changelog": "2026.11.6",
+    "pm-changelog": "2026.11.7",
     "pm-ops": "2026.11.6",
     "typescript": "7.0.2",
     "istanbul-lib-instrument": "^6.0.3",
