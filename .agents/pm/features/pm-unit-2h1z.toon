@@ -2,11 +2,45 @@ id: pm-unit-2h1z
 title: Compare one population across time windows with an explicit window reason
 description: "Manual test, 2026-11-06. Two daily counts of the same population (same subject_ref, population_key and population_digest; windows 11-04 and 11-05) are refused as population_mismatch. Agents routinely need day-over-day or release-over-release comparisons. Proposal: report window_mismatch as its own reason when only time_window differs, and add an explicit cross-window comparison (for example --across-windows) that orders the values. Its witness names both windows, and it stays refused for different populations or semantics."
 type: Feature
-status: open
+status: closed
 priority: 2
-tags[3]: agents,compare,manual-test
+tags[4]: agents,compare,"gh:unbraind/pm-unit#5",manual-test
 created_at: "2026-11-06T07:22:31.895Z"
-updated_at: "2026-11-06T09:22:21.325Z"
+updated_at: "2026-11-06T21:31:15.387Z"
+closed_at: "2026-11-06T21:31:14.558Z"
+completed_at: "2026-11-06T21:31:14.558Z"
 author: claude-orchestrator
 acceptance_criteria: "A time_window-only difference reports window_mismatch, not population_mismatch; an explicit cross-window comparison orders same-population values and names both windows in its witness; a different population, semantic kind or dimension is still refused; every case has tests through real SDK trackers"
+resolution: First-slice acceptance delivered by merged PR #5 (0578835e5d5b46aac334bb8368905deb04530b61) and verified on main.
+expected_result: Window-only differences report window_mismatch; explicit cross-window comparison retains both windows and held-constant context; dimension/meaning/population mismatches still refuse on real SDK trackers.
+actual_result: "Read compareQuantities and strict incompatibility/evaluate paths. Pinned linked core/cross-window tests passed 12/12, including all four cross-window tests with real no-git trackers, CLI/SDK witness parity and pinned Wikimedia counts 722 versus 965. Full gate passes 78/78 tests and all 40 reverts; eight specifically cover cross-window safeguards. Arithmetic remains strict and comparisons read-only."
+comments[6]{created_at,author,text}:
+  "2026-11-06T13:10:25.303Z",codex-agent,"Implement a read-only explicit cross-window comparison. Keep dimension, meaning, subject and population checks strict; report window-only mismatches separately. Return both windows and the constants held fixed. Add real no-git SDK, CLI, packed-artifact and behavioral revert coverage, documentation and a pinned public day-over-day example."
+  "2026-11-06T13:26:17.202Z",codex-agent,"Implemented explicit SDK across_windows and CLI --across-windows with a strict boolean, a window-only diagnostic and a structured comparison witness. Other context mismatches, unknowns and overlapping intervals still abstain. Preliminary complete coverage passed 78 tests at 100 percent in every dimension. Self-review also preserves conflict exit code 4 and reports window-only arithmetic mismatches without allowing cross-window arithmetic. Added a public Wikimedia pair: 722 versus 965 daily page views with identical filter definitions, pinned raw bytes, SHA-256 and native source provenance. Source validity, visitor identity and causality are not inferred."
+  "2026-11-06T13:31:50.310Z",codex-agent,"Behavioral revert proof: node test/revert.acceptance.ts --cross-window-only passed all eight required negative controls, each in a disposable copy: legacy population label for window-only mismatch; removed opt-in; overly broad opt-in; missing right-window witness; ignored CLI transport; removed native flag registration; mislabeled arithmetic windows; and lost context-conflict exit code. The unchanged implementation passed afterward. Final focused core plus cross-window tests passed 12 of 12; the tracker-linked test passed, and packed npm/Bun/npx/bunx plus in-process SDK acceptance passed with Git absent. Regenerated the existing public fleet receipt at 43732 ms, retaining 47 reproduced claims and the same packet metrics. Both full release gates are next."
+  "2026-11-06T14:02:36.750Z",codex-agent,"Final local validation passed: npm run release:check and bun run release:check each completed 78 unskipped tests, one captured-artifact npm/Bun/npx/bunx plus SDK acceptance journey, and all 40 behavioral reverts with the unchanged implementation passing afterward. Independent coverage is statements 572/572, branches 404/404, functions 107/107 and lines 517/517, with no ignores. Lint, typecheck, tracker health, identity, changelog, production audit, docstrings (83 declarations), zero duplication and the 41-file package allowlist passed. The eight new regression removals are documented above. Both historical daily measurements retain separate UTC windows and a common declared filter digest. No new SDK gap was hit. Releasing the claim without closing the feature; final exact-head remote CI and review evidence will be included in the handoff."
+  "2026-11-06T21:15:39.104Z",codex-sol,"Closure verification on main after merged PR #4 (e723ebeb6dcc7dffed097cb787e0e3639a5dcfdc) and PR #5 (0578835e5d5b46aac334bb8368905deb04530b61). Read the acceptance criteria and corresponding source/tests; run existing focused and full package gates before deciding closure. Native cursor parity, arbitrary providers and declaration algebra remain separate unfinished features. No publication is authorized."
+  "2026-11-06T21:31:09.691Z",codex-sol,"Main closure verification (current-main CI run 42251057235; local linked core/cross-window tests 12/12): Read compareQuantities and strict incompatibility/evaluate paths. Pinned linked core/cross-window tests passed 12/12, including all four cross-window tests with real no-git trackers, CLI/SDK witness parity and pinned Wikimedia counts 722 versus 965. Full gate passes 78/78 tests and all 40 reverts; eight specifically cover cross-window safeguards. Arithmetic remains strict and comparisons read-only. The local linked-worktree health gate sees shared/enclosing merge configuration drift; the independent disposable clone health is clean apart from optional missing-driver warnings. Local npm and Bun gates are being rerun serially; their results and exact-head remote CI/review evidence will be reported in the PR handoff without rewriting tracker history."
+files[14]{path,scope}:
+  docs/real-data-receipt.json,project
+  src/api.ts,project
+  src/commands.ts,project
+  src/errors.ts,project
+  src/kernel.ts,project
+  src/output.ts,project
+  src/schema.ts,project
+  test/core.test.ts,project
+  test/corpus-privacy.test.ts,project
+  test/cross-window.test.ts,project
+  test/fixtures/daily-pageviews.json,project
+  test/install.acceptance.ts,project
+  test/revert.acceptance.ts,project
+  test/tracker-metadata.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/cross-window.test.ts,project,codex-agent,"2026-11-06T13:26:15.359Z",local_mutation,cross-window-comparison
+docs[3]{path,scope}:
+  ARCHITECTURE.md,project
+  docs/real-data.md,project
+  README.md,project
+close_reason: "PR #5; commit 0578835e5d5b46aac334bb8368905deb04530b61; main CI run 42251057235; local core/cross-window 12/12; Read compareQuantities and strict incompatibility/evaluate paths. Pinned linked core/cross-window tests passed 12/12, including all four cross-window tests with real no-git trackers, CLI/SDK witness parity and pinned Wikimedia counts 722 versus 965. Full gate passes 78/78 tests and all 40 reverts; eight specifically cover cross-window safeguards. Arithmetic remains strict and comparisons read-only."
 body: ""

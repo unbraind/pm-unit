@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { declarePartition, recordQuantity, deriveQuantity, readQuantitySet, explainQuantity, digest } from '../dist/index.js';
+import { fixture, request, hasCode } from './helpers.ts';
+import { partitionRequest, sumRequest } from './partition-helpers.ts';
+
+test('public tracker type partition reproduces seven Features plus one Epic with pinned membership evidence', async t => {
+  const { sha256, ...source } = JSON.parse(await readFile(new URL('./fixtures/partition-tracker.json', import.meta.url), 'utf8')) as { repository: string; revision: string; url: string; retrieved_at: string; sha256: string; rows: { id: string; type: string; item_hash: string }[] };
+  assert.equal(source.repository, 'unbraind/pm-unit'); assert.equal(source.revision, '0578835e5d5b46aac334bb8368905deb04530b61');
+  assert.equal(createHash('sha256').update(JSON.stringify(source)).digest('hex'), sha256);
+  const members = [source.rows.filter(row => row.type === 'Feature'), source.rows.filter(row => row.type === 'Epic')];
+  assert.deepEqual(members.map(rows => rows.length), [7, 1]); assert.equal(new Set(source.rows.map(row => row.id)).size, 8);
+  assert.deepEqual(members.flat().map(row => row.id).sort(), source.rows.map(row => row.id).sort());
+  assert.equal(members[0].some(a => members[1].some(b => a.id === b.id)), false);
+  const { native, host, id } = await fixture(t);
+  const evidence = await native.create({ id: 'corpus-membership', title: 'Public tracker membership snapshot', type: 'Task', body: JSON.stringify(source) });
+  const hash = (await native.readItemRevision(evidence.item.id)).item_hash;
+  const provenance = [{ item_id: evidence.item.id, item_hash: hash, field_pointer: '/body' }];
+  for (const [i, key] of ['left', 'right'].entries()) await recordQuantity(host, await request(host, id, key, { unit_code: 'count', value: { numerator: String(members[i].length), denominator: '1' }, semantic_kind: 'tracker_item_count', subject_ref: 'pm-unit', population_key: `type-${i}`, population_digest: digest(members[i]), time_window: `revision:${source.revision}`, observed_at: source.retrieved_at, provenance }));
+  const sum = await sumRequest(host, id); await assert.rejects(deriveQuantity(host, sum), hasCode('not_found'));
+  const input = await partitionRequest(host, id); input.declaration.population_digest = digest(source.rows); input.declaration.evidence = provenance; input.declaration.reviewed_at = source.retrieved_at;
+  input.declaration.rationale = 'At the pinned public revision every native item has one type. Feature and Epic ID sets are disjoint and their union is the complete eight-item snapshot.';
+  await declarePartition(host, input); await deriveQuantity(host, await sumRequest(host, id));
+  const output = await explainQuantity(host, { id, quantity: 'sum' });
+  assert.deepEqual(output.quantity.value, { numerator: '8', denominator: '1' }); assert.equal(output.quantity.population_digest, digest(source.rows));
+  assert.equal(output.quantity.observed_at, source.retrieved_at); assert.equal(output.declarations?.[0].reviewed_at, source.retrieved_at);
+  assert.deepEqual(output.declarations, [input.declaration]); assert.deepEqual(output.quantity.provenance, provenance);
+  assert.equal((await readQuantitySet(host, id)).state.operations.length, 5);
+});

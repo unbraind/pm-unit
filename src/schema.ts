@@ -23,7 +23,15 @@ export const QuantityInputSchema = z.strictObject({
   supersedes: KeySchema.optional(), correction_reason: z.string().min(1).max(512).optional(),
 }).refine(value => (value.value !== null || value.unknown_reason !== undefined) && ((value.supersedes === undefined) === (value.correction_reason === undefined)));
 /** A deliberately bounded first-release exact binary expression, with no executable text. */
-export const ExpressionSchema = z.strictObject({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), left: KeySchema, right: KeySchema });
+export const ExpressionSchema = z.strictObject({ op: z.enum(['add', 'subtract', 'multiply', 'divide']), left: KeySchema, right: KeySchema, declaration_id: KeySchema.optional() });
+/** Reviewed assertion about two exact immutable operands, not inferred disjointness. */
+export const PartitionDeclarationSchema = z.strictObject({
+  version: z.literal(1), declaration_id: KeySchema, kind: z.literal('disjoint_partition'),
+  operands: z.array(z.strictObject({ quantity_id: KeySchema, digest: DigestSchema })).length(2),
+  population_key: KeySchema, population_digest: DigestSchema,
+  reviewed_by: KeySchema, reviewed_at: z.iso.datetime(), rationale: z.string().trim().min(1).max(512),
+  evidence: z.array(ProvenanceSchema).min(1).max(16),
+});
 /** Immutable derivation retains operands and exact source digests. */
 export const DerivationSchema = z.strictObject({ quantity: QuantityInputSchema, expression: ExpressionSchema, operands: z.array(z.strictObject({ quantity_id: KeySchema, digest: DigestSchema })).length(2), declaration_digest: DigestSchema, limitations: z.array(z.string().max(256)).max(8) });
 /** Compact exact intermediate derivation; its quantity is delivered once in the dependency list. */
@@ -31,11 +39,11 @@ export const DerivationWitnessSchema = DerivationSchema.omit({ quantity: true })
 /** Intermediate formula and immutable input fingerprints for an explanation. */
 export type DerivationWitness = z.infer<typeof DerivationWitnessSchema>;
 /** Immutable semantic mutation result, separate from the current owner revision. */
-export const CommittedResultSchema = z.strictObject({ kind: z.enum(['create', 'record', 'derive']), identity: KeySchema, sequence: z.number().int().min(1).max(256), digest: DigestSchema });
+export const CommittedResultSchema = z.strictObject({ kind: z.enum(['create', 'record', 'derive', 'declare']), identity: KeySchema, sequence: z.number().int().min(1).max(256), digest: DigestSchema });
 /** Replay identity is never evicted to make room for later writes. */
 export const ReplaySchema = z.strictObject({ operation_id: KeySchema, request_digest: DigestSchema, result: CommittedResultSchema, result_digest: DigestSchema });
 /** Versioned strict aggregate stored only in native unit_state. */
-export const QuantitySetSchema = z.strictObject({ version: z.literal(1), quantity_set_key: KeySchema, observations: z.array(QuantityInputSchema).max(128), derivations: z.array(DerivationSchema).max(128), operations: z.array(ReplaySchema).min(1).max(256) });
+export const QuantitySetSchema = z.strictObject({ version: z.union([z.literal(1), z.literal(2)]), quantity_set_key: KeySchema, observations: z.array(QuantityInputSchema).max(128), derivations: z.array(DerivationSchema).max(128), operations: z.array(ReplaySchema).min(1).max(256), declarations: z.array(PartitionDeclarationSchema).min(1).max(32).optional() }).refine(state => (state.version === 2) === (state.declarations !== undefined));
 /** Explicit caller-owned create identity and creation request. */
 export const CreateQuantitySetInputSchema = z.strictObject({ id: KeySchema, op: KeySchema, title: z.string().trim().min(1).max(256), quantity_set_key: KeySchema, related: z.array(KeySchema).max(16).default([]) });
 const mutation = { id: KeySchema, op: KeySchema, revision: DigestSchema };
@@ -43,10 +51,16 @@ const mutation = { id: KeySchema, op: KeySchema, revision: DigestSchema };
 export const RecordQuantityInputSchema = z.strictObject({ ...mutation, quantity: QuantityInputSchema });
 /** Exact binary derivation append; explicit edits never auto-rebase. */
 export const DeriveQuantityInputSchema = z.strictObject({ ...mutation, quantity_id: KeySchema, expression: ExpressionSchema, notes: z.string().max(512).default('') });
+/** Append one reviewed partition without rebasing its explicit owner revision. */
+export const DeclarePartitionInputSchema = z.strictObject({ ...mutation, declaration: PartitionDeclarationSchema });
+/** Immutable reviewed disjointness assertion and its submitted evidence. */
+export type PartitionDeclaration = z.infer<typeof PartitionDeclarationSchema>;
+/** Public SDK partition declaration request. */
+export type DeclarePartitionInput = z.input<typeof DeclarePartitionInputSchema>;
 /** Read-only conversion query. */
 export const ConvertQuantityInputSchema = z.strictObject({ id: KeySchema, quantity: KeySchema, to: UnitCodeSchema });
-/** Read-only exact ordering query. */
-export const CompareQuantitiesInputSchema = z.strictObject({ id: KeySchema, left: KeySchema, right: KeySchema });
+/** Read-only exact ordering query; only an explicit option permits unequal windows. */
+export const CompareQuantitiesInputSchema = z.strictObject({ id: KeySchema, left: KeySchema, right: KeySchema, across_windows: z.boolean().default(false) });
 /** Exact dependency witness query. */
 export const ExplainQuantityInputSchema = z.strictObject({ id: KeySchema, quantity: KeySchema });
 /** Revision-bound packet query; cursor is opaque, never an offset alone. */
@@ -84,7 +98,7 @@ export function canonical(value: unknown): string {
 /** SHA-256 content identity for source, requests and results. */
 export function digest(value: unknown): string { return createHash('sha256').update(canonical(value)).digest('hex'); }
 /** Refuse unsafe data before it can enter immutable native history. */
-export function guardSubmitted(value: unknown, seen = new Set<object>(), depth = 0): void {
+export function guardSubmitted(value: unknown, seen = new Set<object>(), depth = 0, budget = { slots: 0 }): void {
   insist(depth <= 16, 'invalid_input', 'Input nesting exceeds sixteen levels');
   if (typeof value === 'string') {
     insist(value.length <= 8000 && value.isWellFormed(), 'invalid_input', 'Text is oversized or malformed Unicode');
@@ -94,13 +108,23 @@ export function guardSubmitted(value: unknown, seen = new Set<object>(), depth =
   } else if (value !== null && typeof value === 'object') {
     const prototype = Object.getPrototypeOf(value);
     insist(Array.isArray(value) || prototype === Object.prototype || prototype === null, 'invalid_input', 'Only plain JSON data is supported');
+    // JSON arrays never have holes. A hole lets schema validation walk empty slots and read values inherited from
+    // Array.prototype that this guard never scans, so only dense arrays within the per-array limit are accepted, and every
+    // array's slots are charged to one aggregate budget shared across the whole input.
+    if (Array.isArray(value)) {
+      insist(value.length <= 32768, 'invalid_input', 'Input arrays exceed the traversal budget');
+      // Exactly the indices 0..length-1: a key count alone is fooled by named properties standing in for holes.
+      const keys = Object.keys(value);
+      insist(keys.length === value.length && keys.every((key, index) => key === String(index)), 'invalid_input', 'Sparse arrays are not plain JSON data');
+      budget.slots += value.length; insist(budget.slots <= 262144, 'invalid_input', 'Input arrays exceed the traversal budget');
+    }
     insist(!seen.has(value), 'invalid_input', 'Cyclic input is forbidden'); seen.add(value);
     for (const name of Reflect.ownKeys(value)) {
       const descriptor = Object.getOwnPropertyDescriptor(value, name)!;
       insist(typeof name === 'string' && 'value' in descriptor && (descriptor.enumerable || (Array.isArray(value) && name === 'length')), 'invalid_input', 'Only enumerable JSON data properties are supported');
     }
     for (const [name, child] of Object.entries(value)) {
-      insist(!['__proto__', 'prototype', 'constructor'].includes(name), 'invalid_input', 'Prototype keys are forbidden'); guardSubmitted(child, seen, depth + 1);
+      insist(!['__proto__', 'prototype', 'constructor'].includes(name), 'invalid_input', 'Prototype keys are forbidden'); guardSubmitted(child, seen, depth + 1, budget);
     }
     seen.delete(value);
   }

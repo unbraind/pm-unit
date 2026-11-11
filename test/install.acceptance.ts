@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { npmEnvironment } from '../scripts/environment.ts';
+import { digest } from '../dist/index.js';
 import { observation } from './helpers.ts';
 import { packedRequirement } from './install-tools.ts';
 /** Run a credential-free consumer command and preserve only bounded diagnostics. */
@@ -45,6 +46,11 @@ test('one captured artifact supports npm Bun npx bunx and SDK with Git absent', 
       const exact = JSON.parse(run(['unit', 'convert', 'packed-ledger', '--quantity', 'elapsed', '--to', 'min', '--json', '--output-budget', '1600'])); assert.deepEqual(exact.data.quantity.value, { numerator: '2', denominator: '1' });
       assert.match(run(['unit', 'convert', 'packed-ledger', '--quantity', 'elapsed', '--to', 'h']), /denominator/);
       const mismatch = JSON.parse(run(['unit', 'compare', 'packed-ledger', '--left', 'elapsed', '--right', 'summed', '--json'])); assert.equal(mismatch.data.usable, false); assert.equal(mismatch.data.reason, 'semantic_mismatch');
+      const previous = JSON.parse(run(['unit', 'record', 'packed-ledger', '--op', 'previous', '--revision', second.revision, '--input', '-', '--json'], JSON.stringify({ quantity: observation('previous', { time_window: '2026-11-04' }) }))); assert.equal(previous.ok, true);
+      assert.equal(JSON.parse(run(['unit', 'compare', 'packed-ledger', '--left', 'previous', '--right', 'elapsed', '--json'])).data.reason, 'window_mismatch');
+      const daily = JSON.parse(run(['unit', 'compare', 'packed-ledger', '--left', 'previous', '--right', 'elapsed', '--across-windows', '--json']));
+      assert.equal(daily.data.ordering, 0); assert.equal(daily.data.comparison_witness.across_windows, true); assert.equal(daily.data.comparison_witness.left_time_window, '2026-11-04');
+      assert.match(run(['unit', 'compare', 'packed-ledger', '--left', 'previous', '--right', 'elapsed', '--across-windows']), /held_constant/);
       const page = JSON.parse(run(['unit', 'packet', 'packed-ledger', '--output-limit', '1', '--json'])); assert.ok(page.continuation);
       assert.equal(JSON.parse(run(['unit', 'packet', 'packed-ledger', '--output-limit', '1', '--output-cursor', page.continuation, '--json'], undefined, 2)).code, 'read_output_cursor_invalid');
       assert.equal(JSON.parse(run(['unit', 'packet', 'packed-ledger', '--output-limit', '1', '--cursor', page.continuation, '--json'])).data.returned, 1);
@@ -55,9 +61,9 @@ test('one captured artifact supports npm Bun npx bunx and SDK with Git absent', 
       assert.equal(JSON.parse(run(['unit', 'convert', 'packed-ledger', '--quantity', 'elapsed', '--to', 'min', '--json', '--budget', String(minimum)])).ok, true);
       assert.equal(JSON.parse(run(['unit', 'record', 'packed-ledger', '--op', 'bad', '--revision', second.revision, '--input', '-', '--json'], JSON.stringify({ quantity: observation('bad', { notes: '\u001b[31m' }) }), 2)).refusal.code, 'invalid_input');
       for (const denominator of ['1.5', 'abc']) assert.equal(JSON.parse(run(['unit', 'record', 'packed-ledger', '--op', 'bad-denominator', '--revision', second.revision, '--input', '-', '--json'], JSON.stringify({ quantity: observation('bad', { value: { numerator: '1', denominator } }) }), 2)).refusal.code, 'invalid_input');
-      writeFileSync(join(cwd, 'sdk-write.mjs'), "import {createDirectoryHost,recordQuantity,readQuantitySet} from 'pm-unit';const host=createDirectoryHost(process.cwd()+'/.agents/pm','consumer');const owner=await readQuantitySet(host,'packed-ledger');await recordQuantity(host,{id:owner.id,op:'sdk-record',revision:owner.revision,quantity:{...owner.state.observations[0],quantity_id:'sdk-observation'}});console.log('SDK WRITE OK');\n");
+      writeFileSync(join(cwd, 'sdk-write.mjs'), "import {createDirectoryHost,recordQuantity,readQuantitySet} from 'pm-unit';const host=createDirectoryHost(process.cwd()+'/.agents/pm','consumer');const owner=await readQuantitySet(host,'packed-ledger');await recordQuantity(host,{id:owner.id,op:'sdk-record',revision:owner.revision,quantity:{...owner.state.observations[0],quantity_id:'sdk-observation',population_key:'sdk-cohort',population_digest:'c'.repeat(64)}});console.log('SDK WRITE OK');\n");
       assert.match(execute(manager === 'npm' ? 'node' : 'bun', ['sdk-write.mjs'], cwd, safe), /SDK WRITE OK/);
-      writeFileSync(join(cwd, 'sdk.mjs'), "import assert from 'node:assert/strict';import {createDirectoryHost,convertQuantity,readQuantitySet} from 'pm-unit';const host=createDirectoryHost(process.cwd()+'/.agents/pm','consumer');assert.equal((await readQuantitySet(host,'packed-ledger')).state.observations.length,3);assert.deepEqual((await convertQuantity(host,{id:'packed-ledger',quantity:'elapsed',to:'min'})).quantity.value,{numerator:'2',denominator:'1'});console.log('SDK OK '+(globalThis.Bun?'bun':'node'));\n");
+      writeFileSync(join(cwd, 'sdk.mjs'), "import assert from 'node:assert/strict';import {createDirectoryHost,convertQuantity,readQuantitySet,compareQuantities} from 'pm-unit';const host=createDirectoryHost(process.cwd()+'/.agents/pm','consumer');assert.equal((await readQuantitySet(host,'packed-ledger')).state.observations.length,4);assert.deepEqual((await convertQuantity(host,{id:'packed-ledger',quantity:'elapsed',to:'min'})).quantity.value,{numerator:'2',denominator:'1'});assert.equal((await compareQuantities(host,{id:'packed-ledger',left:'previous',right:'elapsed',across_windows:true})).ordering,0);console.log('SDK OK '+(globalThis.Bun?'bun':'node'));\n");
       const runtime = manager === 'npm' ? 'node' : 'bun'; assert.match(execute(runtime, ['sdk.mjs'], cwd, safe), new RegExp(`SDK OK ${runtime}`));
       const installed = join(dirname(dirname(dirname(process.execPath))));
       for (const version of ['v22.19.0', 'v26.13.0']) {
@@ -67,7 +73,17 @@ test('one captured artifact supports npm Bun npx bunx and SDK with Git absent', 
         assert.match(execute(node, ['sdk.mjs'], cwd, safe), /SDK OK node/);
         const converted = JSON.parse(execute('npx', ['--no-install', 'pm', 'unit', 'convert', 'packed-ledger', '--quantity', 'elapsed', '--to', 'min', '--json'], cwd, safe)); assert.deepEqual(converted.data.quantity.value, { numerator: '2', denominator: '1' });
       }
-      unlinkSync(join(bin, 'node')); symlinkSync(process.execPath, join(bin, 'node')); journeys.push({ manager, commands, runtime });
+      unlinkSync(join(bin, 'node')); symlinkSync(process.execPath, join(bin, 'node'));
+      const member = JSON.parse(run(['unit', 'packet', 'packed-ledger', '--quantity', 'sdk-observation', '--json']));
+      const elapsed = JSON.parse(run(['unit', 'packet', 'packed-ledger', '--quantity', 'elapsed', '--json']));
+      const declaration = { version: 1, declaration_id: 'partition', kind: 'disjoint_partition', operands: [elapsed.data.rows[0].quantity, member.data.rows[0].quantity].map((q: { quantity_id: string }) => ({ quantity_id: q.quantity_id, digest: digest(q) })), population_key: 'union', population_digest: digest('union'), reviewed_by: 'consumer', reviewed_at: '2026-11-06T00:00:00Z', rationale: 'Explicit consumer fixture partition.', evidence: elapsed.data.rows[0].quantity.provenance };
+      const reviewed = JSON.parse(run(['unit', 'declare', 'packed-ledger', '--op', 'review', '--revision', member.revision, '--input', '-', '--json'], JSON.stringify({ declaration })));
+      assert.equal(reviewed.data.result.kind, 'declare');
+      const sum = JSON.parse(run(['unit', 'derive', 'packed-ledger', '--op', 'sum', '--revision', reviewed.revision, '--input', '-', '--json'], JSON.stringify({ quantity_id: 'sum', expression: { op: 'add', left: 'elapsed', right: 'sdk-observation', declaration_id: 'partition' } })));
+      assert.equal(sum.ok, true);
+      const explanation = JSON.parse(run(['unit', 'explain', 'packed-ledger', '--quantity', 'sum', '--budget', '8192', '--json']));
+      assert.deepEqual(explanation.data.quantity.value, { numerator: '240', denominator: '1' }); assert.deepEqual(explanation.data.declarations, [declaration]);
+      journeys.push({ manager, commands, runtime });
     }
     const handoff = join(root, 'handoff'); mkdirSync(join(handoff, 'release-artifact'), { recursive: true }); mkdirSync(join(handoff, 'dist'));
     copyFileSync(archive, join(handoff, 'release-artifact/package.tgz'));
