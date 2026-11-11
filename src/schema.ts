@@ -98,7 +98,7 @@ export function canonical(value: unknown): string {
 /** SHA-256 content identity for source, requests and results. */
 export function digest(value: unknown): string { return createHash('sha256').update(canonical(value)).digest('hex'); }
 /** Refuse unsafe data before it can enter immutable native history. */
-export function guardSubmitted(value: unknown, seen = new Set<object>(), depth = 0): void {
+export function guardSubmitted(value: unknown, seen = new Set<object>(), depth = 0, budget = { slots: 0 }): void {
   insist(depth <= 16, 'invalid_input', 'Input nesting exceeds sixteen levels');
   if (typeof value === 'string') {
     insist(value.length <= 8000 && value.isWellFormed(), 'invalid_input', 'Text is oversized or malformed Unicode');
@@ -108,13 +108,23 @@ export function guardSubmitted(value: unknown, seen = new Set<object>(), depth =
   } else if (value !== null && typeof value === 'object') {
     const prototype = Object.getPrototypeOf(value);
     insist(Array.isArray(value) || prototype === Object.prototype || prototype === null, 'invalid_input', 'Only plain JSON data is supported');
+    // JSON arrays never have holes. A hole lets schema validation walk empty slots and read values inherited from
+    // Array.prototype that this guard never scans, so only dense arrays within the per-array limit are accepted, and every
+    // array's slots are charged to one aggregate budget shared across the whole input.
+    if (Array.isArray(value)) {
+      insist(value.length <= 32768, 'invalid_input', 'Input arrays exceed the traversal budget');
+      // Exactly the indices 0..length-1: a key count alone is fooled by named properties standing in for holes.
+      const keys = Object.keys(value);
+      insist(keys.length === value.length && keys.every((key, index) => key === String(index)), 'invalid_input', 'Sparse arrays are not plain JSON data');
+      budget.slots += value.length; insist(budget.slots <= 262144, 'invalid_input', 'Input arrays exceed the traversal budget');
+    }
     insist(!seen.has(value), 'invalid_input', 'Cyclic input is forbidden'); seen.add(value);
     for (const name of Reflect.ownKeys(value)) {
       const descriptor = Object.getOwnPropertyDescriptor(value, name)!;
       insist(typeof name === 'string' && 'value' in descriptor && (descriptor.enumerable || (Array.isArray(value) && name === 'length')), 'invalid_input', 'Only enumerable JSON data properties are supported');
     }
     for (const [name, child] of Object.entries(value)) {
-      insist(!['__proto__', 'prototype', 'constructor'].includes(name), 'invalid_input', 'Prototype keys are forbidden'); guardSubmitted(child, seen, depth + 1);
+      insist(!['__proto__', 'prototype', 'constructor'].includes(name), 'invalid_input', 'Prototype keys are forbidden'); guardSubmitted(child, seen, depth + 1, budget);
     }
     seen.delete(value);
   }
