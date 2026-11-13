@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026.11.6 - 2026-11-06
+## Unreleased
 
 ### Added
 
@@ -12,5 +12,6 @@
 
 ### Fixed
 
+- Valid 80-digit quantities fail identity conversion and self-comparison due to intermediate overflow ([pm-unit-exact-conversion](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-exact-conversion.toon))
 - Read the stored budget setting only when no explicit budget is given ([pm-unit-budget](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-budget.toon))
 - Refuse sparse arrays longer than the traversal budget before schema validation ([pm-unit-kr3e](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-kr3e.toon))
