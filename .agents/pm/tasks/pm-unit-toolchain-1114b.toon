@@ -2,12 +2,17 @@ id: pm-unit-toolchain-1114b
 title: Adopt current pm-cli option contract and toolchain
 description: ""
 type: Task
-status: in_progress
+status: closed
 priority: 2
 tags[1]: "gh:unbraind/pm-unit#15"
 created_at: "2026-11-14T05:02:17.550Z"
-updated_at: "2026-11-14T05:37:37.930Z"
+updated_at: "2026-11-14T08:53:21.730Z"
+closed_at: "2026-11-14T08:53:21.615Z"
+completed_at: "2026-11-14T08:53:21.615Z"
 author: codex-toolchain-1114b
+resolution: Implemented and merged in #17 (e16d34b).
+expected_result: The change described by this item is on main.
+actual_result: "Merged in #17 as e16d34b; checks successful at head f413ce1: CodeQL, codeql, test (22), test (26)."
 comments[4]{created_at,author,text}:
   "2026-11-14T05:03:09.191Z",codex-toolchain-1114b,"Failure -> cause -> fix: cross-window string true expected handler invalid_input -> GH-1665 host normalization in pm-cli 2026.11.8 -> assert normalized success, replace refusal with invalid boolean host extension_flag_value_invalid (exit 2), retain reachable empty-left handler invalid_input and prove no history writes. Public compareQuantities raw-value refusals remain relevant to direct domain API callers. Baseline focused test reproduced 3 pass / 1 fail before adaptation; no production functions changed, so behavioral function revert is inapplicable."
   "2026-11-14T05:03:36.912Z",codex-toolchain-1114b,Focused cross-window regression passes 4/4. Running npm and Bun release gates at unchanged thresholds; exact final-head CI will supply remaining evidence if a gate exceeds its time budget.
@@ -22,4 +27,5 @@ tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
   node --test --test-concurrency=2 test/cross-window.test.ts,project,codex-toolchain-1114b,"2026-11-14T05:03:17.354Z",local_mutation,chore/adopt-pm-cli-option-contract
 docs[1]{path,scope}:
   CHANGELOG.md,project
+close_reason: "Delivered by #17 \"Adopt pm-cli 2026.11.13 extension option contract and land the pm-toolchain bump\" (merged as e16d34b). Checks successful at the PR head f413ce1: CodeQL, codeql, test (22), test (26)."
 body: ""
