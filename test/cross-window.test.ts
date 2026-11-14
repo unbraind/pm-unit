@@ -47,11 +47,14 @@ test('cross-window CLI and SDK share strict JSON and TOON witnesses on a real tr
   const harness = await createExtensionTestHarness(extension, { capabilities: ['commands', 'schema', 'renderers'] }); t.after(() => harness.deactivate());
   const derivation = await harness.runCommand({ command: 'unit derive', args: [id], options: { op: 'no-cross-window-arithmetic', revision: (await readQuantitySet(host, id)).revision, input: JSON.stringify({ quantity_id: 'delta', expression: { op: 'subtract', left: 'left', right: 'right' } }) }, pmRoot });
   const refused = derivation.result as UnitResult; assert.equal(refused.refusal?.code, 'window_mismatch'); assert.equal(refused.exit_code, 4);
+  const before = await historyEvents(pmRoot, id);
+  await assert.rejects(harness.runCommand({ command: 'unit compare', args: [id], options: { left: 'left', right: 'right', acrossWindows: 'bogus' }, pmRoot }), { code: 'extension_flag_value_invalid', exitCode: 2 });
+  const invalid = await harness.runCommand({ command: 'unit compare', args: [id], options: { left: '', right: 'right', acrossWindows: true }, pmRoot });
+  assert.equal((invalid.result as UnitResult).refusal?.code, 'invalid_input'); assert.equal(invalid.exitCode, 2);
   for (const acrossWindows of [undefined, false, true, 'true'] as const) {
     const execution = await harness.runCommand({ command: 'unit compare', args: [id], options: { left: 'left', right: 'right', acrossWindows }, global: { outputBudget: 'unbounded' }, pmRoot });
     assert.equal(execution.cause, undefined); const result = execution.result as UnitResult;
-    if (acrossWindows === 'true') { assert.equal(result.refusal?.code, 'invalid_input'); continue; }
-    const sdk = await compareQuantities(host, { id, left: 'left', right: 'right', across_windows: acrossWindows });
+    const sdk = await compareQuantities(host, { id, left: 'left', right: 'right', across_windows: acrossWindows === 'true' ? true : acrossWindows });
     assert.deepEqual(result.data, sdk);
     const json = await harness.runRendererOverride({ format: 'json', command: 'unit compare', result });
     const toon = await harness.runRendererOverride({ format: 'toon', command: 'unit compare', result });
@@ -59,6 +62,7 @@ test('cross-window CLI and SDK share strict JSON and TOON witnesses on a real tr
     assert.deepEqual(JSON.parse(String(json.rendered)).data.comparison_witness, sdk.comparison_witness);
     assert.doesNotThrow(() => fitEnvelope(host, envelope(sdk), 8192));
   }
+  assert.equal(await historyEvents(pmRoot, id), before);
 });
 
 test('public Wikimedia daily measurements reproduce an honest day-over-day comparison', async t => {
