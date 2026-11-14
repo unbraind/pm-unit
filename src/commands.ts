@@ -40,7 +40,8 @@ export async function runCommand(command: string, ctx: CommandHandlerContext): P
     insist(ctx.global.outputInclude === undefined && ctx.global.outputSession === undefined && ctx.global.outputRowContract === undefined, 'invalid_input', 'Generic projection would omit quantity witnesses', 'Use --quantity and --output-limit');
     insist(flags.budget === undefined || ctx.global.outputBudget === undefined, 'invalid_input', 'Choose one budget transport');
     const requestedBudget = flags.budget === undefined ? ctx.global.outputBudget : flags.budget;
-    const budget = requestedBudget === 'unbounded' ? 8192 : integer(requestedBudget, integer(policy?.output_budget, 1600));
+    const budget = requestedBudget === 'unbounded' ? 8192 : requestedBudget !== undefined ? integer(requestedBudget, 1600) : integer(policy?.output_budget, 1600);
+    insist(requestedBudget !== undefined || budget <= 8192, 'invalid_input', 'Stored output budget exceeds the 8192 token ceiling');
     insist(command === 'packet' || (ctx.global.outputCursor === undefined && ctx.global.outputLimit === undefined), 'invalid_input', 'Pagination applies only to unit packet');
     insist(flags.cursor === undefined || ctx.global.outputCursor === undefined, 'invalid_input', 'Choose one continuation transport', 'Use --cursor for the package cursor; native producer continuation remains upstream work');
     insist(flags.limit === undefined || ctx.global.outputLimit === undefined, 'invalid_input', 'Choose one limit transport', 'Use --limit or --output-limit, not both');
