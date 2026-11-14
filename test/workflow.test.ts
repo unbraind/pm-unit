@@ -18,10 +18,9 @@ test('CI health accepts a plain tracker but rejects corrupt native history',asyn
 });
 
 test('daily release remains main-only and approval-gated with exact archived provenance publishing',()=>{
-  const workflow=readFileSync('.github/workflows/release.yml','utf8');assert.match(workflow,/schedule:/);assert.match(workflow,/workflow_dispatch:/);
-  assert.equal((workflow.match(/if: github.ref == 'refs\/heads\/main' && vars.PM_RELEASE_APPROVED == 'true'/g)??[]).length,3);
-  const publishes=[...workflow.matchAll(/^\s*npm publish\s+(\S+)([^\n]*)/gm)];assert.equal(publishes.length,1);assert.equal(publishes[0][1],'./release-artifact/package.tgz');assert.match(publishes[0][2],/--provenance --ignore-scripts/);
-  assert.match(workflow,/sha256sum --check --strict/);assert.match(workflow,/npm run release:check/);assert.match(workflow,/npm run release:notes/);assert.match(workflow,/id-token: write/);
+  const workflow=readFileSync('.github/workflows/release.yml','utf8');
+  assert.match(workflow,/uses: unbraind\/pm-ops\/\.github\/workflows\/daily-release\.yml@[a-f0-9]{40}/u);
+  assert.doesNotMatch(workflow,/npm publish/u);
   // Only active (non-comment) lines count. The caller pins a pm-github release commit by full SHA with
   // its version comment; Dependabot updates both. The deprecated pm-github-version fallback stays absent.
   const syncLines=readFileSync('.github/workflows/pm-github-sync.yml','utf8').split('\n').filter(line=>!/^\s*#/.test(line));
@@ -38,6 +37,5 @@ test('canonical pm-ops release planner covers no-change dependency-only collisio
   const dependency=decideDailyRelease(base);assert.equal(dependency.should_release,true);assert.equal(dependency.npm_version,'2026.11.5');
   const collision=decideDailyRelease({...base,releaseTags:['v2026.11.4','v2026.11.5'],publishedToday:true});assert.equal(collision.should_release,false);
   const stale=decideDailyRelease({...base,existingPrs:[{number:4,headRefName:'release/v2026.11.4',isCrossRepository:false,author:{login:'github-actions[bot]'}}]});assert.equal(stale.base_sha,base.mainSha);
-  // The archived handoff is published only after the complete gate succeeds.
-  const workflow=readFileSync('.github/workflows/release.yml','utf8');assert.match(workflow,/needs.prepare.outputs.should_release == 'true'/);assert.match(workflow,/steps.publish.outcome == 'success'/);assert.ok(workflow.indexOf('npm run release:check')<workflow.indexOf('npm publish ./release-artifact/package.tgz'));
+
 });
