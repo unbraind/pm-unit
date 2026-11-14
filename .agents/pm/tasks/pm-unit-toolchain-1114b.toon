@@ -1,0 +1,25 @@
+id: pm-unit-toolchain-1114b
+title: Adopt current pm-cli option contract and toolchain
+description: ""
+type: Task
+status: in_progress
+priority: 2
+tags[1]: "gh:unbraind/pm-unit#15"
+created_at: "2026-11-14T05:02:17.550Z"
+updated_at: "2026-11-14T05:37:37.930Z"
+author: codex-toolchain-1114b
+comments[4]{created_at,author,text}:
+  "2026-11-14T05:03:09.191Z",codex-toolchain-1114b,"Failure -> cause -> fix: cross-window string true expected handler invalid_input -> GH-1665 host normalization in pm-cli 2026.11.8 -> assert normalized success, replace refusal with invalid boolean host extension_flag_value_invalid (exit 2), retain reachable empty-left handler invalid_input and prove no history writes. Public compareQuantities raw-value refusals remain relevant to direct domain API callers. Baseline focused test reproduced 3 pass / 1 fail before adaptation; no production functions changed, so behavioral function revert is inapplicable."
+  "2026-11-14T05:03:36.912Z",codex-toolchain-1114b,Focused cross-window regression passes 4/4. Running npm and Bun release gates at unchanged thresholds; exact final-head CI will supply remaining evidence if a gate exceeds its time budget.
+  "2026-11-14T05:14:15.774Z",codex-toolchain-1114b,The initial local release gate exposed clone merge-driver drift after the host upgrade. Reinstalled the current merge mapping and retain its generated repository-relative .gitattributes fence; tracker health then passes. This is toolchain configuration only; no history re-anchoring or source changes. Coverage and remaining npm/Bun release gates run at unchanged thresholds.
+  "2026-11-14T05:37:37.927Z",codex-toolchain-1114b,"| Failure | Cause (changelog) | Fix |\n| --- | --- | --- |\n| cross-window harness string true expected invalid_input | pm-cli 2026.11.8 GH-1665 normalizes declared option values | assert normalized success; replace refusal with invalid boolean host code/exit 2 and empty-left handler code/exit 2; retain no history writes |\n\nLocal npm run release:check and bun run release:check pass. Each runs 95/95 tests, all four coverage dimensions at 100 percent over eight emitted sources, packed acceptance 1/1, and 55 expected behavioral failures followed by passing restored checks. Focused cross-window regression passes 4/4. Bun gate uses isolated HOME and Git configuration. Upstream candidate (not filed): pm-cli 2026.11.13 passes options {enabled: []} through a declared strict boolean flag into a synthetic handler; expected extension_flag_value_invalid with exitCode 2. This is an unclassified validation gap, not a proven new regression. The package retains public domain validation of raw arrays and remains correct if the host later refuses first."
+files[4]{path,scope}:
+  .gitattributes,project
+  package-lock.json,project
+  package.json,project
+  test/cross-window.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/cross-window.test.ts,project,codex-toolchain-1114b,"2026-11-14T05:03:17.354Z",local_mutation,chore/adopt-pm-cli-option-contract
+docs[1]{path,scope}:
+  CHANGELOG.md,project
+body: ""
