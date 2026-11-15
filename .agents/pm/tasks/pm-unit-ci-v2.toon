@@ -1,0 +1,37 @@
+id: pm-unit-ci-v2
+title: Apply Fleet CI v2 quick PR and deep tiers
+description: "Preserve required checks and release contracts while reducing repeated PR work. Companion: pm-cli-website-dyhg."
+type: Task
+status: in_progress
+priority: 2
+tags[2]: ci,performance
+created_at: "2026-11-15T14:39:55.722Z"
+updated_at: "2026-11-15T14:46:10.655Z"
+author: codex-sol
+comments[4]{created_at,author,text}:
+  "2026-11-15T14:41:32.552Z",codex-sol,"Required checks confirmed: test (22), test (26), codeql. CodeQL stays unfiltered. Model quick depth keeps the original first 50/500 sequences with 50-case batch boundaries and generated operation totals. Integer property sweep selects a 25/201 prefix plus explicit zero/positive boundary regressions. Precision digit-boundary and capacity/privacy fixtures remain exhaustive. Full npm/Bun matrix moves to deep CI with scale 3 and 120-minute caps. Harness watchdogs round up to integer milliseconds; product contracts unchanged."
+  "2026-11-15T14:42:14.737Z",codex-sol,"Historical successful main run 43656921036: full model 32.731 s; packed acceptance 33.504 s; hosted execution 2m01s (22), 4m50s (26). Job logs retrieved through the jobs endpoint after an empty gh run view log. Packed tests already prove Bun project install and bunx CLI/extension use, so retain graph-install smoke. Documentation path checks identity and corpus privacy plus the core privacy/input-guard cases after prerequisite compilation. Strict health installs clone-local drivers; plain tracker fixture isolates global PM settings. PR timeout 15 minutes; deep remains 120."
+  "2026-11-15T14:43:48.214Z",codex-sol,"Local linked proof passes: typecheck 7.563 s, lint 4.006 s, five touched test files 77.219 s at quick depth and watchdog scale 3. New deterministic rational boundary checks retain zero and positive coverage beyond the quick prefix. Changelog check included this in-progress task, so regenerate its single changelog row. Unique-key YAML validation passes; actionlint unavailable. Quick coverage is running; full depth remains remote-only."
+  "2026-11-15T14:46:08.909Z",codex-sol,"Final quick coverage PASSED through pm test in 121.830 s: 99/99 tests, zero failures/cancellations/skips; 637/637 statements, 455/455 branches, 123/123 functions, 571/571 lines across unchanged eight emitted runtime files. Quick model measured 13.296 s; historical hosted full model 32.731 s is a different environment, not a controlled speedup estimate. Strict health passes after merge-driver setup in a disposable clone. Changelog, identity and YAML checks pass. PR #21 initial CI 43725992548 and CodeQL 43725992809 are queued; required-check wall time unavailable. No CI wait. Full depth and packed/revert acceptance on this head remain remote validation risks."
+files[13]{path,scope}:
+  .github/workflows/ci-deep.yml,project
+  .github/workflows/ci.yml,project
+  .github/workflows/codeql.yml,project
+  CHANGELOG.md,project
+  test/core.test.ts,project
+  test/corpus-review.test.ts,project
+  test/install.acceptance.ts,project
+  test/model.test.ts,project
+  test/partition-process.test.ts,project
+  test/revert.acceptance.ts,project
+  test/support/depth.ts,project
+  test/support/time.ts,project
+  test/workflow.test.ts,project
+tests[4]{command,scope,timeout_seconds,provenance{author,created_at,source_kind,source_ref}}:
+  npm run typecheck,project,300,codex-sol,"2026-11-15T14:41:33.415Z",local_mutation,ci/quick-pr-tier-deep-local-tier
+  npm run lint,project,300,codex-sol,"2026-11-15T14:41:35.160Z",local_mutation,ci/quick-pr-tier-deep-local-tier
+  PM_TEST_DEPTH=quick PM_TEST_TIME_SCALE=3 node --test --test-concurrency=2 test/model.test.ts test/core.test.ts test/corpus-review.test.ts test/partition-process.test.ts test/workflow.test.ts,project,1200,codex-sol,"2026-11-15T14:41:36.910Z",local_mutation,ci/quick-pr-tier-deep-local-tier
+  PM_TEST_DEPTH=quick npm run coverage,project,1200,codex-sol,"2026-11-15T14:42:38.971Z",local_mutation,ci/quick-pr-tier-deep-local-tier
+docs[1]{path,scope}:
+  docs/ci-tiers.md,project
+body: ""

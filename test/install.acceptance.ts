@@ -1,3 +1,4 @@
+import { testTimeout } from './support/time.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync, readFileSync, existsSync, unlinkSync, copyFileSync, chmodSync } from 'node:fs';
@@ -11,7 +12,7 @@ import { observation } from './helpers.ts';
 import { packedRequirement } from './install-tools.ts';
 /** Run a credential-free consumer command and preserve only bounded diagnostics. */
 function execute(executable: string, args: string[], cwd: string, env: NodeJS.ProcessEnv, input?: string, expected = 0): string {
-  const result = spawnSync(executable, args, { cwd, env, input, encoding: 'utf8', timeout: 180000, maxBuffer: 4 * 1024 * 1024 });
+  const result = spawnSync(executable, args, { cwd, env, input, encoding: 'utf8', timeout: testTimeout(180000), maxBuffer: 4 * 1024 * 1024 });
   assert.equal(result.status, expected, `${executable} ${args.slice(0, 4).join(' ')}: ${result.stderr.slice(-1500)} ${result.stdout.slice(-1500)}`); return result.stdout || result.stderr;
 }
 test('one captured artifact supports npm Bun npx bunx and SDK with Git absent', () => {

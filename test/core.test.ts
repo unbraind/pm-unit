@@ -1,3 +1,4 @@
+import { testDepth } from './support/depth.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -111,13 +112,22 @@ test('comparison refuses dimensions kinds subjects populations digests and windo
   await assert.rejects(explainQuantity(host, { id, quantity: 'absent' }), hasCode('not_found'));
 });
 
-test('rational properties and all exact conversions use an independent integer oracle', () => {
-  for (let i = -100; i <= 100; i++) for (const denominator of [1, 3, 7]) {
+/** Independent rational and conversion properties for one exact integer. */
+function checkRationalProperties(i: number): void {
+  for (const denominator of [1, 3, 7]) {
     const q = rational({ numerator: String(i * 2), denominator: String(denominator * 2) }); assert.equal(BigInt(q.numerator) * BigInt(denominator), BigInt(i) * BigInt(q.denominator));
     assert.deepEqual(arithmetic(q, { numerator: '1', denominator: '1' }, 'multiply'), q);
     assert.deepEqual(arithmetic(arithmetic(q, { numerator: '17', denominator: '3' }, 'add'), { numerator: '17', denominator: '3' }, 'subtract'), q);
     for (const [from, to] of [['ms', 's'], ['ms', 'h'], ['s', 'h'], ['h', 'min'], ['kB', 'KiB'], ['MB', 'MiB'], ['GB', 'GiB'], ['GiB', 'B'], ['m', 'cm'], ['km', 'm'], ['g', 'kg'], ['B', 'KiB'], ['MiB', 'B'], ['ratio', '%'], ['count', 'count'], ['token', 'token']] as const) assert.deepEqual(convert(convert(q, from, to), to, from), q);
   }
+}
+
+test('zero and positive rational conversion boundaries remain explicit at quick depth', () => {
+  for (const i of [0, 1, 100]) checkRationalProperties(i);
+});
+
+test('rational properties and all exact conversions use an independent integer oracle', () => {
+  for (let i = -100; i < -100 + testDepth(201); i++) checkRationalProperties(i);
   assert.deepEqual(convert({ numerator: '4560', denominator: '1' }, 'ms', 's'), { numerator: '114', denominator: '25' });
   assert.deepEqual(convert({ numerator: '1', denominator: '1' }, 'GiB', 'MB'), { numerator: '16777216', denominator: '15625' });
   assert.deepEqual(convert({ numerator: '1500', denominator: '1' }, 'kB', 'B'), { numerator: '1500000', denominator: '1' });

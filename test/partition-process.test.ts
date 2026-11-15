@@ -1,3 +1,4 @@
+import { testTimeout } from './support/time.ts';
 import test from 'node:test';
 import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,7 +27,7 @@ function worker(t: TestContext, pmRoot: string, input: DeclarePartitionInput, bo
   return { child, ready, result, exited };
 }
 
-test('partition process race admits exactly one revision-bound review without losing native state', { timeout: 60000 }, async t => {
+test('partition process race admits exactly one revision-bound review without losing native state', { timeout: testTimeout(60000) }, async t => {
   const { host, id, pmRoot } = await partitionFixture(t); const input = await partitionRequest(host, id);
   const peer = { ...input, op: 'peer', declaration: { ...input.declaration, declaration_id: 'peer' } };
   const workers = [worker(t, pmRoot, input, 'before_update'), worker(t, pmRoot, peer, 'before_update')];
@@ -42,7 +43,7 @@ test('partition process race admits exactly one revision-bound review without lo
   assert.equal(await historyEvents(pmRoot, id), 5); await deriveQuantity(host, await sumRequest(host, id));
 });
 
-for (const boundary of ['before_update', 'after_update']) test(`partition process killed at ${boundary} converges on one declaration and audit event`, { timeout: 60000 }, async t => {
+for (const boundary of ['before_update', 'after_update']) test(`partition process killed at ${boundary} converges on one declaration and audit event`, { timeout: testTimeout(60000) }, async t => {
   const { host, id, pmRoot } = await partitionFixture(t); const input = await partitionRequest(host, id);
   const process = worker(t, pmRoot, input, boundary); await process.ready; process.child.kill('SIGKILL'); assert.equal(await process.exited, 'SIGKILL');
   const recovered = await declarePartition(host, input); assert.equal(recovered.replayed, boundary === 'after_update');

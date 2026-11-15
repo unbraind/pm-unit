@@ -18,3 +18,4 @@
 ### Other
 
 - Adopt current pm-cli option contract and toolchain ([pm-unit-toolchain-1114b](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-toolchain-1114b.toon))
+- Apply Fleet CI v2 quick PR and deep tiers ([pm-unit-ci-v2](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-ci-v2.toon))
