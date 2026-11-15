@@ -37,12 +37,12 @@
     "duplication": "node scripts/duplication-gate.ts",
     "audit:prod": "node --input-type=module -e \"import { spawnSync } from 'node:child_process'; import { npmEnvironment } from './scripts/environment.ts'; const env = npmEnvironment(process.env); const win = process.platform === 'win32'; const r = spawnSync(win ? 'npm.cmd' : 'npm', ['audit', '--omit=dev', '--ignore-scripts'], { stdio: 'inherit', env, shell: win }); process.exit(r.status ?? 1);\"",
     "pack:dry-run": "npm run build && node scripts/pack-gate.ts",
-    "changelog": "pm-changelog --pm-root .agents/pm --mode prepend --output CHANGELOG.md --release-version-from-package --date-from-version --since-previous-tag --until-release-tag --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full",
-    "changelog:full": "pm-changelog --pm-root .agents/pm --mode replace --output CHANGELOG.md --all-release-tags --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full",
-    "changelog:check": "pm-changelog --pm-root .agents/pm --mode replace --output CHANGELOG.md --all-release-tags --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --check --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full",
+    "changelog": "pm-changelog --pm-root .agents/pm --mode prepend --output CHANGELOG.md --release-version-from-package --date-from-version --since-previous-tag --until-release-tag --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full --include-empty",
+    "changelog:full": "pm-changelog --pm-root .agents/pm --mode replace --output CHANGELOG.md --all-release-tags --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full --include-empty",
+    "changelog:check": "pm-changelog --pm-root .agents/pm --mode replace --output CHANGELOG.md --all-release-tags --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --check --pm-bin ./node_modules/.bin/pm --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full --include-empty",
     "release:check": "npm run identity:check && npm run tracker:health && npm run typecheck && npm run lint && npm run duplication && npm run build && npm run docstring && npm run coverage && npm run audit:prod && npm run pack:dry-run && npm run changelog:check && npm run verify:release-publish-attestation && npm run test:install && npm run test:revert",
     "prepublishOnly": "npm run release:check",
-    "release:notes": "pm-changelog --pm-root .agents/pm --stdout --since-previous-tag --until-release-tag --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --github-step-summary --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full",
+    "release:notes": "pm-changelog --pm-root .agents/pm --stdout --since-previous-tag --until-release-tag --release-version-from-package --date-from-version --item-url-base https://github.com/unbraind/pm-unit/blob/main/.agents/pm --respect-item-release --status closed,in_progress --pm-bin ./node_modules/.bin/pm --github-step-summary --pm-arg=--output-budget --pm-arg=unbounded --pm-arg=--output-limit --pm-arg=unbounded --pm-arg=--output-include --pm-arg=full --include-empty",
     "coverage": "npm run build && npm run build:test && node scripts/coverage-gate.ts",
     "verify:release-publish-attestation": "node scripts/verify-release-publish-attestation.ts",
     "identity:check": "node scripts/identity-gate.ts",
@@ -58,23 +58,24 @@
     "@babel/eslint-parser": "8.0.7",
     "@babel/parser": "8.1.0",
     "@babel/plugin-syntax-typescript": "8.0.3",
+    "@types/istanbul-lib-coverage": "^2.0.6",
+    "@types/istanbul-lib-instrument": "^1.7.8",
+    "@types/istanbul-lib-report": "^3.0.3",
+    "@types/istanbul-reports": "^3.0.4",
     "@types/node": "26.6.6",
     "@unbrained/pm-cli": "2026.11.13",
     "c8": "^12.0.0",
     "eslint": "10.14.0",
     "fast-glob": "3.3.3",
-    "jscpd": "5.4.3",
-    "pm-changelog": "2026.11.13",
-    "pm-ops": "2026.11.6",
-    "typescript": "7.0.2",
-    "istanbul-lib-instrument": "^6.0.3",
     "istanbul-lib-coverage": "^3.2.2",
+    "istanbul-lib-instrument": "^6.0.3",
     "istanbul-lib-report": "^3.0.1",
     "istanbul-reports": "^3.2.0",
-    "@types/istanbul-lib-instrument": "^1.7.8",
-    "@types/istanbul-lib-coverage": "^2.0.6",
-    "@types/istanbul-lib-report": "^3.0.3",
-    "@types/istanbul-reports": "^3.0.4"
+    "jscpd": "5.4.3",
+    "pm-changelog": "2026.11.13",
+    "pm-ops": "2026.11.14",
+    "typescript": "7.0.2",
+    "yaml": "2.9.1"
   },
   "keywords": [
     "pm-cli",
@@ -150,8 +151,8 @@
     }
   },
   "dependencies": {
-    "zod": "^4.4.0",
-    "@toon-format/toon": "^4.4.0"
+    "@toon-format/toon": "^4.4.0",
+    "zod": "^4.4.0"
   },
   "overrides": {
     "minimatch": "^11.0.1"
