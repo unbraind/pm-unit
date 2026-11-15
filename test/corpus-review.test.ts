@@ -1,3 +1,4 @@
+import { testTimeout } from './support/time.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, cpSync, symlinkSync, readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
@@ -52,7 +53,7 @@ test('corpus acceptance uses checkout paths from a foreign cwd and derives nonad
     const fixture = JSON.parse(readFileSync(fixturePath, 'utf8')) as { claims: { pair_role?: string }[] };
     const rank = (role?: string) => role === 'numerator' ? 0 : role === 'denominator' ? 2 : 1;
     fixture.claims.sort((left, right) => rank(left.pair_role) - rank(right.pair_role)); writeFileSync(fixturePath, JSON.stringify(fixture));
-    const result = spawnSync(process.execPath, [join(checkout, 'test/real-data.acceptance.ts'), '--write-receipt'], { cwd: foreign, env: { ...testEnvironment(npmEnvironment(process.env)), GIT_CEILING_DIRECTORIES: scratch }, encoding: 'utf8', timeout: 120000 });
+    const result = spawnSync(process.execPath, [join(checkout, 'test/real-data.acceptance.ts'), '--write-receipt'], { cwd: foreign, env: { ...testEnvironment(npmEnvironment(process.env)), GIT_CEILING_DIRECTORIES: scratch }, encoding: 'utf8', timeout: testTimeout(120000) });
     assert.equal(result.status, 0, result.stdout + result.stderr);
     const report = JSON.parse(readFileSync(join(checkout, 'real-data.local.json'), 'utf8')) as { reproduced: number; derived_ratios: number; refusals: unknown[] };
     assert.equal(report.reproduced, 47); assert.equal(report.derived_ratios, 1); assert.equal(report.refusals.length, 6);

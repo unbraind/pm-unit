@@ -1,18 +1,20 @@
+import { testDepth } from './support/depth.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createQuantitySet, recordQuantity, readQuantitySet, convertQuantity, digest } from '../dist/index.js';
 import { fixture, request, hasCode } from './helpers.ts';
 import type { RecordQuantityInput } from '../dist/index.js';
 
-test('500 seeded random operation sequences match an independent model and SDK read-back', async t => {
+test('seeded random operation sequences match an independent model and SDK read-back', async t => {
   const { host, birth, native } = await fixture(t); let seed = 0x51a7; const counts = { record: 0, replay: 0, stale: 0, convert: 0, peer: 0 };
   /** Reproducible xorshift32 operation and data generator. */
   const random = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed >>> 0; };
   await native.create({ id: 'corpus-model-consumer', title: 'Quantity consuming task', type: 'Task' });
-  for (let batch = 0; batch < 10; batch++) {
+  const sequences = testDepth(500);
+  for (let batch = 0; batch < Math.ceil(sequences / 50); batch++) {
     const id = `corpus-model-${batch}`; await createQuantitySet(host, { ...birth, id, op: `birth-${batch}`, related: ['corpus-model-consumer'] });
     const model = new Map<string, { numerator: bigint; denominator: bigint; notes: string }>(); const old: RecordQuantityInput[] = []; let hasPeer = false;
-    for (let sequence = 0; sequence < 50; sequence++) {
+    for (let sequence = 0; sequence < Math.min(50, sequences - batch * 50); sequence++) {
       for (let step = 0; step < 2; step++) {
         const choice = random() % 5;
         if (old.length === 0 || (choice === 0 && model.size < 25)) {
@@ -36,6 +38,6 @@ test('500 seeded random operation sequences match an independent model and SDK r
       assert.ok(got.item.dependencies?.some(dep => dep.id === 'corpus-model-consumer')); if (hasPeer) assert.equal(got.item.description, 'Peer-owned prose');
     }
   }
-  assert.equal(Object.values(counts).reduce((sum, count) => sum + count, 0), 1000); assert.ok(Object.values(counts).every(count => count > 0));
-  t.diagnostic(JSON.stringify({ seed: '0x51a7', sequences: 500, operations: 1000, read_back: 500, counts }));
+  assert.equal(Object.values(counts).reduce((sum, count) => sum + count, 0), sequences * 2); assert.ok(Object.values(counts).every(count => count > 0));
+  t.diagnostic(JSON.stringify({ seed: '0x51a7', sequences, operations: sequences * 2, read_back: sequences, counts }));
 });

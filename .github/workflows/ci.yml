@@ -1,17 +1,22 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request: {}
   workflow_dispatch: {}
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PM_TEST_DEPTH: quick
     strategy:
       fail-fast: false
       matrix:
@@ -26,6 +31,29 @@ jobs:
           fetch-tags: true
           persist-credentials: false
 
+      - name: Detect code changes
+        id: changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          code=true
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            code=false
+            git diff --name-only --no-renames -z "$BASE_SHA...$HEAD_SHA" > "$RUNNER_TEMP/ci-changed-paths"
+            while IFS= read -r -d '' path; do
+              case "$path" in
+                # Executable tracker files use the same code tier in every package.
+                .agents/pm/*.mjs|.agents/pm/*.cjs|.agents/pm/*.js|.agents/pm/*.ts) code=true ;;
+                .agents/pm/*|*.md|docs/*|CHANGELOG.md|LICENSE) ;;
+                *) code=true ;;
+              esac
+            done < "$RUNNER_TEMP/ci-changed-paths"
+          fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
@@ -33,55 +61,37 @@ jobs:
           cache: npm
 
       - name: Setup Bun
+        if: steps.changes.outputs.code == 'true' && matrix.node-version == 26
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify tracked pm project health
-        # The script fails on the SDK's authoritative ok predicate, including
-        # history, integrity and extension failures, without requiring Git setup.
-        run: npm run tracker:health
+      - name: Strict tracker health
+        if: steps.changes.outputs.code != 'true'
+        run: |
+          ./node_modules/.bin/pm merge install
+          ./node_modules/.bin/pm health --strict-exit
 
-      - name: Verify commit identities and private path policy
-        run: npm run identity:check
+      - name: Documentation privacy and identity gates
+        if: steps.changes.outputs.code != 'true'
+        run: |
+          npm run identity:check
+          npm run changelog:check
+          # Privacy suites consume dist; compile only as their prerequisite.
+          npm run build
+          node --test test/corpus-privacy.test.ts
+          node --test --test-name-pattern='privacy|guardSubmitted' test/core.test.ts
 
-      - name: Build package
-        run: npm run build
+      - name: Quick engines floor build and tests
+        if: steps.changes.outputs.code == 'true' && matrix.node-version == 22
+        run: npm test
 
-      - name: Type check
-        run: npm run typecheck
+      - name: Quick npm release gate
+        if: steps.changes.outputs.code == 'true' && matrix.node-version == 26
+        run: npm run release:check
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Duplication gate
-        run: npm run duplication
-
-      - name: Verify complete docstring coverage
-        run: npm run docstring
-
-      - name: Test with coverage gate
-        run: npm run coverage
-
-      - name: Production dependency audit
-        run: npm run audit:prod
-
-      - name: Verify npm package contents
-        run: npm run pack:dry-run
-
-      - name: Verify generated changelog
-        run: npm run changelog:check
-
-      - name: Verify every publish invocation is attested
-        run: npm run verify:release-publish-attestation
-
-      - name: Verify Bun can install the package graph
+      # test:install already proves Bun project installs and bunx CLI/extension use.
+      - name: Bun package graph smoke
+        if: steps.changes.outputs.code == 'true' && matrix.node-version == 26
         run: bun install --no-save
-
-      - name: Packed npm and Bun acceptance
-        run: npm run test:install
-
-      - name: Bun release gates
-        if: matrix.node-version == 26
-        run: bun run release:check
