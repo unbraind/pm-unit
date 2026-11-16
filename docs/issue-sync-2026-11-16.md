@@ -37,3 +37,7 @@ A passing plan proves completeness and identity planning, not successful writes 
 ## Validation
 
 Typecheck and lint pass. The pinned tracker validation returns `ok: true` with existing advisories. The seeded tracker validation and gated import preview also pass through `pm test --run --progress`. Package quick tests are still running at the initial draft; no full passing package suite is claimed. Remaining results are recorded in the linked sync repair item. CI is not dispatched manually, and no successful scheduled rerun is claimed.
+
+## Final bounded verification receipt
+
+Final bounded verification: typecheck, lint and changelog:check passed. The locked-CLI gated import preview passed (1 planned, zero skipped). The initial quick suite finished with 99 pass, 1 failed timeout and 2 cancelled process tests. Direct reruns with PM_TEST_DEPTH=quick PM_TEST_TIME_SCALE=4 passed: node --test --test-concurrency=1 --test-name-pattern="corpus acceptance uses checkout" test/corpus-review.test.ts selected the corpus acceptance case (1/1); node --test --test-concurrency=1 test/partition-process.test.ts passed 3/3. No green full-suite rerun is claimed. The pinned normalization proof passes; the old literal comparison reproduces exit 1. The new item history verifies with strict exit.
