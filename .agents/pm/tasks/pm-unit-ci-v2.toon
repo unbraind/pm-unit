@@ -4,13 +4,11 @@ description: "Preserve required checks and release contracts while reducing repe
 type: Task
 status: in_progress
 priority: 2
-tags[2]: ci,performance
+tags[3]: ci,"gh:unbraind/pm-unit#23",performance
 created_at: "2026-11-15T14:39:55.722Z"
-updated_at: "2026-11-16T07:32:24.298Z"
-assignee: codex-sol
-claim_principal: codex-sol
+updated_at: "2026-11-16T07:41:33.241Z"
 author: codex-sol
-comments[7]{created_at,author,text}:
+comments[8]{created_at,author,text}:
   "2026-11-15T14:41:32.552Z",codex-sol,"Required checks confirmed: test (22), test (26), codeql. CodeQL stays unfiltered. Model quick depth keeps the original first 50/500 sequences with 50-case batch boundaries and generated operation totals. Integer property sweep selects a 25/201 prefix plus explicit zero/positive boundary regressions. Precision digit-boundary and capacity/privacy fixtures remain exhaustive. Full npm/Bun matrix moves to deep CI with scale 3 and 120-minute caps. Harness watchdogs round up to integer milliseconds; product contracts unchanged."
   "2026-11-15T14:42:14.737Z",codex-sol,"Historical successful main run 43656921036: full model 32.731 s; packed acceptance 33.504 s; hosted execution 2m01s (22), 4m50s (26). Job logs retrieved through the jobs endpoint after an empty gh run view log. Packed tests already prove Bun project install and bunx CLI/extension use, so retain graph-install smoke. Documentation path checks identity and corpus privacy plus the core privacy/input-guard cases after prerequisite compilation. Strict health installs clone-local drivers; plain tracker fixture isolates global PM settings. PR timeout 15 minutes; deep remains 120."
   "2026-11-15T14:43:48.214Z",codex-sol,"Local linked proof passes: typecheck 7.563 s, lint 4.006 s, five touched test files 77.219 s at quick depth and watchdog scale 3. New deterministic rational boundary checks retain zero and positive coverage beyond the quick prefix. Changelog check included this in-progress task, so regenerate its single changelog row. Unique-key YAML validation passes; actionlint unavailable. Quick coverage is running; full depth remains remote-only."
@@ -18,6 +16,7 @@ comments[7]{created_at,author,text}:
   "2026-11-16T07:23:52.681Z",codex-sol,"Final-template follow-up: audit current main; split deep Node 22/26 by npm/Bun with one gate per job; preserve active deep runs; route executable tracker and docs files through code CI; verify optional CodeQL paths and self-hosted setup. Measure latest successful PR jobs, run workflow contracts, typecheck and available lint. Release claim without closing; no release workflow or verifier edits."
   "2026-11-16T07:32:23.099Z",codex-sol,"Follow-up audit: required contexts verified through branch protection. CodeQL is required, so its paths remain unfiltered. Existing hosted-only npm cache/Bun setup and Bun version logging were audited and retained. Historical PR run 43820497226: test (22) execution 0m48s, wall 0m50s; test (26) execution 4m19s, wall 4m21s. All execution durations are below 15 minutes; long wall times are queueing. Items 1, 2 and 5 changed; item 3 retained because required; item 4 already compliant. No item 6 test-depth fix needed."
   "2026-11-16T07:32:24.293Z",codex-sol,"Local proof passed through the linked pm test command: typecheck, test compilation and focused workflow contracts; lint passed where defined, with the existing docstring gate used for pm-context. Strict YAML parsing passed; actionlint is unavailable. New classifier tests exercise executable tracker/docs suffixes, nested files, tracker extensions and data-only paths. Full depth is deferred to post-merge deep CI. No release workflows or release verifiers changed."
+  "2026-11-16T07:41:32.054Z",codex-sol,"PR https://github.com/unbraind/pm-unit/pull/23. Hosted source-head proof at 6be8f78d0b6f8672d0172aa2b2b364344042c416: codeql success, execution 0m52s, created-to-completed wall 2m52s; test (22) success, execution 1m12s, created-to-completed wall 1m58s; test (26) success, execution 2m50s, created-to-completed wall 7m23s. Runs: https://github.com/unbraind/pm-unit/actions/runs/43824696430 https://github.com/unbraind/pm-unit/actions/runs/43824696447. Typecheck, test compilation and all focused workflow contracts passed locally; lint passed where defined (pm-context uses its existing docstring gate). Strict YAML parsing passed; actionlint is unavailable. Tracker health passed with isolated global PM settings; pm-unit used the standard local merge-driver install first. The source and workflow changes are complete. This final receipt adds only tracker metadata; final-head CI times will be maintained in the PR body. Full-depth matrix and self-hosted execution remain post-merge evidence. Releasing the claim; leave this item in_progress and open for the orchestrator."
 files[14]{path,scope}:
   .github/workflows/ci-deep.yml,project
   .github/workflows/ci.yml,project
