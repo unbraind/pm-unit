@@ -3,9 +3,10 @@
 Required checks remain `test (22)`, `test (26)` and `codeql`. The PR tier runs
 on pull requests and dispatch, on Ubuntu hosted runners, with superseded PR
 cancellation and 15-minute job limits. Dispatch always selects the code tier.
-Executable JavaScript/TypeScript under the tracker selects the code tier too.
+Executable JavaScript/TypeScript/shell in the tracker or docs, and all tracker
+extensions, select the code tier too.
 
-| Check | Code PR Node 22 | Code PR Node 26 | Docs/tracker PR, both | Deep Node 22 + 26 |
+| Check | Code PR Node 22 | Code PR Node 26 | Docs/tracker PR, both | Deep Node 22/26 × npm/Bun |
 | --- | --- | --- | --- | --- |
 | npm ci | yes | yes | yes | yes |
 | Authoritative tracker health | — | release gate | install clone merge drivers; strict CLI | npm + Bun gates |
@@ -24,9 +25,10 @@ Executable JavaScript/TypeScript under the tracker selects the code tier too.
 | CodeQL | separate required workflow | separate required workflow | required, unfiltered | main pushes and weekly |
 
 Deep runs on main pushes, daily at 02:23 UTC, and dispatch. Release schedules
-remain 05:37 UTC and minute 41 hourly. Deep jobs are `deep (22)` and `deep (26)`,
-use the local pool unless `PM_LOCAL_DEEP=off`, cancel older runs per ref, and
-have a 120-minute limit. Each executes the complete npm and Bun release gates.
+remain 05:37 UTC and minute 41 hourly. Deep jobs are `deep (22, npm)`,
+`deep (22, bun)`, `deep (26, npm)` and `deep (26, bun)`. They use the local pool unless `PM_LOCAL_DEEP=off`, preserve active runs per ref, and
+have a 120-minute limit. GitHub retains one pending run per group. Each matrix
+job executes exactly one complete npm or Bun release gate.
 Local runners keep their persistent npm cache and preinstalled Bun; hosted
 runners use npm caching and Bun setup. Every deep log prints `bun --version`.
 
@@ -55,3 +57,22 @@ and PR cancellation remain, with a new 30-minute timeout.
 Tracking: [pm-unit-ci-v2](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-ci-v2.toon).
 Companion: `pm-cli-website-dyhg`. Release caller, sync workflows and release
 verifier scripts are unchanged.
+
+## Final-template follow-up (2026-11-16)
+
+Latest successful PR CI: [run 43820497226](https://github.com/unbraind/pm-unit/actions/runs/43820497226).
+These are historical workflow job measurements, not a controlled benchmark of this change.
+
+| Job | Execution (started → completed) | Wall time (created → completed) |
+| --- | --- | --- |
+| test (22) | 0m48s | 0m50s |
+| test (26) | 4m19s | 4m21s |
+
+Every measured job executed within the 15-minute quick-tier target. Queueing
+explains any larger wall time. No test-depth adjustment or sharding is included.
+CodeQL is required by branch protection, so its PR and main paths remain unfiltered.
+
+The workflow contracts strictly parse all three tier YAML files, exercise each PR
+classifier against data and executable paths, and verify one full gate per matrix
+job, self-hosted setup, the runner expression and non-cancelling deep concurrency.
+Full-depth execution remains post-merge deep-CI evidence.
