@@ -12,6 +12,7 @@
 
 ### Fixed
 
+- Node 22 revert proof misses TAP UnitRefusal failures ([pm-unit-wasm](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-wasm.toon))
 - Read the stored budget setting only when no explicit budget is given ([pm-unit-budget](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-budget.toon))
 - Refuse sparse arrays longer than the traversal budget before schema validation ([pm-unit-kr3e](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-kr3e.toon))
 
