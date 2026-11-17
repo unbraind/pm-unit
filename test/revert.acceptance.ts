@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { npmEnvironment, testEnvironment } from '../scripts/environment.ts';
+import { isBehavioralRevertFailure } from './revert-failure.ts';
 
 const changes = [
   { name: 'exact normalization removed', file: 'kernel', pattern: /export function rational\(value\) \{[\s\S]*?\n\}/, replacement: 'export function rational(value) { return value; }', test: 'core', filter: 'rational properties' },
@@ -74,8 +75,12 @@ for (const change of selected) {
   try {
     for (const file of ['dist', 'src', 'test', 'scripts', 'docs', '.github', 'package.json', 'manifest.json', 'README.md', 'ARCHITECTURE.md', 'CHANGELOG.md', 'LICENSE', 'tsconfig.json', 'tsconfig.test.json']) cpSync(file, join(root, file), { recursive: true }); symlinkSync(join(process.cwd(), 'node_modules'), join(root, 'node_modules'), 'dir');
     const file = join(root, 'path' in change && typeof change.path === 'string' ? change.path : `dist/src/${change.file}.js`); const source = readFileSync(file, 'utf8'); assert.match(source, change.pattern, `Mutation did not match ${change.name}`); writeFileSync(file, source.replace(change.pattern, change.replacement));
-    const result = spawnSync(process.execPath, ['--test', '--test-concurrency=2', `--test-name-pattern=${change.filter}`, change.test.endsWith('.acceptance') ? `test/${change.test}.ts` : `test/${change.test}.test.ts`], { cwd: root, env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: testTimeout(change.test.endsWith('.acceptance') ? 360000 : 120000) });
-    assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`); assert.match(result.stdout + result.stderr, /AssertionError|Missing expected rejection|Missing expected exception|UnitRefusal:/, `Failure must be behavioral: ${change.name}`); if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch)); console.log(`EXPECTED FAIL: ${change.name}`);
+    const result = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=2', `--test-name-pattern=${change.filter}`, change.test.endsWith('.acceptance') ? `test/${change.test}.ts` : `test/${change.test}.test.ts`], { cwd: root, env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: testTimeout(change.test.endsWith('.acceptance') ? 360000 : 120000) });
+    assert.notEqual(result.status, 0, `Safeguard removal incorrectly passed: ${change.name}`);
+    assert.equal(result.status, 1, `Mutation test did not exit normally: ${change.name}`);
+    assert.ok(isBehavioralRevertFailure(result.stdout), `Failure must be behavioral: ${change.name}`);
+    if ('mustMatch' in change && typeof change.mustMatch === 'string') assert.match(result.stdout + result.stderr, new RegExp(change.mustMatch));
+    console.log(`EXPECTED FAIL: ${change.name}`);
   } finally { rmSync(root, { recursive: true, force: true }); }
 }
 const restored = spawnSync(process.execPath, ['--test', '--test-concurrency=2', 'test/partitions.test.ts', 'test/partition-process.test.ts', 'test/partition-public.test.ts', 'test/core.test.ts', 'test/contracts.test.ts', 'test/edge.test.ts', 'test/cross-window.test.ts', 'test/conversion-boundary.test.ts', 'test/corpus-privacy.test.ts', 'test/corpus-review.test.ts', 'test/install-tools.test.ts'], { env: testEnvironment(npmEnvironment(process.env)), encoding: 'utf8', timeout: testTimeout(360000) });
