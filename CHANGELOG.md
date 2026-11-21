@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026.11.6 - 2026-11-06
+## Unreleased
 
 ### Added
 
@@ -20,3 +20,7 @@
 
 - Adopt current pm-cli option contract and toolchain ([pm-unit-toolchain-1114b](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-toolchain-1114b.toon))
 - Apply Fleet CI v2 quick PR and deep tiers ([pm-unit-ci-v2](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-ci-v2.toon))
+
+### Closed
+
+- Closed: Valid 80-digit quantities fail identity conversion and self-comparison due to intermediate overflow ([pm-unit-github-2c5788c54ae6-6](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-github-2c5788c54ae6-6.toon))
