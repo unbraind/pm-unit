@@ -19,4 +19,5 @@
 ### Other
 
 - Adopt current pm-cli option contract and toolchain ([pm-unit-toolchain-1114b](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-toolchain-1114b.toon))
+- Adopt pm-cli 2026.11.22 host-aligned SDK behaviour ([pm-unit-sdk-1122](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/chores/pm-unit-sdk-1122.toon))
 - Apply Fleet CI v2 quick PR and deep tiers ([pm-unit-ci-v2](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-ci-v2.toon))

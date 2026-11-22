@@ -1,0 +1,23 @@
+id: pm-unit-sdk-1122
+title: Adopt pm-cli 2026.11.22 host-aligned SDK behaviour
+description: Migrate the package toolchain and verify the native host contracts. Companion item pm-cli-website-spus.
+type: Chore
+status: in_progress
+priority: 2
+tags: []
+created_at: "2026-11-22T20:28:43.174Z"
+updated_at: "2026-11-22T21:02:29.952Z"
+author: codex-agent
+acceptance_criteria: Pin all first-party development tools at npm latest and refresh tracked locks; Prove native and package cursor and budget behaviours with the installed SDK; Run the unchanged release gates and open the migration PR
+comments[1]{created_at,author,text}:
+  "2026-11-22T21:02:28.619Z",codex-agent,"## Host behavior\n\n- `not ok 37 - native harness executes all commands and round-trips scoped JSON and TOON renderers`. The old harness passed package cursors through `outputCursor` and let the handler reject conflicting cursors. The host now validates native cursors before dispatch and reports `read_output_cursor_invalid` with exit 2. The native test checks the refusal, resumes through `--cursor`, and exercises the package's own guards directly with the real SDK.\n- The same test previously got package `invalid_input` for repeated scalar options and a malformed output session. The host now reports `extension_flag_value_invalid` and `invalid_read_output_session`. Both host codes and the original package refusals are covered.\n- `not ok 43 - an explicit budget is not refused by an invalid stored budget setting`. A global budget of 1 used to deliver the package `output_budget` envelope. The host now budgets the full delivered output and throws `output_budget_exceeded` with exit 2 and a `required` hint. The package `--budget` refusal, unbounded reads, and the mutation budget checks are retained.\n\n## Verification\n\n- Baseline build and typecheck passed. The full baseline passed 102 of 104 tests. Both updated failure classes fail with a missing expected host rejection when run against 2026.11.14 in a disposable checkout.\n- `pm test pm-unit-sdk-1122 --run --progress` passed 7 of 7 contract tests.\n- `npm run release:check` and `bun run release:check` each passed 104 of 104 tests and 55 behavioral reverts. Coverage is 637/637 statements, 455/455 branches, 123/123 functions, and 571/571 lines. The gates include typecheck, lint, identity and privacy, tracker health, changelog, production audit, and packed npm and Bun acceptance.\n- A clean checkout resolved the initial local merge-driver configuration drift.\n\nCI for this branch is tracked in the Actions run list. [Branch runs](https://github.com/unbraind/pm-unit/actions?query=branch%3Adeps%2Fadopt-pm-cli-host-alignment-1122)"
+files[3]{path,scope}:
+  package-lock.json,project
+  package.json,project
+  test/contracts.test.ts,project
+tests[1]{command,scope,provenance{author,created_at,source_kind,source_ref}}:
+  node --test --test-concurrency=2 test/contracts.test.ts,project,codex-agent,"2026-11-22T20:33:51.364Z",local_mutation,deps/adopt-pm-cli-host-alignment-1122
+docs[2]{path,scope}:
+  ARCHITECTURE.md,project
+  README.md,project
+body: ""
