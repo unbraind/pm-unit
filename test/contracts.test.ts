@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createExtensionTestHarness, decodeToon } from '@unbrained/pm-cli/sdk/testing';
-import { fitOutputEnvelope, writeSettingsSection, createPmCliExpectedError, OutputEnvelopeFitError } from '@unbrained/pm-cli/sdk';
+import { createExtensionCommandSdk, fitOutputEnvelope, writeSettingsSection } from '@unbrained/pm-cli/sdk';
 import { PmClient } from '@unbrained/pm-cli/sdk/core';
 import extension, { createQuantitySet, recordQuantity, deriveQuantity, readQuantitySet, readState, quantityPacket, createDirectoryHost, digest, envelope, fitEnvelope, UnitRefusal } from '../dist/index.js';
 import { runCommand, inputJson } from '../dist/src/commands.js';
@@ -31,9 +31,27 @@ test('native harness executes all commands and round-trips scoped JSON and TOON 
   }
   assert.equal((await native.readItemRevision('corpus-cli')).item_hash, derived.revision);
   const result = await run('packet', ['corpus-cli'], { limit: '1' }); assert.ok(result.continuation);
-  assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputCursor: result.continuation })).ok, true);
+  const hostCursorRefusal = { code: 'read_output_cursor_invalid', exitCode: 2 };
+  await assert.rejects(run('packet', ['corpus-cli'], { limit: '1' }, { outputCursor: result.continuation }), hostCursorRefusal);
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1', cursor: result.continuation })).ok, true);
-  assert.equal((await run('packet', ['corpus-cli'], { cursor: result.continuation }, { outputCursor: result.continuation })).refusal?.code, 'invalid_input');
+  await assert.rejects(run('packet', ['corpus-cli'], { cursor: result.continuation }, { outputCursor: result.continuation }), hostCursorRefusal);
+  await assert.rejects(run('convert', ['corpus-cli'], { quantity: 'first', to: 's' }, { outputCursor: 'bad' }), hostCursorRefusal);
+
+  await assert.rejects(run('packet', ['corpus-cli'], { quantity: [] }), { code: 'extension_flag_value_invalid', exitCode: 2 });
+  await assert.rejects(run('packet', ['corpus-cli'], {}, { outputSession: 'x' }), { code: 'invalid_read_output_session', exitCode: 2 });
+
+  // Check the package guards directly because native validation stops these requests before dispatch.
+  const sdk = createExtensionCommandSdk(pmRoot, native);
+  for (const [command, options, global] of [
+    ['packet', { cursor: result.continuation }, { outputCursor: result.continuation }],
+    ['convert', { quantity: 'first', to: 's' }, { outputCursor: 'bad' }],
+    ['packet', { quantity: [] }, {}],
+    ['packet', {}, { outputSession: 'x' }],
+  ] as const) {
+    const result = await runCommand(command, { command: `unit ${command}`, args: ['corpus-cli'], options, global, pm_root: pmRoot, sdk }) as UnitResult;
+    assert.equal(result.refusal?.code, 'invalid_input');
+    assert.equal(result.exit_code, 2);
+  }
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputLimit: '2' })).refusal?.code, 'invalid_input');
   assert.equal((await run('packet', ['corpus-cli'], { limit: '1' }, { outputLimit: '1' })).refusal?.code, 'invalid_input');
   assert.equal((await run('packet', ['corpus-cli'], {}, { outputLimit: '1', outputBudget: '1600' })).ok, true);
@@ -48,8 +66,8 @@ test('native harness executes all commands and round-trips scoped JSON and TOON 
     ['create', { id: 'corpus-refused', op: 'bad', input: '{"id":"other"}' }, {}, 'invalid_input'],
     ['create', { id: 'corpus-refused', op: 'tiny', input: '{"title":"tiny","quantity_set_key":"tiny"}' }, { outputBudget: '1' }, 'output_budget'],
     ['packet', { limit: '1.5' }, {}, 'invalid_input'], ['packet', { limit: '101' }, {}, 'invalid_input'], ['packet', {}, { outputBudget: 0 }, 'invalid_input'], ['packet', {}, { outputBudget: [] }, 'invalid_input'], ['packet', {}, { outputBudget: '1.5' }, 'invalid_input'], ['packet', {}, { outputBudget: '999999999999999999999' }, 'invalid_input'],
-    ['packet', { quantity: [] }, {}, 'invalid_input'], ['packet', {}, { outputInclude: 'id' }, 'invalid_input'], ['packet', {}, { outputSession: 'x' }, 'invalid_input'], ['packet', {}, { outputRowContract: 'x' }, 'invalid_input'],
-    ['convert', { quantity: 'first', to: 's' }, { outputCursor: 'bad' }, 'invalid_input'], ['convert', { quantity: 'first', to: 's' }, { outputLimit: 1 }, 'invalid_input'],
+    ['packet', {}, { outputInclude: 'id' }, 'invalid_input'], ['packet', {}, { outputRowContract: 'x' }, 'invalid_input'],
+    ['convert', { quantity: 'first', to: 's' }, { outputLimit: 1 }, 'invalid_input'],
   ] as const) { const failure = await run(command, ['corpus-cli'], options, global); assert.equal(failure.refusal?.code, expected); assert.equal(failure.ok, false); }
   await assert.rejects(native.get('corpus-refused'), error => error instanceof Error);
   assert.equal((await runCommand('packet', { command: 'unit packet', args: [], options: {}, global: {}, pm_root: pmRoot } as CommandHandlerContext) as UnitResult).refusal?.code, 'backend_unsupported');
@@ -135,7 +153,7 @@ test('whole envelopes preserve witnesses and return verified retry budgets', asy
 });
 
 test('an explicit budget is not refused by an invalid stored budget setting', async t => {
-  const { pmRoot, id, host } = await fixture(t); const ext = await createExtensionTestHarness(extension, { capabilities: ['commands', 'schema', 'renderers'] }); t.after(() => ext.deactivate());
+  const { pmRoot, id, host, native } = await fixture(t); const ext = await createExtensionTestHarness(extension, { capabilities: ['commands', 'schema', 'renderers'] }); t.after(() => ext.deactivate());
   for (let at = 0; at < 4; at++) await recordQuantity(host, await request(host, id, `budget-${at}`, { notes: 'Public context. '.repeat(30) }));
   for (const stored of [0, -1, 1.5, 8193]) {
     await writeSettingsSection(pmRoot, 'unit', { output_budget: stored }, { author: 'fixture' });
@@ -145,7 +163,20 @@ test('an explicit budget is not refused by an invalid stored budget setting', as
     }
     for (const transport of ['options', 'global']) {
       for (const budget of ['1', 'unbounded']) {
-        const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: budget === '1' ? '1' : '4', ...(transport === 'options' ? { budget } : {}) }, global: transport === 'global' ? { outputBudget: budget } : {}, pmRoot }); if (ran.cause) throw ran.cause;
+        const invocation = ext.runCommand({ command: 'unit packet', args: [id], options: { limit: budget === '1' ? '1' : '4', ...(transport === 'options' ? { budget } : {}) }, global: transport === 'global' ? { outputBudget: budget } : {}, pmRoot });
+        if (transport === 'global' && budget === '1') {
+          await assert.rejects(invocation, (error: unknown) => {
+            assert.ok(hasCode('output_budget_exceeded')(error));
+            assert.ok(error instanceof Error && 'exitCode' in error && 'context' in error);
+            assert.equal(error.exitCode, 2);
+            assert.ok(error.context && typeof error.context === 'object' && 'required' in error.context);
+            assert.match(String(error.context.required), /outputBudget/);
+            return true;
+          });
+          continue;
+        }
+        const ran = await invocation;
+        if (ran.cause) throw ran.cause;
         const result = ran.result as UnitResult;
         if (budget === '1') assert.equal(result.refusal?.code, 'output_budget', 'proof:explicit_tiny_budget');
         else { assert.equal(result.ok, true, 'proof:explicit_unbounded'); assert.ok((result as UnitResult & { output_fit: { estimated_tokens: number } }).output_fit.estimated_tokens > 1600, 'proof:exceeds_default'); }
@@ -154,8 +185,13 @@ test('an explicit budget is not refused by an invalid stored budget setting', as
     const fallback = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '1' }, pmRoot }); if (fallback.cause) throw fallback.cause;
     assert.equal((fallback.result as UnitResult).ok, false, `Invalid stored ${stored} must still refuse without an explicit budget`);
   }
-  for (const explicit of ['0', '-1', '1.5', []]) {
+  for (const explicit of ['0', '-1', '1.5']) {
     const ran = await ext.runCommand({ command: 'unit packet', args: [id], options: { limit: '1', budget: explicit }, pmRoot }); if (ran.cause) throw ran.cause;
     assert.equal((ran.result as UnitResult).ok, false, 'Invalid explicit budgets still refuse');
   }
+  const options = { limit: '1', budget: [] };
+  await assert.rejects(ext.runCommand({ command: 'unit packet', args: [id], options, pmRoot }), { code: 'extension_flag_value_invalid', exitCode: 2 });
+  const sdk = createExtensionCommandSdk(pmRoot, native);
+  const direct = await runCommand('packet', { command: 'unit packet', args: [id], options, global: {}, pm_root: pmRoot, sdk }) as UnitResult;
+  assert.equal(direct.refusal?.code, 'invalid_input');
 });
