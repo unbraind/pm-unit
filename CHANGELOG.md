@@ -25,6 +25,7 @@
 
 ### Dependencies
 
+- Bump @babel/parser
 - Bump unbraind/pm-ops/.github/workflows/daily-release.yml ([#33](https://github.com/unbraind/pm-unit/pull/33))
 - Bump unbraind/pm-github/.github/workflows/pm-github-sync.yml ([#34](https://github.com/unbraind/pm-unit/pull/34))
 - Bump the codeql-action group with 2 updates ([#32](https://github.com/unbraind/pm-unit/pull/32))
