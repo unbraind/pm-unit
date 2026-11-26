@@ -23,9 +23,13 @@
 - Adopt pm-cli 2026.11.22 host-aligned SDK behaviour ([pm-unit-sdk-1122](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/chores/pm-unit-sdk-1122.toon))
 - Apply Fleet CI v2 quick PR and deep tiers ([pm-unit-ci-v2](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/tasks/pm-unit-ci-v2.toon))
 
+### Closed
+
+- Closed: Valid 80-digit quantities fail identity conversion and self-comparison due to intermediate overflow ([pm-unit-github-2c5788c54ae6-6](https://github.com/unbraind/pm-unit/blob/main/.agents/pm/issues/pm-unit-github-2c5788c54ae6-6.toon))
+
 ### Dependencies
 
-- Bump unbraind/pm-ops/.github/workflows/daily-release.yml
+- Bump unbraind/pm-ops/.github/workflows/daily-release.yml ([#45](https://github.com/unbraind/pm-unit/pull/45))
 - Bump @babel/parser from 8.1.2 to 8.1.3 in the dependencies group ([#39](https://github.com/unbraind/pm-unit/pull/39))
 - Bump unbraind/pm-ops/.github/workflows/daily-release.yml ([#33](https://github.com/unbraind/pm-unit/pull/33))
 - Bump unbraind/pm-github/.github/workflows/pm-github-sync.yml ([#34](https://github.com/unbraind/pm-unit/pull/34))

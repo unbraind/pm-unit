@@ -1,0 +1,21 @@
+id: pm-unit-github-2c5788c54ae6-36
+title: Generated issue sync flips the existing changelog heading and fails its own gate
+description: "GH issue #36: https://github.com/unbraind/pm-unit/issues/36 · author @unbraind · created 2026-11-22T12:13:39Z · updated 2026-11-22T18:26:06Z"
+type: Issue
+status: open
+priority: 2
+tags[2]: "gh:unbraind/pm-unit#36","github_author:unbraind"
+created_at: "2026-11-22T12:13:39Z"
+updated_at: "2026-11-26T12:47:26.330Z"
+author: pm-github
+github_close_reason: ""
+github_closed_at: ""
+github_created_at: "2026-11-22T12:13:39Z"
+github_link_only: false
+github_number: 36
+github_release: ""
+github_state: open
+github_state_reason: unspecified
+github_updated_at: "2026-11-22T18:26:06Z"
+github_url: "https://github.com/unbraind/pm-unit/issues/36"
+body: "[PM Unit #25](https://github.com/unbraind/pm-unit/pull/25) at `a260f27e7fcc72f5166574af5edc77dfd0c77f17` changes only two imported tracker files and `CHANGELOG.md`. Compared with default `61d5e84a60da7ced19cb16c0212c862168b2686f`, the generated PR replaces `## 2026.11.6 - 2026-11-06` with `## Unreleased` while adding the imported issue under Closed. The subsequent `changelog:check` regenerates the prior heading and reports `tracker_changed` on both [Node 22](https://github.com/unbraind/pm-unit/actions/runs/45018214253/job/137196024251) and [Node 26](https://github.com/unbraind/pm-unit/actions/runs/45018214253/job/137196024439).\n\nThis is confirmed at the generated branch, not a demonstrated default-branch runtime regression, publication state, or the tag-date mismatch in pm-ops#292. Align the sync writer and checker on the final PR tree: the same inputs should produce byte-identical changelog in both paths, preserving the imported close record in the intended section. Verify a second regeneration is a no-op and that both exact-head Node jobs pass without weakening the check.\n\n---\n\n### GitHub comments (1)\n\n> **@unbraind** (2026-11-22T18:26:06Z)\n>\n> Diagnosis (orchestrator, 2026-11-22). Two causes combine:\n> \n> 1. **The writer/checker mismatch is already fixed upstream.** At the caller's pin (pm-github `8af1795`, 2026.11.16), the reusable sync runs `changelog:full -- --no-pending-release`, while this repo's `changelog:check` regenerates with the pending release. [pm-github#261](https://github.com/unbraind/pm-github/pull/261), released in **pm-github v2026.11.19**, removed that flag. It now runs the caller's own post-import script and then `npm run changelog:check` on the final tree, and refuses to publish if either changes CHANGELOG.md or tracker files. Dependabot's weekly `github-actions` update moves `.github/workflows/pm-github-sync.yml` to v2026.11.19 (no fleet caller is on it yet). After that, the next sync regenerates #25 with the same bytes as the check.\n> 2. **Why the heading counts as \"pending\" at all:** `pm-unit@2026.11.6` is on npm (hand-published on 2026-11-15), but the repo has **no git tags**. Every Daily Release since then has stopped at `Verify npm will accept this workflow's OIDC identity`: `HTTP 404: OIDC token exchange error - package not found` (for example, [run 45028262900](https://github.com/unbraind/pm-unit/actions/runs/45028262900)). That means npm has no trusted publisher for `release.yml`. Owner action:\n>    `npm trust github pm-unit --file release.yml --repository unbraind/pm-unit --allow-publish -y`\n>    Once a release is tagged, `2026.11.6` stops being a pending heading in both paths.\n> \n> Verification after the repin: a second regeneration is a no-op, and both exact-head Node jobs on the sync PR pass with `changelog:check` unchanged.\n>"
