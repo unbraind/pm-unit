@@ -25,6 +25,7 @@
 
 ### Dependencies
 
+- Bump unbraind/pm-ops/.github/workflows/daily-release.yml
 - Bump @babel/parser from 8.1.2 to 8.1.3 in the dependencies group ([#39](https://github.com/unbraind/pm-unit/pull/39))
 - Bump unbraind/pm-ops/.github/workflows/daily-release.yml ([#33](https://github.com/unbraind/pm-unit/pull/33))
 - Bump unbraind/pm-github/.github/workflows/pm-github-sync.yml ([#34](https://github.com/unbraind/pm-unit/pull/34))
