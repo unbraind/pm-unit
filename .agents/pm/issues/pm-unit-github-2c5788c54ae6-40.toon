@@ -1,0 +1,21 @@
+id: pm-unit-github-2c5788c54ae6-40
+title: "Unmet spec criteria: domain declarations, provider conformance, and daily OIDC publication"
+description: "GH issue #40: https://github.com/unbraind/pm-unit/issues/40 · author @unbraind · created 2026-11-24T19:11:45Z · updated 2026-11-24T19:12:25Z"
+type: Issue
+status: open
+priority: 2
+tags[2]: "gh:unbraind/pm-unit#40","github_author:unbraind"
+created_at: "2026-11-24T19:11:45Z"
+updated_at: "2026-11-26T12:47:26.401Z"
+author: pm-github
+github_close_reason: ""
+github_closed_at: ""
+github_created_at: "2026-11-24T19:11:45Z"
+github_link_only: false
+github_number: 40
+github_release: ""
+github_state: open
+github_state_reason: unspecified
+github_updated_at: "2026-11-24T19:12:25Z"
+github_url: "https://github.com/unbraind/pm-unit/issues/40"
+body: "Three acceptance points remain open in the package spec.\n\n> Every described CLI shape and typed SDK export has parity tests including domain success unknown and typed refusal paths\n>\n> The directory and injected-provider conformance suites pass and unsupported provider atomicity authorization or snapshot guarantees produce explicit refusals\n>\n> Main-only daily auto-release uses pm-changelog exact-source gates OIDC provenance and tested no-change dependency-only collision queued-check and failed-release cases after owner publication approval\n\n- `index.ts` and `test/partitions.test.ts` demonstrate reviewed disjoint partitions. The broader quantity-domain declaration API and its parity cases remain pending. The package tracks reviewed semantic mappings as `pm-unit-compatibility`.\n- `docs/review-status.md` and `test/contracts.test.ts` document directory-host support and typed refusal for missing guarantees. The equivalent injected-provider conformance receipt, including guarded writes and concurrent writers, is still due. See `pm-unit-providers`.\n- `.github/workflows/release.yml` and `test/workflow.test.ts` cover the approved schedule and canonical preparation logic. GitHub Actions run 45436158753 failed the npm OIDC identity check before publication. The registry's current `pm-unit@2026.11.6` has no provenance entry. Demonstrate a successful approved main-only release with provenance and retained recovery evidence.\n\n\n---\n\n### GitHub comments (1)\n\n> **@coderabbitai[bot]** (2026-11-24T19:12:25Z)\n>\n> <!-- coderabbit-ai-generated:v1 -->\n> \n> <!-- This is an auto-generated issue plan by CodeRabbit -->\n> <details>\n> <summary>🔗 Related PRs</summary>\n> <dl>\n> <dd>\n> <br>\n> \n> unbraind/pm-unit#4 - pm-unit: exact units, populations and derivations for quantities in agent context [merged]\n> unbraind/pm-unit#38 - Keep published dependency updates in the generated changelog [merged]\n> </dd>\n> </dl>\n> </details>\n> \n> ---\n> <details>\n> <summary>📝 Issue Planner</summary>\n> <dl>\n> <dd>\n> <br>\n> \n> <sub>Check the box below or use the `@coderabbitai plan` command to generate an implementation plan and prompts that you can use with your favorite coding assistant.</sub>\n> \n> - [ ] <!-- {\"checkboxId\":\"8d4f2b9c-3e1a-4f7c-a9b2-d5e8f1c4a7b9\"} --> Create Plan\n> </dd>\n> </dl>\n> </details>\n> \n> \n> ---\n> <details>\n> <summary> 🧪 Issue enrichment is currently in open beta.</summary>\n> <dl>\n> <dd>\n> <br>\n> \n> \n> You can configure auto-planning by selecting labels in the issue_enrichment configuration.\n> \n> To disable automatic issue enrichment, add the following to your `.coderabbit.yaml`:\n> ```yaml\n> issue_enrichment:\n>   auto_enrich:\n>     enabled: false\n> ```\n> </dd>\n> </dl>\n> </details>\n> \n> 💬 Have feedback or questions? Drop into our [discord](https://discord.gg/coderabbit)!"
