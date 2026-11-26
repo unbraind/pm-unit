@@ -36,3 +36,7 @@ updates:
       codeql-action:
         patterns:
           - "github/codeql-action*"
+      # Every pm-github workflow caller in this repository (today the gated sync) moves in one pull request.
+      pm-github-workflows:
+        patterns:
+          - "unbraind/pm-github/*"
